@@ -1,0 +1,19 @@
+site_name: python-sdk
+site_description: python sdk for Instill AI products
+site_author: instill-ai
+
+repo_url: https://github.com/instill-ai/python-sdk
+edit_uri: https://github.com/instill-ai/python-sdk/edit/main/docs
+
+theme: readthedocs
+
+markdown_extensions:
+  - codehilite
+
+nav:
+  - Home: index.md
+  - Advanced: advanced.md
+  - About:
+    - Release Notes: about/changelog.md
+    - Contributor Guide: about/contributing.md
+    - License: about/license.md
