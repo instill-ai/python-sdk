@@ -51,3 +51,6 @@ coverage.xml
 
 # VSCode
 .vscode
+
+# MacOS
+.DS_Store

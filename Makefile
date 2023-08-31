@@ -1,4 +1,4 @@
-PROJECT := python-sdk
+PROJECT := instill-python-sdk
 PACKAGE := instill_sdk
 MODULES := $(wildcard $(PACKAGE)/*.py)
 

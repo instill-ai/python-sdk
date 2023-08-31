@@ -2,15 +2,11 @@
 
 python sdk for Instill AI products
 
-This project was generated with [cookiecutter](https://github.com/audreyr/cookiecutter) using [jacebrowning/template-python](https://github.com/jacebrowning/template-python).
-
-[![Unix Build Status](https://img.shields.io/github/actions/workflow/status/instill-ai/python-sdk/main.yml?branch=main&label=linux)](https://github.com/instill-ai/python-sdk/actions)
-[![Windows Build Status](https://img.shields.io/appveyor/ci/instill-ai/python-sdk.svg?label=windows)](https://ci.appveyor.com/project/instill-ai/python-sdk)
+[![Unix Build Status](https://img.shields.io/github/actions/workflow/status/instill-ai/python-sdk/test.yml?branch=main&label=linux)](https://github.com/instill-ai/python-sdk/actions)
 [![Coverage Status](https://img.shields.io/codecov/c/gh/instill-ai/python-sdk)](https://codecov.io/gh/instill-ai/python-sdk)
-[![Scrutinizer Code Quality](https://img.shields.io/scrutinizer/g/instill-ai/python-sdk.svg)](https://scrutinizer-ci.com/g/instill-ai/python-sdk)
-[![PyPI License](https://img.shields.io/pypi/l/python-sdk.svg)](https://pypi.org/project/python-sdk)
-[![PyPI Version](https://img.shields.io/pypi/v/python-sdk.svg)](https://pypi.org/project/python-sdk)
-[![PyPI Downloads](https://img.shields.io/pypi/dm/python-sdk.svg?color=orange)](https://pypistats.org/packages/python-sdk)
+[![PyPI License](https://img.shields.io/pypi/l/instill-python-sdk.svg)](https://pypi.org/project/instill-python-sdk)
+[![PyPI Version](https://img.shields.io/pypi/v/instill-python-sdk.svg)](https://pypi.org/project/instill-python-sdk)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/instill-python-sdk.svg?color=orange)](https://pypistats.org/packages/instill-python-sdk)
 
 ## Setup
 
@@ -23,13 +19,13 @@ This project was generated with [cookiecutter](https://github.com/audreyr/cookie
 Install it directly into an activated virtual environment:
 
 ```text
-$ pip install python-sdk
+$ pip install instill-python-sdk
 ```
 
 or add it to your [Poetry](https://poetry.eustace.io/) project:
 
 ```text
-$ poetry add python-sdk
+$ poetry add instill-python-sdk
 ```
 
 ## Usage

@@ -1,6 +1,6 @@
 [tool.poetry]
 
-name = "python-sdk"
+name = "instill-python-sdk"
 version = "0.1.0"
 description = "python sdk for Instill AI products"
 
@@ -10,8 +10,8 @@ license = "MIT"
 authors = ["instill-ai <hello@instill.tech>"]
 
 readme = "README.md"
-homepage = "https://pypi.org/project/python-sdk"
-documentation = "https://python-sdk.readthedocs.io"
+homepage = "https://pypi.org/project/instill-python-sdk"
+documentation = "https://instill-python-sdk.readthedocs.io"
 repository = "https://github.com/instill-ai/python-sdk"
 
 keywords = [
@@ -38,6 +38,7 @@ protobuf = "^4.24.2"
 google-api-core = "^2.11.1"
 googleapis-common-protos = "^1.60.0"
 protoc-gen-openapiv2 = "^0.0.1"
+types-protobuf = "^4.24.0.1"
 
 [tool.poetry.dev-dependencies]
 
@@ -76,15 +77,35 @@ ipython = "^7.12.0"
 
 [tool.poetry.scripts]
 
-python-sdk = "instill_sdk.cli:main"
+# python-sdk = "instill_sdk.cli:main"
 
 [tool.black]
 
 quiet = true
+exclude = '''
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | protogen
+    | build
+    | dist
+  )/
+  | foo.py           # also separately exclude a file named foo.py in
+                     # the root of the project
+)
+'''
 
 [tool.isort]
 
 profile = "black"
+skip_glob = ["**/protogen/*"]
 
 [tool.mypy]
 

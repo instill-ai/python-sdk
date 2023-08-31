@@ -1549,6 +1549,17 @@ docs = ["myst-parser", "pydata-sphinx-theme", "sphinx"]
 test = ["argcomplete (>=2.0)", "pre-commit", "pytest", "pytest-mock"]
 
 [[package]]
+name = "types-protobuf"
+version = "4.24.0.1"
+description = "Typing stubs for protobuf"
+optional = false
+python-versions = "*"
+files = [
+    {file = "types-protobuf-4.24.0.1.tar.gz", hash = "sha256:90adea3b693d6a40d8ef075c58fe6b5cc6e01fe1496301a7e6fc70398dcff92e"},
+    {file = "types_protobuf-4.24.0.1-py3-none-any.whl", hash = "sha256:df203a204e4ae97d4cca4c9cf725262579dd7857a19f9e7fc74871ccfa073c01"},
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.7.1"
 description = "Backported and Experimental Type Hints for Python 3.7+"
@@ -1728,4 +1739,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "9565c7854e96bd380eeb556f3a46c8f0eca9c2c69d5124f3ce85e458bf0059d2"
+content-hash = "1a7abc6bca3afc819eb21380c4f541db2f4e3dc745632dd542154105ba2f34a3"
