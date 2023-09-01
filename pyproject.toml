@@ -1,13 +1,13 @@
 [tool.poetry]
 
 name = "instill-python-sdk"
-version = "0.1.0"
+version = "0.0.1"
 description = "python sdk for Instill AI products"
 
 packages = [{ include = "instill_sdk" }]
 
 license = "MIT"
-authors = ["instill-ai <hello@instill.tech>"]
+authors = ["instill-ai <drop@instill.tech>"]
 
 readme = "README.md"
 homepage = "https://pypi.org/project/instill-python-sdk"
