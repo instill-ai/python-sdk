@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 from importlib.metadata import PackageNotFoundError, version
 
 from instill_sdk.utils.logger import Logger
