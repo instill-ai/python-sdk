@@ -1,7 +1,7 @@
 [tool.poetry]
 
 name = "instill-python-sdk"
-version = "0.0.1"
+version = "0.0.3"
 description = "python sdk for Instill AI products"
 
 packages = [{ include = "instill_sdk" }]
@@ -31,8 +31,6 @@ classifiers = [
 python = "^3.8"
 
 # TODO: Remove these and add your library's requirements
-click = "*"
-minilog = "*"
 grpcio = "1.48.2"
 protobuf = "^4.24.2"
 google-api-core = "^2.11.1"
@@ -74,6 +72,9 @@ sniffer = "*"
 MacFSEvents = { version = "*", platform = "darwin" }
 pync = { version = "*", platform = "darwin" }
 ipython = "^7.12.0"
+
+# Publish
+twine = "^4.0.2"
 
 [tool.poetry.scripts]
 
