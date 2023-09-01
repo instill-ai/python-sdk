@@ -37,3 +37,4 @@ $ python
 >>> import instill_sdk
 >>> instill_sdk.__version__
 ```
+### You can find a [_notebook example_](notebooks/model_usage.ipynb) here
