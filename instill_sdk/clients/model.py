@@ -1,6 +1,5 @@
 # pylint: disable=no-member,wrong-import-position
 import time
-
 import grpc
 
 # mgmt
@@ -144,24 +143,18 @@ class ModelClient(Client):
         raise SystemError("model creation failed")
 
     @grpc_handler
-    def create_model_github(
+    def create_model(
         self,
-        model_name: str,
-        model_repo: str,
-        model_tag: str,
+        name: str,
+        definition: str,
         visibility: model_interface.Model.Visibility.ValueType,
+        configuration: dict,
     ) -> model_interface.Model:
         model = model_interface.Model()
-        model.id = model_name
-        model.model_definition = "model-definitions/github"
+        model.id = name
+        model.model_definition = definition
         model.visibility = visibility
-        model.configuration.update(
-            {
-                "repository": model_repo,
-                "tag": model_tag,
-            },
-        )
-
+        model.configuration.update(configuration)
         resp = self._stub.CreateUserModel(
             request=model_interface.CreateUserModelRequest(
                 model=model, parent=self._user.name
@@ -176,27 +169,27 @@ class ModelClient(Client):
             ).operation.done
             is not True
         ):
-            Logger.i(f"{model_name} creating...")
+            Logger.i(f"{model.id} creating...")
             time.sleep(1)
 
         watch_resp = self._stub.WatchUserModel(
             request=model_interface.WatchUserModelRequest(
-                name=f"{self._user.name}/models/{model_name}"
+                name=f"{self._user.name}/models/{model.id}"
             )
         )
         while watch_resp.state == 0:
-            Logger.i(f"{model_name} creating...")
+            Logger.i(f"{model.id} creating...")
             time.sleep(1)
             watch_resp = self._stub.WatchUserModel(
                 request=model_interface.WatchUserModelRequest(
-                    name=f"{self._user.name}/models/{model_name}"
+                    name=f"{self._user.name}/models/{model.id}"
                 )
             )
 
         if watch_resp.state == 1:
             return self._stub.GetUserModel(
                 request=model_interface.GetUserModelRequest(
-                    name=f"{self._user.name}/models/{model_name}"
+                    name=f"{self._user.name}/models/{model.id}"
                 )
             ).model
 

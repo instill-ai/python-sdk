@@ -29,8 +29,6 @@ classifiers = [
 [tool.poetry.dependencies]
 
 python = "^3.8"
-
-# TODO: Remove these and add your library's requirements
 grpcio = "1.48.2"
 protobuf = "^4.24.2"
 google-api-core = "^2.11.1"

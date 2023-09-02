@@ -4,22 +4,22 @@ from instill_sdk.clients.model import ModelClient
 from instill_sdk.resources.resource import Resource
 
 
-class GithubModel(Resource):
+class Model(Resource):
     def __init__(
         self,
         client: ModelClient,
         name: str,
-        model_repo: str,
-        model_tag: str,
-        visibility=model_interface.Model.VISIBILITY_PRIVATE,
+        definition: str,
+        configuration: dict,
+        visibility: model_interface.Model.Visibility.ValueType,
     ) -> None:
         super().__init__()
         self.client = client
-        model = client.create_model_github(
-            model_name=name,
-            model_repo=model_repo,
-            model_tag=model_tag,
+        model = client.create_model(
+            name=name,
+            definition=definition,
             visibility=visibility,
+            configuration=configuration,
         )
         if model is None:
             model = client.get_model(model_name=name)
@@ -29,7 +29,8 @@ class GithubModel(Resource):
         self.resource = model
 
     def __del__(self):
-        self.client.delete_model(self.resource.id)
+        if self.resource is not None:
+            self.client.delete_model(self.resource.id)
 
     def __call__(self, task_inputs: list) -> list:
         return self.client.trigger_model(self.resource.id, task_inputs)
@@ -61,3 +62,42 @@ class GithubModel(Resource):
 
     def undeploy(self) -> bool:
         return self.client.undeploy_model(self.resource.id)
+
+
+class GithubModel(Model):
+    def __init__(
+        self,
+        client: ModelClient,
+        name: str,
+        model_repo: str,
+        model_tag: str,
+        visibility=model_interface.Model.VISIBILITY_PRIVATE,
+    ) -> None:
+        definition = "model-definitions/github"
+        configuration = {"repository": model_repo, "tag": model_tag}
+        super().__init__(
+            client=client,
+            name=name,
+            definition=definition,
+            configuration=configuration,
+            visibility=visibility,
+        )
+
+
+class HugginfaceModel(Model):
+    def __init__(
+        self,
+        client: ModelClient,
+        name: str,
+        model_repo: str,
+        visibility=model_interface.Model.VISIBILITY_PRIVATE,
+    ) -> None:
+        configuration = {"repo_id": model_repo}
+        definition = "model-definitions/huggingface"
+        super().__init__(
+            client=client,
+            name=name,
+            definition=definition,
+            configuration=configuration,
+            visibility=visibility,
+        )
