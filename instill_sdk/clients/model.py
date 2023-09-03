@@ -1,6 +1,6 @@
 # pylint: disable=no-member,wrong-import-position
 import time
-from typing import Tuple
+
 import grpc
 
 # mgmt
@@ -14,7 +14,6 @@ import instill_sdk.protogen.model.model.v1alpha.model_pb2 as model_interface
 import instill_sdk.protogen.model.model.v1alpha.model_public_service_pb2_grpc as model_service
 from instill_sdk.clients.client import Client
 from instill_sdk.utils.error_handler import grpc_handler
-from instill_sdk.utils.logger import Logger
 
 
 class ModelClient(Client):
@@ -116,7 +115,6 @@ class ModelClient(Client):
             ).operation.done
             is not True
         ):
-            Logger.i(f"{model_name} creating...")
             time.sleep(1)
 
         watch_resp = self._stub.WatchUserModel(
@@ -125,7 +123,6 @@ class ModelClient(Client):
             )
         )
         while watch_resp.state == 0:
-            Logger.i(f"{model_name} creating...")
             time.sleep(1)
             watch_resp = self._stub.WatchUserModel(
                 request=model_interface.WatchUserModelRequest(
@@ -165,7 +162,6 @@ class ModelClient(Client):
             ).operation.done
             is not True
         ):
-            Logger.i(f"{model.id} creating...")
             time.sleep(1)
 
         watch_resp = self._stub.WatchUserModel(
@@ -174,7 +170,6 @@ class ModelClient(Client):
             )
         )
         while watch_resp.state == 0:
-            Logger.i(f"{model.id} creating...")
             time.sleep(1)
             watch_resp = self._stub.WatchUserModel(
                 request=model_interface.WatchUserModelRequest(
@@ -192,7 +187,7 @@ class ModelClient(Client):
         raise SystemError("model creation failed")
 
     @grpc_handler
-    def deploy_model(self, model_name: str) -> bool:
+    def deploy_model(self, model_name: str) -> model_interface.Model.State:
         self._stub.DeployUserModel(
             request=model_interface.DeployUserModelRequest(
                 name=f"{self._user.name}/models/{model_name}"
@@ -205,7 +200,6 @@ class ModelClient(Client):
             )
         )
         while watch_resp.state not in (2, 3):
-            Logger.i(f"{model_name} deploying...")
             time.sleep(1)
             watch_resp = self._stub.WatchUserModel(
                 request=model_interface.WatchUserModelRequest(
@@ -213,10 +207,10 @@ class ModelClient(Client):
                 )
             )
 
-        return watch_resp.state == 2
+        return watch_resp.state
 
     @grpc_handler
-    def undeploy_model(self, model_name: str) -> bool:
+    def undeploy_model(self, model_name: str) -> model_interface.Model.State:
         self._stub.UndeployUserModel(
             request=model_interface.UndeployUserModelRequest(
                 name=f"{self._user.name}/models/{model_name}"
@@ -229,7 +223,6 @@ class ModelClient(Client):
             )
         )
         while watch_resp.state not in (1, 3):
-            Logger.i(f"{model_name} undeploying...")
             time.sleep(1)
             watch_resp = self._stub.WatchUserModel(
                 request=model_interface.WatchUserModelRequest(
@@ -237,7 +230,7 @@ class ModelClient(Client):
                 )
             )
 
-        return watch_resp.state == 1
+        return watch_resp.state
 
     @grpc_handler
     def trigger_model(self, model_name: str, task_inputs: list) -> list:
@@ -265,8 +258,18 @@ class ModelClient(Client):
         ).model
 
     @grpc_handler
-    def list_models(self) -> Tuple[list, str, int]:
+    def list_models(self) -> list:
+        models = []
         resp = self._stub.ListUserModels(
-            model_interface.ListUserModelsRequest(parent=self._user.name)
+            request=model_interface.ListUserModelsRequest(parent=self._user.name)
         )
-        return (resp.models, resp.next_page_token, resp.total_size)
+        models.extend(resp.models)
+        while resp.next_page_token != "":
+            resp = self._stub.ListUserModels(
+                request=model_interface.ListUserModelsRequest(
+                    parent=self._user.name,
+                    page_token=resp.next_page_token,
+                )
+            )
+            models.extend(resp.models)
+        return models

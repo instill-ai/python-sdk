@@ -32,6 +32,8 @@ class _ViewEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeW
     """View: BASIC"""
     VIEW_FULL: _View.ValueType  # 2
     """View: FULL"""
+    VIEW_CONFIGURATION: _View.ValueType  # 3
+    """View: CONFIGURATION"""
 
 class View(_View, metaclass=_ViewEnumTypeWrapper):
     """View enumerates the definition views"""
@@ -42,6 +44,8 @@ VIEW_BASIC: View.ValueType  # 1
 """View: BASIC"""
 VIEW_FULL: View.ValueType  # 2
 """View: FULL"""
+VIEW_CONFIGURATION: View.ValueType  # 3
+"""View: CONFIGURATION"""
 global___View = View
 
 class _ConnectorType:

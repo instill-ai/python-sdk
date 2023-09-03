@@ -55,16 +55,18 @@ class Model(Resource):
     def get_definition(self) -> str:
         return self.resource.model_definition
 
-    def get_state(self) -> str:
+    def get_state(self) -> model_interface.Model.State:
         return self.client.watch_model(self.resource.id)
 
-    def deploy(self) -> bool:
+    def deploy(self) -> model_interface.Model:
+        self.client.deploy_model(self.resource.id)
         self._update()
-        return self.client.deploy_model(self.resource.id)
+        return self._resource
 
-    def undeploy(self) -> bool:
+    def undeploy(self) -> model_interface.Model:
+        self.client.undeploy_model(self.resource.id)
         self._update()
-        return self.client.undeploy_model(self.resource.id)
+        return self._resource
 
 
 class GithubModel(Model):

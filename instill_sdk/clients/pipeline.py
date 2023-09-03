@@ -1,5 +1,6 @@
 # pylint: disable=no-member,wrong-import-position
 from typing import Tuple
+
 import grpc
 
 # mgmt
@@ -19,7 +20,7 @@ from instill_sdk.utils.error_handler import grpc_handler
 
 class PipelineClient(Client):
     def __init__(
-        self, user: mgmt_interface.User, protocol="http", host="localhost", port="9080"
+        self, user: mgmt_interface.User, protocol="http", host="localhost", port="8080"
     ) -> None:
         """Initialize client for pipeline service with target host.
 
@@ -64,14 +65,12 @@ class PipelineClient(Client):
         self._port = port
 
     @grpc_handler
-    def liveness(self) -> healthcheck.HealthCheckResponse.ServingStatus:
-        return self._stub.Liveness(request=pipeline_interface.LivenessRequest()).status
+    def liveness(self) -> pipeline_interface.LivenessResponse:
+        return self._stub.Liveness(request=pipeline_interface.LivenessRequest())
 
     @grpc_handler
-    def readiness(self) -> healthcheck.HealthCheckResponse.ServingStatus:
-        return self._stub.Readiness(
-            request=pipeline_interface.ReadinessRequest()
-        ).status
+    def readiness(self) -> pipeline_interface.ReadinessResponse:
+        return self._stub.Readiness(request=pipeline_interface.ReadinessRequest())
 
     @grpc_handler
     def is_serving(self) -> bool:
@@ -86,11 +85,11 @@ class PipelineClient(Client):
     @grpc_handler
     def create_pipeline(
         self,
-        pipeline_name: str,
+        name: str,
         recipe: pipeline_interface.Recipe,
     ) -> pipeline_interface.Pipeline:
         pipeline = pipeline_interface.Pipeline(
-            id=pipeline_name,
+            id=name,
             recipe=recipe,
         )
         resp = self._stub.CreateUserPipeline(
@@ -125,7 +124,7 @@ class PipelineClient(Client):
                 name=f"{self._user.name}/pipelines/{name}", inputs=inputs
             )
         )
-        return resp.pipeline, resp.metadata
+        return resp.outputs, resp.metadata
 
     @grpc_handler
     def delete_pipeline(self, name: str):
@@ -136,8 +135,19 @@ class PipelineClient(Client):
         )
 
     @grpc_handler
-    def list_pipelines(self) -> Tuple[list, str, int]:
+    def list_pipelines(self) -> list:
+        pipelines = []
         resp = self._stub.ListUserPipelines(
             pipeline_interface.ListUserPipelinesRequest(parent=self._user.name)
         )
-        return (resp.pipelines, resp.next_page_token, resp.total_size)
+        pipelines.extend(resp.pipelines)
+        while resp.next_page_token != "":
+            resp = self._stub.ListUserPipelines(
+                pipeline_interface.ListUserPipelinesRequest(
+                    parent=self._user.name,
+                    page_token=resp.next_page_token,
+                )
+            )
+            pipelines.extend(resp.pipelines)
+
+        return pipelines

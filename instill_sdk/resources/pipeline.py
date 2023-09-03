@@ -49,3 +49,6 @@ class Pipeline(Resource):
 
     def get_recipe(self) -> str:
         return self.resource.recipe
+
+    def validate_pipeline(self) -> pipeline_interface.Pipeline:
+        return self.client.validate_pipeline(name=self.resource.id)

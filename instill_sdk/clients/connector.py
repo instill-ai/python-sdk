@@ -1,13 +1,11 @@
 # pylint: disable=no-member,wrong-import-position
-from typing import Tuple
 import grpc
 
 # mgmt
 import instill_sdk.protogen.base.mgmt.v1alpha.mgmt_pb2 as mgmt_interface
-
+import instill_sdk.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
 import instill_sdk.protogen.vdp.connector.v1alpha.connector_pb2 as connector_interface
 import instill_sdk.protogen.vdp.connector.v1alpha.connector_public_service_pb2_grpc as connector_service
-import instill_sdk.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
 from instill_sdk.clients.client import Client
 from instill_sdk.utils.error_handler import grpc_handler
 
@@ -87,7 +85,7 @@ class ConnectorClient(Client):
     ) -> connector_interface.ConnectorResource:
         connector = connector_interface.ConnectorResource()
         connector.id = name
-        connector.connector_definition = definition
+        connector.connector_definition_name = definition
         connector.configuration.update(configuration)
         resp = self._stub.CreateUserConnectorResource(
             request=connector_interface.CreateUserConnectorResourceRequest(
@@ -101,24 +99,15 @@ class ConnectorClient(Client):
     def get_connector(self, name: str) -> connector_interface.ConnectorResource:
         return self._stub.GetUserConnectorResource(
             request=connector_interface.GetUserConnectorResourceRequest(
-                name=f"{self._user.name}/connectors/{name}"
-            ).connector_resource
-        )
-
-    @grpc_handler
-    def list_connectors(self) -> Tuple[list, str, int]:
-        resp = self._stub.ListUserConnectorResources(
-            request=connector_interface.ListUserConnectorResourcesRequest(
-                parent=self._user.name
+                name=f"{self._user.name}/connector-resources/{name}"
             )
-        )
-        return (resp.connector_resources, resp.next_page_token, resp.total_size)
+        ).connector_resource
 
     @grpc_handler
     def connect_connector(self, name: str) -> connector_interface.ConnectorResource:
         return self._stub.ConnectUserConnectorResource(
             request=connector_interface.ConnectUserConnectorResourceRequest(
-                name=f"{self._user.name}/connectors/{name}"
+                name=f"{self._user.name}/connector-resources/{name}"
             )
         ).connector_resource
 
@@ -126,7 +115,7 @@ class ConnectorClient(Client):
     def disconnect_connector(self, name: str) -> connector_interface.ConnectorResource:
         return self._stub.DisconnectUserConnectorResource(
             request=connector_interface.DisconnectUserConnectorResourceRequest(
-                name=f"{self._user.name}/connectors/{name}"
+                name=f"{self._user.name}/connector-resources/{name}"
             )
         ).connector_resource
 
@@ -134,7 +123,7 @@ class ConnectorClient(Client):
     def test_connector(self, name: str) -> connector_interface.ConnectorResource.State:
         return self._stub.TestUserConnectorResource(
             request=connector_interface.TestUserConnectorResourceRequest(
-                name=f"{self._user.name}/connectors/{name}"
+                name=f"{self._user.name}/connector-resources/{name}"
             )
         ).state
 
@@ -142,7 +131,7 @@ class ConnectorClient(Client):
     def execute_connector(self, name: str, inputs: list) -> list:
         return self._stub.ExecuteUserConnectorResource(
             request=connector_interface.ExecuteUserConnectorResourceRequest(
-                name=f"{self._user.name}/connectors/{name}", inputs=inputs
+                name=f"{self._user.name}/connector-resources/{name}", inputs=inputs
             )
         ).outputs
 
@@ -150,14 +139,35 @@ class ConnectorClient(Client):
     def watch_connector(self, name: str) -> connector_interface.ConnectorResource.State:
         return self._stub.WatchUserConnectorResource(
             request=connector_interface.WatchUserConnectorResourceRequest(
-                name=f"{self._user.name}/connectors/{name}"
+                name=f"{self._user.name}/connector-resources/{name}"
             )
         ).state
 
     @grpc_handler
     def delete_connector(self, name: str):
+        self.disconnect_connector(name)
         self._stub.DeleteUserConnectorResource(
             request=connector_interface.DeleteUserConnectorResourceRequest(
-                name=f"{self._user.name}/connectors/{name}"
+                name=f"{self._user.name}/connector-resources/{name}"
             )
         )
+
+    @grpc_handler
+    def list_connectors(self) -> list:
+        connectors = []
+        resp = self._stub.ListUserConnectorResources(
+            connector_interface.ListUserConnectorResourcesRequest(
+                parent=self._user.name
+            )
+        )
+        connectors.extend(resp.connector_resources)
+        while resp.next_page_token != "":
+            resp = self._stub.ListUserConnectorResources(
+                connector_interface.ListUserConnectorResourcesRequest(
+                    parent=self._user.name,
+                    page_token=resp.next_page_token,
+                )
+            )
+            connectors.extend(resp.connector_resources)
+
+        return connectors
