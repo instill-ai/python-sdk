@@ -14,7 +14,6 @@ import instill_sdk.protogen.model.model.v1alpha.model_pb2 as model_interface
 import instill_sdk.protogen.model.model.v1alpha.model_public_service_pb2_grpc as model_service
 from instill_sdk.clients.client import Client
 from instill_sdk.utils.error_handler import grpc_handler
-from instill_sdk.utils.logger import Logger
 
 
 class ModelClient(Client):
@@ -82,13 +81,12 @@ class ModelClient(Client):
             return False
 
     @grpc_handler
-    def watch_model(self, model_name: str) -> str:
-        resp = self._stub.WatchUserModel(
+    def watch_model(self, model_name: str) -> model_interface.Model.State:
+        return self._stub.WatchUserModel(
             request=model_interface.WatchUserModelRequest(
                 name=f"{self._user.name}/models/{model_name}"
             )
-        )
-        return model_interface.Model.State.Name(resp.state)
+        ).state
 
     @grpc_handler
     def create_model_local(
@@ -96,13 +94,11 @@ class ModelClient(Client):
         model_name: str,
         model_description: str,
         model_path: str,
-        visibility: model_interface.Model.Visibility.ValueType,
     ) -> model_interface.Model:
         model = model_interface.Model()
         model.id = model_name
         model.description = model_description
         model.model_definition = "model-definitions/local"
-        model.visibility = visibility
 
         with open(model_path, "rb") as f:
             data = f.read()
@@ -119,7 +115,6 @@ class ModelClient(Client):
             ).operation.done
             is not True
         ):
-            Logger.i(f"{model_name} creating...")
             time.sleep(1)
 
         watch_resp = self._stub.WatchUserModel(
@@ -128,7 +123,6 @@ class ModelClient(Client):
             )
         )
         while watch_resp.state == 0:
-            Logger.i(f"{model_name} creating...")
             time.sleep(1)
             watch_resp = self._stub.WatchUserModel(
                 request=model_interface.WatchUserModelRequest(
@@ -144,24 +138,16 @@ class ModelClient(Client):
         raise SystemError("model creation failed")
 
     @grpc_handler
-    def create_model_github(
+    def create_model(
         self,
-        model_name: str,
-        model_repo: str,
-        model_tag: str,
-        visibility: model_interface.Model.Visibility.ValueType,
+        name: str,
+        definition: str,
+        configuration: dict,
     ) -> model_interface.Model:
         model = model_interface.Model()
-        model.id = model_name
-        model.model_definition = "model-definitions/github"
-        model.visibility = visibility
-        model.configuration.update(
-            {
-                "repository": model_repo,
-                "tag": model_tag,
-            },
-        )
-
+        model.id = name
+        model.model_definition = definition
+        model.configuration.update(configuration)
         resp = self._stub.CreateUserModel(
             request=model_interface.CreateUserModelRequest(
                 model=model, parent=self._user.name
@@ -176,34 +162,32 @@ class ModelClient(Client):
             ).operation.done
             is not True
         ):
-            Logger.i(f"{model_name} creating...")
             time.sleep(1)
 
         watch_resp = self._stub.WatchUserModel(
             request=model_interface.WatchUserModelRequest(
-                name=f"{self._user.name}/models/{model_name}"
+                name=f"{self._user.name}/models/{model.id}"
             )
         )
         while watch_resp.state == 0:
-            Logger.i(f"{model_name} creating...")
             time.sleep(1)
             watch_resp = self._stub.WatchUserModel(
                 request=model_interface.WatchUserModelRequest(
-                    name=f"{self._user.name}/models/{model_name}"
+                    name=f"{self._user.name}/models/{model.id}"
                 )
             )
 
         if watch_resp.state == 1:
             return self._stub.GetUserModel(
                 request=model_interface.GetUserModelRequest(
-                    name=f"{self._user.name}/models/{model_name}"
+                    name=f"{self._user.name}/models/{model.id}"
                 )
             ).model
 
         raise SystemError("model creation failed")
 
     @grpc_handler
-    def deploy_model(self, model_name: str) -> bool:
+    def deploy_model(self, model_name: str) -> model_interface.Model.State:
         self._stub.DeployUserModel(
             request=model_interface.DeployUserModelRequest(
                 name=f"{self._user.name}/models/{model_name}"
@@ -216,7 +200,6 @@ class ModelClient(Client):
             )
         )
         while watch_resp.state not in (2, 3):
-            Logger.i(f"{model_name} deploying...")
             time.sleep(1)
             watch_resp = self._stub.WatchUserModel(
                 request=model_interface.WatchUserModelRequest(
@@ -224,10 +207,10 @@ class ModelClient(Client):
                 )
             )
 
-        return watch_resp.state == 2
+        return watch_resp.state
 
     @grpc_handler
-    def undeploy_model(self, model_name: str) -> bool:
+    def undeploy_model(self, model_name: str) -> model_interface.Model.State:
         self._stub.UndeployUserModel(
             request=model_interface.UndeployUserModelRequest(
                 name=f"{self._user.name}/models/{model_name}"
@@ -240,7 +223,6 @@ class ModelClient(Client):
             )
         )
         while watch_resp.state not in (1, 3):
-            Logger.i(f"{model_name} undeploying...")
             time.sleep(1)
             watch_resp = self._stub.WatchUserModel(
                 request=model_interface.WatchUserModelRequest(
@@ -248,7 +230,7 @@ class ModelClient(Client):
                 )
             )
 
-        return watch_resp.state == 1
+        return watch_resp.state
 
     @grpc_handler
     def trigger_model(self, model_name: str, task_inputs: list) -> list:
@@ -276,7 +258,18 @@ class ModelClient(Client):
         ).model
 
     @grpc_handler
-    def list_models(self) -> model_interface.ListUserModelsResponse:
-        return self._stub.ListUserModels(
-            model_interface.ListUserModelsRequest(parent=self._user.name)
+    def list_models(self) -> list:
+        models = []
+        resp = self._stub.ListUserModels(
+            request=model_interface.ListUserModelsRequest(parent=self._user.name)
         )
+        models.extend(resp.models)
+        while resp.next_page_token != "":
+            resp = self._stub.ListUserModels(
+                request=model_interface.ListUserModelsRequest(
+                    parent=self._user.name,
+                    page_token=resp.next_page_token,
+                )
+            )
+            models.extend(resp.models)
+        return models

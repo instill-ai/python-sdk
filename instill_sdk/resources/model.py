@@ -4,22 +4,20 @@ from instill_sdk.clients.model import ModelClient
 from instill_sdk.resources.resource import Resource
 
 
-class GithubModel(Resource):
+class Model(Resource):
     def __init__(
         self,
         client: ModelClient,
         name: str,
-        model_repo: str,
-        model_tag: str,
-        visibility=model_interface.Model.VISIBILITY_PRIVATE,
+        definition: str,
+        configuration: dict,
     ) -> None:
         super().__init__()
         self.client = client
-        model = client.create_model_github(
-            model_name=name,
-            model_repo=model_repo,
-            model_tag=model_tag,
-            visibility=visibility,
+        model = client.create_model(
+            name=name,
+            definition=definition,
+            configuration=configuration,
         )
         if model is None:
             model = client.get_model(model_name=name)
@@ -29,7 +27,8 @@ class GithubModel(Resource):
         self.resource = model
 
     def __del__(self):
-        self.client.delete_model(self.resource.id)
+        if self.resource is not None:
+            self.client.delete_model(self.resource.id)
 
     def __call__(self, task_inputs: list) -> list:
         return self.client.trigger_model(self.resource.id, task_inputs)
@@ -50,14 +49,56 @@ class GithubModel(Resource):
     def resource(self, resource: model_interface.Model):
         self._resource = resource
 
+    def _update(self):
+        self.resource = self.client.get_model(model_name=self.resource.id)
+
     def get_definition(self) -> str:
         return self.resource.model_definition
 
-    def get_state(self) -> str:
+    def get_state(self) -> model_interface.Model.State:
         return self.client.watch_model(self.resource.id)
 
-    def deploy(self) -> bool:
-        return self.client.deploy_model(self.resource.id)
+    def deploy(self) -> model_interface.Model:
+        self.client.deploy_model(self.resource.id)
+        self._update()
+        return self._resource
 
-    def undeploy(self) -> bool:
-        return self.client.undeploy_model(self.resource.id)
+    def undeploy(self) -> model_interface.Model:
+        self.client.undeploy_model(self.resource.id)
+        self._update()
+        return self._resource
+
+
+class GithubModel(Model):
+    def __init__(
+        self,
+        client: ModelClient,
+        name: str,
+        model_repo: str,
+        model_tag: str,
+    ) -> None:
+        definition = "model-definitions/github"
+        configuration = {"repository": model_repo, "tag": model_tag}
+        super().__init__(
+            client=client,
+            name=name,
+            definition=definition,
+            configuration=configuration,
+        )
+
+
+class HugginfaceModel(Model):
+    def __init__(
+        self,
+        client: ModelClient,
+        name: str,
+        model_repo: str,
+    ) -> None:
+        configuration = {"repo_id": model_repo}
+        definition = "model-definitions/huggingface"
+        super().__init__(
+            client=client,
+            name=name,
+            definition=definition,
+            configuration=configuration,
+        )

@@ -1,4 +1,6 @@
 # pylint: disable=no-member,wrong-import-position
+from typing import Tuple
+
 import grpc
 
 # mgmt
@@ -18,9 +20,9 @@ from instill_sdk.utils.error_handler import grpc_handler
 
 class PipelineClient(Client):
     def __init__(
-        self, user: mgmt_interface.User, protocol="http", host="localhost", port="9080"
+        self, user: mgmt_interface.User, protocol="http", host="localhost", port="8080"
     ) -> None:
-        """Initialize client for model service with target host.
+        """Initialize client for pipeline service with target host.
 
         Args:
             protocol (str): http/https
@@ -62,41 +64,13 @@ class PipelineClient(Client):
     def port(self, port: str):
         self._port = port
 
-    # =============== General methods
+    @grpc_handler
+    def liveness(self) -> pipeline_interface.LivenessResponse:
+        return self._stub.Liveness(request=pipeline_interface.LivenessRequest())
 
     @grpc_handler
-    def liveness(self) -> healthcheck.HealthCheckResponse.ServingStatus:
-        return self._stub.Liveness(request=pipeline_interface.LivenessRequest()).status
-
-    @grpc_handler
-    def readiness(self) -> healthcheck.HealthCheckResponse.ServingStatus:
-        return self._stub.Readiness(
-            request=pipeline_interface.ReadinessRequest()
-        ).status
-
-    @grpc_handler
-    def create_pipeline(
-        self,
-        pipeline_name: str,
-        recipe: pipeline_interface.Recipe,
-        visibility: pipeline_interface.Visibility.ValueType,
-    ) -> pipeline_interface.Pipeline:
-        pipeline = pipeline_interface.Pipeline(
-            id=pipeline_name,
-            recipe=recipe,
-            visibility=visibility,
-        )
-        # pipeline.id = pipeline_name
-        # pipeline.recipe = recipe
-        # pipeline.visibility = visibility
-        resp = self._stub.CreateUserPipeline(
-            request=pipeline_interface.CreateUserPipelineRequest(
-                pipeline=pipeline, parent=self._user.name
-            )
-        )
-        return resp.pipeline
-
-    # =============== Custom methods
+    def readiness(self) -> pipeline_interface.ReadinessResponse:
+        return self._stub.Readiness(request=pipeline_interface.ReadinessRequest())
 
     @grpc_handler
     def is_serving(self) -> bool:
@@ -107,3 +81,73 @@ class PipelineClient(Client):
             )
         except Exception:
             return False
+
+    @grpc_handler
+    def create_pipeline(
+        self,
+        name: str,
+        recipe: pipeline_interface.Recipe,
+    ) -> pipeline_interface.Pipeline:
+        pipeline = pipeline_interface.Pipeline(
+            id=name,
+            recipe=recipe,
+        )
+        resp = self._stub.CreateUserPipeline(
+            request=pipeline_interface.CreateUserPipelineRequest(
+                pipeline=pipeline, parent=self._user.name
+            )
+        )
+        return resp.pipeline
+
+    @grpc_handler
+    def get_pipeline(self, name: str) -> pipeline_interface.Pipeline:
+        return self._stub.GetUserPipeline(
+            request=pipeline_interface.GetUserPipelineRequest(
+                name=f"{self._user.name}/pipelines/{name}"
+            )
+        ).pipeline
+
+    @grpc_handler
+    def validate_pipeline(self, name: str) -> pipeline_interface.Pipeline:
+        return self._stub.ValidateUserPipeline(
+            request=pipeline_interface.ValidateUserPipelineRequest(
+                name=f"{self._user.name}/pipelines/{name}"
+            )
+        ).pipeline
+
+    @grpc_handler
+    def trigger_pipeline(
+        self, name: str, inputs: list
+    ) -> Tuple[list, pipeline_interface.TriggerMetadata]:
+        resp = self._stub.TriggerUserPipeline(
+            request=pipeline_interface.TriggerUserPipelineRequest(
+                name=f"{self._user.name}/pipelines/{name}", inputs=inputs
+            )
+        )
+        return resp.outputs, resp.metadata
+
+    @grpc_handler
+    def delete_pipeline(self, name: str):
+        self._stub.DeleteUserPipeline(
+            request=pipeline_interface.DeleteUserPipelineRequest(
+                name=f"{self._user.name}/pipelines/{name}"
+            )
+        )
+
+    @grpc_handler
+    def list_pipelines(self) -> list:
+        pipelines = []
+        resp = self._stub.ListUserPipelines(
+            pipeline_interface.ListUserPipelinesRequest(parent=self._user.name)
+        )
+        pipelines.extend(resp.pipelines)
+        while resp.next_page_token != "":
+            resp = self._stub.ListUserPipelines(
+                pipeline_interface.ListUserPipelinesRequest(
+                    parent=self._user.name,
+                    page_token=resp.next_page_token,
+                )
+            )
+            pipelines.extend(resp.pipelines)
+
+        return pipelines

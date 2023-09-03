@@ -93,7 +93,7 @@ endif
 
 .PHONY: read-coverage
 read-coverage:
-	bin/open htmlcov/index.html
+	open htmlcov/index.html
 
 # CHECK #######################################################################
 
@@ -119,7 +119,7 @@ MKDOCS_INDEX := site/index.html
 .PHONY: docs
 docs: mkdocs uml ## Generate documentation and UML
 ifndef CI
-	@ eval "sleep 3; bin/open http://127.0.0.1:8000" &
+	@ eval "sleep 3; open http://127.0.0.1:8000" &
 	poetry run mkdocs serve
 endif
 
@@ -180,7 +180,7 @@ $(PACKAGE).spec:
 upload: dist ## Upload the current version to PyPI
 	git diff --name-only --exit-code
 	poetry publish
-	bin/open https://pypi.org/project/$(PROJECT)
+	open https://pypi.org/project/$(PROJECT)
 
 # CLEANUP #####################################################################
 
