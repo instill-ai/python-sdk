@@ -1,5 +1,6 @@
 # pylint: disable=no-member,wrong-import-position
 import time
+from typing import Tuple
 import grpc
 
 # mgmt
@@ -81,13 +82,12 @@ class ModelClient(Client):
             return False
 
     @grpc_handler
-    def watch_model(self, model_name: str) -> str:
-        resp = self._stub.WatchUserModel(
+    def watch_model(self, model_name: str) -> model_interface.Model.State:
+        return self._stub.WatchUserModel(
             request=model_interface.WatchUserModelRequest(
                 name=f"{self._user.name}/models/{model_name}"
             )
-        )
-        return model_interface.Model.State.Name(resp.state)
+        ).state
 
     @grpc_handler
     def create_model_local(
@@ -95,13 +95,11 @@ class ModelClient(Client):
         model_name: str,
         model_description: str,
         model_path: str,
-        visibility: model_interface.Model.Visibility.ValueType,
     ) -> model_interface.Model:
         model = model_interface.Model()
         model.id = model_name
         model.description = model_description
         model.model_definition = "model-definitions/local"
-        model.visibility = visibility
 
         with open(model_path, "rb") as f:
             data = f.read()
@@ -147,13 +145,11 @@ class ModelClient(Client):
         self,
         name: str,
         definition: str,
-        visibility: model_interface.Model.Visibility.ValueType,
         configuration: dict,
     ) -> model_interface.Model:
         model = model_interface.Model()
         model.id = name
         model.model_definition = definition
-        model.visibility = visibility
         model.configuration.update(configuration)
         resp = self._stub.CreateUserModel(
             request=model_interface.CreateUserModelRequest(
@@ -269,7 +265,8 @@ class ModelClient(Client):
         ).model
 
     @grpc_handler
-    def list_models(self) -> model_interface.ListUserModelsResponse:
-        return self._stub.ListUserModels(
+    def list_models(self) -> Tuple[list, str, int]:
+        resp = self._stub.ListUserModels(
             model_interface.ListUserModelsRequest(parent=self._user.name)
         )
+        return (resp.models, resp.next_page_token, resp.total_size)

@@ -11,14 +11,12 @@ class Model(Resource):
         name: str,
         definition: str,
         configuration: dict,
-        visibility: model_interface.Model.Visibility.ValueType,
     ) -> None:
         super().__init__()
         self.client = client
         model = client.create_model(
             name=name,
             definition=definition,
-            visibility=visibility,
             configuration=configuration,
         )
         if model is None:
@@ -51,6 +49,9 @@ class Model(Resource):
     def resource(self, resource: model_interface.Model):
         self._resource = resource
 
+    def _update(self):
+        self.resource = self.client.get_model(model_name=self.resource.id)
+
     def get_definition(self) -> str:
         return self.resource.model_definition
 
@@ -58,9 +59,11 @@ class Model(Resource):
         return self.client.watch_model(self.resource.id)
 
     def deploy(self) -> bool:
+        self._update()
         return self.client.deploy_model(self.resource.id)
 
     def undeploy(self) -> bool:
+        self._update()
         return self.client.undeploy_model(self.resource.id)
 
 
@@ -71,7 +74,6 @@ class GithubModel(Model):
         name: str,
         model_repo: str,
         model_tag: str,
-        visibility=model_interface.Model.VISIBILITY_PRIVATE,
     ) -> None:
         definition = "model-definitions/github"
         configuration = {"repository": model_repo, "tag": model_tag}
@@ -80,7 +82,6 @@ class GithubModel(Model):
             name=name,
             definition=definition,
             configuration=configuration,
-            visibility=visibility,
         )
 
 
@@ -90,7 +91,6 @@ class HugginfaceModel(Model):
         client: ModelClient,
         name: str,
         model_repo: str,
-        visibility=model_interface.Model.VISIBILITY_PRIVATE,
     ) -> None:
         configuration = {"repo_id": model_repo}
         definition = "model-definitions/huggingface"
@@ -99,5 +99,4 @@ class HugginfaceModel(Model):
             name=name,
             definition=definition,
             configuration=configuration,
-            visibility=visibility,
         )
