@@ -12,13 +12,13 @@ import instill_sdk.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as health
 # model
 import instill_sdk.protogen.model.model.v1alpha.model_pb2 as model_interface
 import instill_sdk.protogen.model.model.v1alpha.model_public_service_pb2_grpc as model_service
-from instill_sdk.clients.client import Client
+from instill_sdk.clients.client import Client, API_TOKEN
 from instill_sdk.utils.error_handler import grpc_handler
 
 
 class ModelClient(Client):
     def __init__(
-        self, user: mgmt_interface.User, token="", host="localhost", port="9080"
+        self, user: mgmt_interface.User, token=API_TOKEN, host="localhost", port="9080"
     ) -> None:
         """Initialize client for model service with target host.
 

@@ -5,14 +5,14 @@ import instill_sdk.protogen.base.mgmt.v1alpha.metric_pb2 as metric_interface
 import instill_sdk.protogen.base.mgmt.v1alpha.mgmt_pb2 as mgmt_interface
 import instill_sdk.protogen.base.mgmt.v1alpha.mgmt_public_service_pb2_grpc as mgmt_service
 import instill_sdk.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
-from instill_sdk.clients.client import Client
+from instill_sdk.clients.client import Client, API_TOKEN
 from instill_sdk.utils.error_handler import grpc_handler
 
 # from instill_sdk.utils.logger import Logger
 
 
 class MgmtClient(Client):
-    def __init__(self, token="", host="localhost", port="7080") -> None:
+    def __init__(self, token=API_TOKEN, host="localhost", port="7080") -> None:
         """Initialize client for management service with target host.
 
         Args:

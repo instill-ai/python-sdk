@@ -6,7 +6,7 @@ import instill_sdk.protogen.base.mgmt.v1alpha.mgmt_pb2 as mgmt_interface
 import instill_sdk.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
 import instill_sdk.protogen.vdp.connector.v1alpha.connector_pb2 as connector_interface
 import instill_sdk.protogen.vdp.connector.v1alpha.connector_public_service_pb2_grpc as connector_service
-from instill_sdk.clients.client import Client
+from instill_sdk.clients.client import Client, API_TOKEN
 from instill_sdk.utils.error_handler import grpc_handler
 
 # from instill_sdk.utils.logger import Logger
@@ -14,7 +14,7 @@ from instill_sdk.utils.error_handler import grpc_handler
 
 class ConnectorClient(Client):
     def __init__(
-        self, user: mgmt_interface.User, token="", host="localhost", port="8080"
+        self, user: mgmt_interface.User, token=API_TOKEN, host="localhost", port="8080"
     ) -> None:
         """Initialize client for connector service with target host.
 

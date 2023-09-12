@@ -14,13 +14,13 @@ import instill_sdk.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interf
 import instill_sdk.protogen.vdp.pipeline.v1alpha.pipeline_public_service_pb2_grpc as pipeline_service
 
 # common
-from instill_sdk.clients.client import Client
+from instill_sdk.clients.client import Client, API_TOKEN
 from instill_sdk.utils.error_handler import grpc_handler
 
 
 class PipelineClient(Client):
     def __init__(
-        self, user: mgmt_interface.User, token="", host="localhost", port="8080"
+        self, user: mgmt_interface.User, token=API_TOKEN, host="localhost", port="8080"
     ) -> None:
         """Initialize client for pipeline service with target host.
 
