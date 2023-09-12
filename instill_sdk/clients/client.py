@@ -11,12 +11,12 @@ class Client(ABC):
 
     @property
     @abstractmethod
-    def protocol(self):
+    def token(self):
         pass
 
-    @protocol.setter
+    @token.setter
     @abstractmethod
-    def protocol(self):
+    def token(self):
         pass
 
     @property
