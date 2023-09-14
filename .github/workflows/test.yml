@@ -36,7 +36,7 @@ jobs:
 
     - name: Test code
       run: make test
-gi
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
