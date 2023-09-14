@@ -37,11 +37,6 @@ jobs:
     - name: Test code
       run: make test
 
-    - name: check coverage
-      run: |
-        ls -la .cache
-        ls -la coverage.xml
-
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:

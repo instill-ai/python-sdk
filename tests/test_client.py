@@ -33,30 +33,30 @@ def describe_client():
             connector_client.host = "instill"
             expect(connector_client.host) == "instill"
 
-    def describe_protocol():
+    def describe_token():
         def when_not_set(expect):
             mgmt_client = MgmtClient()
-            expect(mgmt_client.protocol) == "http"
+            expect(mgmt_client.token) == ""
             model_client = ModelClient(user=mgmt_client.get_user())
-            expect(model_client.protocol) == "http"
+            expect(model_client.token) == ""
             pipeline_client = PipelineClient(user=mgmt_client.get_user())
-            expect(pipeline_client.protocol) == "http"
+            expect(pipeline_client.token) == ""
             connector_client = ConnectorClient(user=mgmt_client.get_user())
-            expect(connector_client.protocol) == "http"
+            expect(connector_client.token) == ""
 
         def when_set_correct_type(expect):
             mgmt_client = MgmtClient()
-            mgmt_client.protocol = "instill"
-            expect(mgmt_client.protocol) == "instill"
+            mgmt_client.token = "instill"
+            expect(mgmt_client.token) == "instill"
             model_client = ModelClient(user=mgmt_client.get_user())
-            model_client.protocol = "instill"
-            expect(model_client.protocol) == "instill"
+            model_client.token = "instill"
+            expect(model_client.token) == "instill"
             pipeline_client = PipelineClient(user=mgmt_client.get_user())
-            pipeline_client.protocol = "instill"
-            expect(pipeline_client.protocol) == "instill"
+            pipeline_client.token = "instill"
+            expect(pipeline_client.token) == "instill"
             connector_client = ConnectorClient(user=mgmt_client.get_user())
-            connector_client.protocol = "instill"
-            expect(connector_client.protocol) == "instill"
+            connector_client.token = "instill"
+            expect(connector_client.token) == "instill"
 
     def describe_port():
         def when_not_set(expect):

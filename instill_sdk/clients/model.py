@@ -12,39 +12,46 @@ import instill_sdk.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as health
 # model
 import instill_sdk.protogen.model.model.v1alpha.model_pb2 as model_interface
 import instill_sdk.protogen.model.model.v1alpha.model_public_service_pb2_grpc as model_service
-from instill_sdk.clients.client import Client
+from instill_sdk.clients.client import API_TOKEN, Client
 from instill_sdk.utils.error_handler import grpc_handler
 
 
 class ModelClient(Client):
     def __init__(
-        self, user: mgmt_interface.User, protocol="http", host="localhost", port="9080"
+        self, user: mgmt_interface.User, token=API_TOKEN, host="localhost", port="9080"
     ) -> None:
         """Initialize client for model service with target host.
 
         Args:
-            protocol (str): http/https
+            token (str): api token for authentication
             host (str): host url
             port (str): host port
         """
 
-        self.protocol = protocol
+        self.token = token
         self.host = host
         self.port = port
 
         self._user = user
-        self._channel = grpc.insecure_channel(
-            f"{host}:{port}".format(protocol=protocol, host=host, port=port)
-        )
+        if len(token) == 0:
+            self._channel = grpc.insecure_channel(f"{host}:{port}")
+        else:
+            ssl_creds = grpc.ssl_channel_credentials()
+            call_creds = grpc.access_token_call_credentials(token)
+            creds = grpc.composite_channel_credentials(ssl_creds, call_creds)
+            self._channel = grpc.secure_channel(
+                target=f"{host}",
+                credentials=creds,
+            )
         self._stub = model_service.ModelPublicServiceStub(self._channel)
 
     @property
-    def protocol(self):
-        return self._protocol
+    def token(self):
+        return self._token
 
-    @protocol.setter
-    def protocol(self, protocol: str):
-        self._protocol = protocol
+    @token.setter
+    def token(self, token: str):
+        self._token = token
 
     @property
     def host(self):

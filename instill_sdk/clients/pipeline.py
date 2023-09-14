@@ -14,39 +14,46 @@ import instill_sdk.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interf
 import instill_sdk.protogen.vdp.pipeline.v1alpha.pipeline_public_service_pb2_grpc as pipeline_service
 
 # common
-from instill_sdk.clients.client import Client
+from instill_sdk.clients.client import API_TOKEN, Client
 from instill_sdk.utils.error_handler import grpc_handler
 
 
 class PipelineClient(Client):
     def __init__(
-        self, user: mgmt_interface.User, protocol="http", host="localhost", port="8080"
+        self, user: mgmt_interface.User, token=API_TOKEN, host="localhost", port="8080"
     ) -> None:
         """Initialize client for pipeline service with target host.
 
         Args:
-            protocol (str): http/https
+            token (str): api token for authentication
             host (str): host url
             port (str): host port
         """
 
-        self.protocol = protocol
+        self.token = token
         self.host = host
         self.port = port
 
         self._user = user
-        self._channel = grpc.insecure_channel(
-            f"{host}:{port}".format(protocol=protocol, host=host, port=port)
-        )
+        if len(token) == 0:
+            self._channel = grpc.insecure_channel(f"{host}:{port}")
+        else:
+            ssl_creds = grpc.ssl_channel_credentials()
+            call_creds = grpc.access_token_call_credentials(token)
+            creds = grpc.composite_channel_credentials(ssl_creds, call_creds)
+            self._channel = grpc.secure_channel(
+                target=f"{host}",
+                credentials=creds,
+            )
         self._stub = pipeline_service.PipelinePublicServiceStub(self._channel)
 
     @property
-    def protocol(self):
-        return self._protocol
+    def token(self):
+        return self._token
 
-    @protocol.setter
-    def protocol(self, protocol: str):
-        self._protocol = protocol
+    @token.setter
+    def token(self, token: str):
+        self._token = token
 
     @property
     def host(self):
