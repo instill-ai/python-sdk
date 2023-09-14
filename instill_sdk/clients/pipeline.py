@@ -14,7 +14,7 @@ import instill_sdk.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interf
 import instill_sdk.protogen.vdp.pipeline.v1alpha.pipeline_public_service_pb2_grpc as pipeline_service
 
 # common
-from instill_sdk.clients.client import Client, API_TOKEN
+from instill_sdk.clients.client import API_TOKEN, Client
 from instill_sdk.utils.error_handler import grpc_handler
 
 

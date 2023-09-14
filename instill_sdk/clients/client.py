@@ -1,8 +1,9 @@
 # pylint: disable=no-member,wrong-import-position
-from abc import ABC, abstractmethod
 import os
+from abc import ABC, abstractmethod
 
 API_TOKEN = os.environ.get("INSTILL_AI_API_TOKEN", default="")
+
 
 class Client(ABC):
     """Base interface class for creating mgmt/pipeline/connector/model clients.
