@@ -37,7 +37,18 @@ jobs:
     - name: Test code
       run: make test
 
-    - name: Upload coverage
-      uses: codecov/codecov-action@v1
+    - name: check coverage
+      run: |
+        ls -la .cache
+        ls -la coverage.xml
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
       with:
+        directory: ./
+        env_vars: OS,PYTHON
         fail_ci_if_error: true
+        files: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        verbose: true
