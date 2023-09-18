@@ -1,0 +1,17 @@
+name: "Lint PR"
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+
+permissions:
+  pull-requests: read
+
+jobs:
+  lint:
+    name: Validate PR title
+    uses: instill-ai/.github/.github/workflows/semantic.yml@main
+    secrets: inherit
