@@ -11,7 +11,7 @@ import instill_sdk.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interf
 import instill_sdk.protogen.vdp.pipeline.v1alpha.pipeline_public_service_pb2_grpc as pipeline_service
 
 # common
-from instill_sdk.clients.client import Client
+from instill_sdk.clients.base import Client
 from instill_sdk.configuration import global_config
 from instill_sdk.utils.error_handler import grpc_handler
 
@@ -59,19 +59,16 @@ class PipelineClient(Client):
     def instance(self, instance: str):
         self._instance = instance
 
-    @grpc_handler
     def liveness(self) -> pipeline_interface.LivenessResponse:
         return self.hosts[self.instance]["client"].Liveness(
             request=pipeline_interface.LivenessRequest()
         )
 
-    @grpc_handler
     def readiness(self) -> pipeline_interface.ReadinessResponse:
         return self.hosts[self.instance]["client"].Readiness(
             request=pipeline_interface.ReadinessRequest()
         )
 
-    @grpc_handler
     def is_serving(self) -> bool:
         try:
             return (

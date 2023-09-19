@@ -1,39 +1,41 @@
-# pylint: disable=no-member,wrong-import-position
+# pylint: disable=no-member,wrong-import-position,no-name-in-module
 import instill_sdk.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
-from instill_sdk.clients.pipeline import PipelineClient
+from instill_sdk.clients import InstillClient
 from instill_sdk.resources.resource import Resource
 
 
 class Pipeline(Resource):
     def __init__(
         self,
-        client: PipelineClient,
+        client: InstillClient,
         name: str,
         recipe: pipeline_interface.Recipe,
     ) -> None:
         super().__init__()
         self.client = client
-        pipeline = client.create_pipeline(name=name, recipe=recipe)
+        pipeline = client.pipeline_service.get_pipeline(name=name)
         if pipeline is None:
-            pipeline = client.get_pipeline(name=name)
+            pipeline = client.pipeline_service.create_pipeline(name=name, recipe=recipe)
             if pipeline is None:
-                raise BaseException("model creation failed")
+                raise BaseException("pipeline creation failed")
 
         self.resource = pipeline
 
     def __del__(self):
         if self.resource is not None:
-            self.client.delete_pipeline(self.resource.id)
+            self.client.pipeline_service.delete_pipeline(self.resource.id)
 
     def __call__(self, task_inputs: list) -> list:
-        return self.client.trigger_pipeline(self.resource.id, task_inputs)
+        return self.client.pipeline_service.trigger_pipeline(
+            self.resource.id, task_inputs
+        )
 
     @property
     def client(self):
         return self._client
 
     @client.setter
-    def client(self, client: PipelineClient):
+    def client(self, client: InstillClient):
         self._client = client
 
     @property
@@ -45,10 +47,10 @@ class Pipeline(Resource):
         self._resource = resource
 
     def _update(self):
-        self.resource = self.client.get_pipeline(name=self.resource.id)
+        self.resource = self.client.pipeline_service.get_pipeline(name=self.resource.id)
 
     def get_recipe(self) -> str:
         return self.resource.recipe
 
     def validate_pipeline(self) -> pipeline_interface.Pipeline:
-        return self.client.validate_pipeline(name=self.resource.id)
+        return self.client.pipeline_service.validate_pipeline(name=self.resource.id)

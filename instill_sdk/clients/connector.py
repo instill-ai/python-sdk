@@ -8,7 +8,7 @@ import instill_sdk.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as health
 # connector
 import instill_sdk.protogen.vdp.connector.v1alpha.connector_pb2 as connector_interface
 import instill_sdk.protogen.vdp.connector.v1alpha.connector_public_service_pb2_grpc as connector_service
-from instill_sdk.clients.client import Client
+from instill_sdk.clients.base import Client
 
 # common
 from instill_sdk.configuration import global_config
@@ -58,19 +58,16 @@ class ConnectorClient(Client):
     def instance(self, instance: str):
         self._instance = instance
 
-    @grpc_handler
     def liveness(self) -> connector_interface.LivenessResponse:
         return self.hosts[self.instance]["client"].Liveness(
             request=connector_interface.LivenessRequest()
         )
 
-    @grpc_handler
     def readiness(self) -> connector_interface.ReadinessResponse:
         return self.hosts[self.instance]["client"].Readiness(
             request=connector_interface.ReadinessRequest()
         )
 
-    @grpc_handler
     def is_serving(self) -> bool:
         try:
             return (

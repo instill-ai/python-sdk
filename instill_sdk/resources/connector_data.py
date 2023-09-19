@@ -1,12 +1,12 @@
-# pylint: disable=no-member,wrong-import-position
-from instill_sdk.clients.connector import ConnectorClient
+# pylint: disable=no-member,wrong-import-position,no-name-in-module
+from instill_sdk.clients import InstillClient
 from instill_sdk.resources.connector import Connector
 
 
 class PineconeConnector(Connector):
     def __init__(
         self,
-        client: ConnectorClient,
+        client: InstillClient,
         name: str,
         api_key: str,
         server_url: str,

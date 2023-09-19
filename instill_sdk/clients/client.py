@@ -1,42 +1,72 @@
-# pylint: disable=no-member,wrong-import-position
-from abc import ABC, abstractmethod
+# pylint: disable=no-name-in-module
+from instill_sdk.clients.connector import ConnectorClient
+from instill_sdk.clients.mgmt import MgmtClient
+from instill_sdk.clients.model import ModelClient
+from instill_sdk.clients.pipeline import PipelineClient
+
+_mgmt_client = None
+_connector_client = None
+_pipeline_client = None
+_model_client = None
+_client = None
 
 
-class Client(ABC):
-    """Base interface class for creating mgmt/pipeline/connector/model clients.
+def _get_mgmt_client() -> MgmtClient:
+    global _mgmt_client
 
-    Args:
-        ABC (abc.ABCMeta): std abstract class
-    """
+    if _mgmt_client is None:
+        _mgmt_client = MgmtClient()
 
-    @property
-    @abstractmethod
-    def hosts(self):
-        pass
+    return _mgmt_client
 
-    @hosts.setter
-    @abstractmethod
-    def hosts(self):
-        pass
 
-    @property
-    @abstractmethod
-    def instance(self):
-        pass
+def _get_connector_clinet() -> ConnectorClient:
+    global _connector_client
 
-    @instance.setter
-    @abstractmethod
-    def instance(self):
-        pass
+    if _connector_client is None:
+        _connector_client = ConnectorClient(
+            namespace=_get_mgmt_client().get_user().name
+        )
 
-    @abstractmethod
-    def liveness(self):
-        raise NotImplementedError
+    return _connector_client
 
-    @abstractmethod
-    def readiness(self):
-        raise NotImplementedError
 
-    @abstractmethod
-    def is_serving(self):
-        raise NotImplementedError
+def _get_pipeline_clinet() -> PipelineClient:
+    global _pipeline_client
+
+    if _pipeline_client is None:
+        _pipeline_client = PipelineClient(namespace=_get_mgmt_client().get_user().name)
+
+    return _pipeline_client
+
+
+def _get_model_clinet() -> ModelClient:
+    global _model_client
+
+    if _model_client is None:
+        _model_client = ModelClient(namespace=_get_mgmt_client().get_user().name)
+
+    return _model_client
+
+
+class InstillClient:
+    def __init__(self) -> None:
+        self.mgmt_service = _get_mgmt_client()
+        self.connector_service = _get_connector_clinet()
+        self.pipeline_service = _get_pipeline_clinet()
+        self.model_serevice = _get_model_clinet()
+
+    def set_instance(self, instance: str):
+        self.mgmt_service.instance = instance
+        self.connector_service.instance = instance
+        self.pipeline_service.instance = instance
+        self.model_serevice.instance = instance
+
+
+def get_client() -> InstillClient:
+    global _client
+
+    if _client is None:
+        _client = InstillClient()
+
+    return _client

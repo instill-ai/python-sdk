@@ -1,9 +1,6 @@
-# pylint: disable=no-member, no-name-in-module
+# pylint: disable=no-member,no-name-in-module
 from google.protobuf.struct_pb2 import Struct
-from instill_sdk.clients.mgmt import MgmtClient
-from instill_sdk.clients.model import ModelClient
-from instill_sdk.clients.connector import ConnectorClient
-from instill_sdk.clients.pipeline import PipelineClient
+from instill_sdk.clients import InstillClient
 from instill_sdk.resources.model import GithubModel
 
 # from instill_sdk.resources.connector_ai import InstillModelConnector
@@ -27,26 +24,22 @@ github_model = {
 }
 
 try:
-    # ======================== mgmt
+    client = InstillClient()
 
-    c = MgmtClient()
-    assert c.is_serving()
+    # ======================== mgmt
+    assert client.mgmt_service.is_serving()
     Logger.i("mgmt client created, assert status == serving: True")
 
-    user = c.get_user()
+    user = client.mgmt_service.get_user()
     assert user.id == "instill-ai"
     Logger.i("mgmt get user, assert default user id == instill-ai: True")
-except AssertionError:
-    pass
-try:
-    # ======================== model
 
-    m = ModelClient(user=user)
-    assert m.is_serving()
+    # ======================== model
+    assert client.model_serevice.is_serving()
     Logger.i("model client created, assert status == serving: True")
 
     model = GithubModel(
-        client=m,
+        client=client,
         name=github_model["model_name"],
         model_repo=github_model["model_repo"],
         model_tag=github_model["model_tag"],
@@ -84,20 +77,15 @@ try:
     Logger.i("inference done, assert output 1 category == brown bear: True")
     assert outputs[2].classification.category == "ice bear"
     Logger.i("inference done, assert output 2 category == ice bear: True")
-except AssertionError:
-    for model in m.list_models():
-        m.delete_model(model.id)
-try:
-    # ======================== connector
 
-    co = ConnectorClient(user=user)
-    assert co.is_serving()
+    # ======================== connector
+    assert client.connector_service.is_serving()
     Logger.i("connector client created, assert status == serving: True")
 
     # mobilenet_connector = InstillModelConnector(co, "mobilenetv2_connector", "", "http://model-backend:9080", "mobilenetv2")
-    config = {"destination_path": "/local/pipeline-backend-test-1"}
+    config = {"destination_path": "/local/test-1"}
     csv_connector = Connector(
-        co,
+        client,
         name="csv",
         definition="connector-definitions/airbyte-destination-csv",
         configuration=config,
@@ -117,33 +105,24 @@ try:
 
     assert csv_connector.test() == connector_interface.ConnectorResource.STATE_CONNECTED
     Logger.i("tested csv connector, assert state == STATE_CONNECTED: True")
-except AssertionError:
-    for model in m.list_models():
-        m.delete_model(model.id)
-    for connector in co.list_connectors():
-        co.delete_connector(connector.id)
-try:
-    # ======================== pipeline
 
-    p = PipelineClient(user=user)
-    assert p.is_serving()
+    # ======================== pipeline
+    assert client.pipeline_service.is_serving()
     Logger.i("pipeline client created, assert status == serving: True")
 
     start_operator_component = pipeline_interface.Component()
     start_operator_component.id = "start"
     start_operator_component.definition_name = "operator-definitions/start-operator"
     start_operator_component.configuration.update(
-        {"metadata": {"body": {"input": {"title": "Input", "type": "text"}}}}
+        {"metadata": {"input": {"title": "Input", "type": "text"}}}
     )
     end_operator_component = pipeline_interface.Component()
     end_operator_component.id = "end"
     end_operator_component.definition_name = "operator-definitions/end-operator"
     end_operator_component.configuration.update(
         {
-            "metadata": {
-                "body": {"output": {"title": "output"}},
-            },
-            "input": {"body": {"output": "{ start.body.input }"}},
+            "metadata": {"answer": {"title": "Answer"}},
+            "input": {"answer": "{ d01.input }"},
         }
     )
     csv_connector_component = pipeline_interface.Component()
@@ -152,9 +131,7 @@ try:
     csv_connector_component.definition_name = (
         "connector-definitions/airbyte-destination-csv"
     )
-    csv_connector_component.configuration.update(
-        {"input": {"text": "{ start.body.input }"}}
-    )
+    csv_connector_component.configuration.update({"input": {"text": "{ start.input }"}})
 
     recipe = pipeline_interface.Recipe()
     recipe.version = "v1alpha"
@@ -162,19 +139,18 @@ try:
     recipe.components.append(end_operator_component)
     recipe.components.append(csv_connector_component)
 
-    pipeline = Pipeline(client=p, name="csv-pipeline", recipe=recipe)
+    pipeline = Pipeline(client=client, name="csv-pipeline", recipe=recipe)
     pipeline.validate_pipeline()
     Logger.i("pipeline csv-pipeline created, validate without error: True")
     i = Struct()
     i.update({"input": "instill-ai rocks"})
-    assert pipeline([i])[0][0]["output"] == "instill-ai rocks"
+    assert pipeline([i])[0][0]["answer"]["text"] == "instill-ai rocks"
     Logger.i("pipeline csv-pipeline triggered, output matched input: True")
 except AssertionError:
-    pass
-# ======================== clean up
-for pipeline in p.list_pipelines():
-    p.delete_pipeline(pipeline.id)
-for connector in co.list_connectors():
-    co.delete_connector(connector.id)
-for model in m.list_models():
-    m.delete_model(model.id)
+    Logger.w("TEST FAILED, ASSERTION MISMATCHED")
+
+Logger.i("====================Test Done====================")
+Logger.i("===================Cleaning up===================")
+del pipeline
+del model
+del csv_connector
