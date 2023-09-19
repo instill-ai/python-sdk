@@ -930,3 +930,33 @@ class DeleteTokenResponse(google.protobuf.message.Message):
     ) -> None: ...
 
 global___DeleteTokenResponse = DeleteTokenResponse
+
+@typing_extensions.final
+class ValidateTokenRequest(google.protobuf.message.Message):
+    """Request for validating the token"""
+
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    def __init__(
+        self,
+    ) -> None: ...
+
+global___ValidateTokenRequest = ValidateTokenRequest
+
+@typing_extensions.final
+class ValidateTokenResponse(google.protobuf.message.Message):
+    """Response for validating the token"""
+
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    USER_UID_FIELD_NUMBER: builtins.int
+    user_uid: builtins.str
+    """user_uid"""
+    def __init__(
+        self,
+        *,
+        user_uid: builtins.str = ...,
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["user_uid", b"user_uid"]) -> None: ...
+
+global___ValidateTokenResponse = ValidateTokenResponse
