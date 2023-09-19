@@ -87,6 +87,13 @@ class MgmtPublicServiceStub:
     """DeleteToken method receives a DeleteTokenRequest message and returns
     a DeleteTokenResponse message.
     """
+    ValidateToken: grpc.UnaryUnaryMultiCallable[
+        base.mgmt.v1alpha.mgmt_pb2.ValidateTokenRequest,
+        base.mgmt.v1alpha.mgmt_pb2.ValidateTokenResponse,
+    ]
+    """ValidateToken method receives a ValidateTokenRequest message and returns
+    a ValidateTokenResponse message.
+    """
     ListPipelineTriggerRecords: grpc.UnaryUnaryMultiCallable[
         base.mgmt.v1alpha.metric_pb2.ListPipelineTriggerRecordsRequest,
         base.mgmt.v1alpha.metric_pb2.ListPipelineTriggerRecordsResponse,
@@ -199,6 +206,13 @@ class MgmtPublicServiceAsyncStub:
     ]
     """DeleteToken method receives a DeleteTokenRequest message and returns
     a DeleteTokenResponse message.
+    """
+    ValidateToken: grpc.aio.UnaryUnaryMultiCallable[
+        base.mgmt.v1alpha.mgmt_pb2.ValidateTokenRequest,
+        base.mgmt.v1alpha.mgmt_pb2.ValidateTokenResponse,
+    ]
+    """ValidateToken method receives a ValidateTokenRequest message and returns
+    a ValidateTokenResponse message.
     """
     ListPipelineTriggerRecords: grpc.aio.UnaryUnaryMultiCallable[
         base.mgmt.v1alpha.metric_pb2.ListPipelineTriggerRecordsRequest,
@@ -330,6 +344,15 @@ class MgmtPublicServiceServicer(metaclass=abc.ABCMeta):
     ) -> typing.Union[base.mgmt.v1alpha.mgmt_pb2.DeleteTokenResponse, collections.abc.Awaitable[base.mgmt.v1alpha.mgmt_pb2.DeleteTokenResponse]]:
         """DeleteToken method receives a DeleteTokenRequest message and returns
         a DeleteTokenResponse message.
+        """
+    @abc.abstractmethod
+    def ValidateToken(
+        self,
+        request: base.mgmt.v1alpha.mgmt_pb2.ValidateTokenRequest,
+        context: _ServicerContext,
+    ) -> typing.Union[base.mgmt.v1alpha.mgmt_pb2.ValidateTokenResponse, collections.abc.Awaitable[base.mgmt.v1alpha.mgmt_pb2.ValidateTokenResponse]]:
+        """ValidateToken method receives a ValidateTokenRequest message and returns
+        a ValidateTokenResponse message.
         """
     @abc.abstractmethod
     def ListPipelineTriggerRecords(

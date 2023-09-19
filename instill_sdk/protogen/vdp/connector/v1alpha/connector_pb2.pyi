@@ -176,6 +176,7 @@ class ConnectorResource(google.protobuf.message.Message):
     UPDATE_TIME_FIELD_NUMBER: builtins.int
     VISIBILITY_FIELD_NUMBER: builtins.int
     CONNECTOR_DEFINITION_FIELD_NUMBER: builtins.int
+    DELETE_TIME_FIELD_NUMBER: builtins.int
     name: builtins.str
     """ConnectorResource resource name. It must have the format of
     "connector-resources/*"
@@ -218,6 +219,9 @@ class ConnectorResource(google.protobuf.message.Message):
     @property
     def connector_definition(self) -> vdp.connector.v1alpha.connector_definition_pb2.ConnectorDefinition:
         """Embed the content of the connector_definition"""
+    @property
+    def delete_time(self) -> google.protobuf.timestamp_pb2.Timestamp:
+        """ConnectorResource delete time"""
     def __init__(
         self,
         *,
@@ -236,9 +240,10 @@ class ConnectorResource(google.protobuf.message.Message):
         update_time: google.protobuf.timestamp_pb2.Timestamp | None = ...,
         visibility: global___ConnectorResource.Visibility.ValueType = ...,
         connector_definition: vdp.connector.v1alpha.connector_definition_pb2.ConnectorDefinition | None = ...,
+        delete_time: google.protobuf.timestamp_pb2.Timestamp | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["_description", b"_description", "configuration", b"configuration", "connector_definition", b"connector_definition", "create_time", b"create_time", "description", b"description", "org", b"org", "owner", b"owner", "update_time", b"update_time", "user", b"user"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["_description", b"_description", "configuration", b"configuration", "connector_definition", b"connector_definition", "connector_definition_name", b"connector_definition_name", "create_time", b"create_time", "description", b"description", "id", b"id", "name", b"name", "org", b"org", "owner", b"owner", "state", b"state", "tombstone", b"tombstone", "type", b"type", "uid", b"uid", "update_time", b"update_time", "user", b"user", "visibility", b"visibility"]) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["_description", b"_description", "configuration", b"configuration", "connector_definition", b"connector_definition", "create_time", b"create_time", "delete_time", b"delete_time", "description", b"description", "org", b"org", "owner", b"owner", "update_time", b"update_time", "user", b"user"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["_description", b"_description", "configuration", b"configuration", "connector_definition", b"connector_definition", "connector_definition_name", b"connector_definition_name", "create_time", b"create_time", "delete_time", b"delete_time", "description", b"description", "id", b"id", "name", b"name", "org", b"org", "owner", b"owner", "state", b"state", "tombstone", b"tombstone", "type", b"type", "uid", b"uid", "update_time", b"update_time", "user", b"user", "visibility", b"visibility"]) -> None: ...
     @typing.overload
     def WhichOneof(self, oneof_group: typing_extensions.Literal["_description", b"_description"]) -> typing_extensions.Literal["description"] | None: ...
     @typing.overload
@@ -262,6 +267,7 @@ class ListConnectorResourcesRequest(google.protobuf.message.Message):
     PAGE_TOKEN_FIELD_NUMBER: builtins.int
     VIEW_FIELD_NUMBER: builtins.int
     FILTER_FIELD_NUMBER: builtins.int
+    SHOW_DELETED_FIELD_NUMBER: builtins.int
     page_size: builtins.int
     """The maximum number of connector-resources to return. The service may return fewer
     than this value. If unspecified, at most 10 connector-resources will be returned.
@@ -273,6 +279,8 @@ class ListConnectorResourcesRequest(google.protobuf.message.Message):
     """ConnectorResource view (default is VIEW_BASIC)"""
     filter: builtins.str
     """Filter expression to list connector-resources"""
+    show_deleted: builtins.bool
+    """Return soft_deleted connector resources"""
     def __init__(
         self,
         *,
@@ -280,15 +288,18 @@ class ListConnectorResourcesRequest(google.protobuf.message.Message):
         page_token: builtins.str | None = ...,
         view: vdp.connector.v1alpha.connector_definition_pb2.View.ValueType | None = ...,
         filter: builtins.str | None = ...,
+        show_deleted: builtins.bool | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["_filter", b"_filter", "_page_size", b"_page_size", "_page_token", b"_page_token", "_view", b"_view", "filter", b"filter", "page_size", b"page_size", "page_token", b"page_token", "view", b"view"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["_filter", b"_filter", "_page_size", b"_page_size", "_page_token", b"_page_token", "_view", b"_view", "filter", b"filter", "page_size", b"page_size", "page_token", b"page_token", "view", b"view"]) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["_filter", b"_filter", "_page_size", b"_page_size", "_page_token", b"_page_token", "_show_deleted", b"_show_deleted", "_view", b"_view", "filter", b"filter", "page_size", b"page_size", "page_token", b"page_token", "show_deleted", b"show_deleted", "view", b"view"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["_filter", b"_filter", "_page_size", b"_page_size", "_page_token", b"_page_token", "_show_deleted", b"_show_deleted", "_view", b"_view", "filter", b"filter", "page_size", b"page_size", "page_token", b"page_token", "show_deleted", b"show_deleted", "view", b"view"]) -> None: ...
     @typing.overload
     def WhichOneof(self, oneof_group: typing_extensions.Literal["_filter", b"_filter"]) -> typing_extensions.Literal["filter"] | None: ...
     @typing.overload
     def WhichOneof(self, oneof_group: typing_extensions.Literal["_page_size", b"_page_size"]) -> typing_extensions.Literal["page_size"] | None: ...
     @typing.overload
     def WhichOneof(self, oneof_group: typing_extensions.Literal["_page_token", b"_page_token"]) -> typing_extensions.Literal["page_token"] | None: ...
+    @typing.overload
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["_show_deleted", b"_show_deleted"]) -> typing_extensions.Literal["show_deleted"] | None: ...
     @typing.overload
     def WhichOneof(self, oneof_group: typing_extensions.Literal["_view", b"_view"]) -> typing_extensions.Literal["view"] | None: ...
 
@@ -436,6 +447,7 @@ class ListUserConnectorResourcesRequest(google.protobuf.message.Message):
     VIEW_FIELD_NUMBER: builtins.int
     FILTER_FIELD_NUMBER: builtins.int
     PARENT_FIELD_NUMBER: builtins.int
+    SHOW_DELETED_FIELD_NUMBER: builtins.int
     page_size: builtins.int
     """The maximum number of connector-resources to return. The service may return fewer
     than this value. If unspecified, at most 10 connector-resources will be returned.
@@ -451,6 +463,8 @@ class ListUserConnectorResourcesRequest(google.protobuf.message.Message):
     """The parent resource where this connector resource will be created.
     Format: users/{users}
     """
+    show_deleted: builtins.bool
+    """Return soft_deleted connector resources"""
     def __init__(
         self,
         *,
@@ -459,15 +473,18 @@ class ListUserConnectorResourcesRequest(google.protobuf.message.Message):
         view: vdp.connector.v1alpha.connector_definition_pb2.View.ValueType | None = ...,
         filter: builtins.str | None = ...,
         parent: builtins.str = ...,
+        show_deleted: builtins.bool | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["_filter", b"_filter", "_page_size", b"_page_size", "_page_token", b"_page_token", "_view", b"_view", "filter", b"filter", "page_size", b"page_size", "page_token", b"page_token", "view", b"view"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["_filter", b"_filter", "_page_size", b"_page_size", "_page_token", b"_page_token", "_view", b"_view", "filter", b"filter", "page_size", b"page_size", "page_token", b"page_token", "parent", b"parent", "view", b"view"]) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["_filter", b"_filter", "_page_size", b"_page_size", "_page_token", b"_page_token", "_show_deleted", b"_show_deleted", "_view", b"_view", "filter", b"filter", "page_size", b"page_size", "page_token", b"page_token", "show_deleted", b"show_deleted", "view", b"view"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["_filter", b"_filter", "_page_size", b"_page_size", "_page_token", b"_page_token", "_show_deleted", b"_show_deleted", "_view", b"_view", "filter", b"filter", "page_size", b"page_size", "page_token", b"page_token", "parent", b"parent", "show_deleted", b"show_deleted", "view", b"view"]) -> None: ...
     @typing.overload
     def WhichOneof(self, oneof_group: typing_extensions.Literal["_filter", b"_filter"]) -> typing_extensions.Literal["filter"] | None: ...
     @typing.overload
     def WhichOneof(self, oneof_group: typing_extensions.Literal["_page_size", b"_page_size"]) -> typing_extensions.Literal["page_size"] | None: ...
     @typing.overload
     def WhichOneof(self, oneof_group: typing_extensions.Literal["_page_token", b"_page_token"]) -> typing_extensions.Literal["page_token"] | None: ...
+    @typing.overload
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["_show_deleted", b"_show_deleted"]) -> typing_extensions.Literal["show_deleted"] | None: ...
     @typing.overload
     def WhichOneof(self, oneof_group: typing_extensions.Literal["_view", b"_view"]) -> typing_extensions.Literal["view"] | None: ...
 
@@ -920,6 +937,7 @@ class ListConnectorResourcesAdminRequest(google.protobuf.message.Message):
     PAGE_TOKEN_FIELD_NUMBER: builtins.int
     VIEW_FIELD_NUMBER: builtins.int
     FILTER_FIELD_NUMBER: builtins.int
+    SHOW_DELETED_FIELD_NUMBER: builtins.int
     page_size: builtins.int
     """The maximum number of connector-resources to return. The service may return fewer
     than this value. If unspecified, at most 10 connector-resources will be returned.
@@ -931,6 +949,8 @@ class ListConnectorResourcesAdminRequest(google.protobuf.message.Message):
     """ConnectorResource view (default is VIEW_BASIC)"""
     filter: builtins.str
     """Filter expression to list connector-resources"""
+    show_deleted: builtins.bool
+    """Return soft_deleted connector resources"""
     def __init__(
         self,
         *,
@@ -938,15 +958,18 @@ class ListConnectorResourcesAdminRequest(google.protobuf.message.Message):
         page_token: builtins.str | None = ...,
         view: vdp.connector.v1alpha.connector_definition_pb2.View.ValueType | None = ...,
         filter: builtins.str | None = ...,
+        show_deleted: builtins.bool | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["_filter", b"_filter", "_page_size", b"_page_size", "_page_token", b"_page_token", "_view", b"_view", "filter", b"filter", "page_size", b"page_size", "page_token", b"page_token", "view", b"view"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["_filter", b"_filter", "_page_size", b"_page_size", "_page_token", b"_page_token", "_view", b"_view", "filter", b"filter", "page_size", b"page_size", "page_token", b"page_token", "view", b"view"]) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["_filter", b"_filter", "_page_size", b"_page_size", "_page_token", b"_page_token", "_show_deleted", b"_show_deleted", "_view", b"_view", "filter", b"filter", "page_size", b"page_size", "page_token", b"page_token", "show_deleted", b"show_deleted", "view", b"view"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["_filter", b"_filter", "_page_size", b"_page_size", "_page_token", b"_page_token", "_show_deleted", b"_show_deleted", "_view", b"_view", "filter", b"filter", "page_size", b"page_size", "page_token", b"page_token", "show_deleted", b"show_deleted", "view", b"view"]) -> None: ...
     @typing.overload
     def WhichOneof(self, oneof_group: typing_extensions.Literal["_filter", b"_filter"]) -> typing_extensions.Literal["filter"] | None: ...
     @typing.overload
     def WhichOneof(self, oneof_group: typing_extensions.Literal["_page_size", b"_page_size"]) -> typing_extensions.Literal["page_size"] | None: ...
     @typing.overload
     def WhichOneof(self, oneof_group: typing_extensions.Literal["_page_token", b"_page_token"]) -> typing_extensions.Literal["page_token"] | None: ...
+    @typing.overload
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["_show_deleted", b"_show_deleted"]) -> typing_extensions.Literal["show_deleted"] | None: ...
     @typing.overload
     def WhichOneof(self, oneof_group: typing_extensions.Literal["_view", b"_view"]) -> typing_extensions.Literal["view"] | None: ...
 

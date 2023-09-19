@@ -61,6 +61,11 @@ class MgmtPublicServiceStub(object):
                 request_serializer=base_dot_mgmt_dot_v1alpha_dot_mgmt__pb2.DeleteTokenRequest.SerializeToString,
                 response_deserializer=base_dot_mgmt_dot_v1alpha_dot_mgmt__pb2.DeleteTokenResponse.FromString,
                 )
+        self.ValidateToken = channel.unary_unary(
+                '/base.mgmt.v1alpha.MgmtPublicService/ValidateToken',
+                request_serializer=base_dot_mgmt_dot_v1alpha_dot_mgmt__pb2.ValidateTokenRequest.SerializeToString,
+                response_deserializer=base_dot_mgmt_dot_v1alpha_dot_mgmt__pb2.ValidateTokenResponse.FromString,
+                )
         self.ListPipelineTriggerRecords = channel.unary_unary(
                 '/base.mgmt.v1alpha.MgmtPublicService/ListPipelineTriggerRecords',
                 request_serializer=base_dot_mgmt_dot_v1alpha_dot_metric__pb2.ListPipelineTriggerRecordsRequest.SerializeToString,
@@ -171,6 +176,14 @@ class MgmtPublicServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ValidateToken(self, request, context):
+        """ValidateToken method receives a ValidateTokenRequest message and returns
+        a ValidateTokenResponse message.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def ListPipelineTriggerRecords(self, request, context):
         """========== Metric endpoints
 
@@ -268,6 +281,11 @@ def add_MgmtPublicServiceServicer_to_server(servicer, server):
                     servicer.DeleteToken,
                     request_deserializer=base_dot_mgmt_dot_v1alpha_dot_mgmt__pb2.DeleteTokenRequest.FromString,
                     response_serializer=base_dot_mgmt_dot_v1alpha_dot_mgmt__pb2.DeleteTokenResponse.SerializeToString,
+            ),
+            'ValidateToken': grpc.unary_unary_rpc_method_handler(
+                    servicer.ValidateToken,
+                    request_deserializer=base_dot_mgmt_dot_v1alpha_dot_mgmt__pb2.ValidateTokenRequest.FromString,
+                    response_serializer=base_dot_mgmt_dot_v1alpha_dot_mgmt__pb2.ValidateTokenResponse.SerializeToString,
             ),
             'ListPipelineTriggerRecords': grpc.unary_unary_rpc_method_handler(
                     servicer.ListPipelineTriggerRecords,
@@ -460,6 +478,23 @@ class MgmtPublicService(object):
         return grpc.experimental.unary_unary(request, target, '/base.mgmt.v1alpha.MgmtPublicService/DeleteToken',
             base_dot_mgmt_dot_v1alpha_dot_mgmt__pb2.DeleteTokenRequest.SerializeToString,
             base_dot_mgmt_dot_v1alpha_dot_mgmt__pb2.DeleteTokenResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ValidateToken(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/base.mgmt.v1alpha.MgmtPublicService/ValidateToken',
+            base_dot_mgmt_dot_v1alpha_dot_mgmt__pb2.ValidateTokenRequest.SerializeToString,
+            base_dot_mgmt_dot_v1alpha_dot_mgmt__pb2.ValidateTokenResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

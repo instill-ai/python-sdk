@@ -405,6 +405,8 @@ class PipelineUsageData(google.protobuf.message.Message):
             TRIGGER_TIME_FIELD_NUMBER: builtins.int
             TRIGGER_MODE_FIELD_NUMBER: builtins.int
             STATUS_FIELD_NUMBER: builtins.int
+            PIPELINE_RELEASE_ID_FIELD_NUMBER: builtins.int
+            PIPELINE_RELEASE_UID_FIELD_NUMBER: builtins.int
             pipeline_uid: builtins.str
             """UID for the triggered pipeline"""
             trigger_uid: builtins.str
@@ -416,6 +418,10 @@ class PipelineUsageData(google.protobuf.message.Message):
             """Trigger mode"""
             status: base.mgmt.v1alpha.metric_pb2.Status.ValueType
             """Final status of the execution"""
+            pipeline_release_id: builtins.str
+            """Version for the triggered release pipeline, empty string if not release"""
+            pipeline_release_uid: builtins.str
+            """UID for the triggered release pipeline, empty string if not release"""
             def __init__(
                 self,
                 *,
@@ -424,9 +430,11 @@ class PipelineUsageData(google.protobuf.message.Message):
                 trigger_time: google.protobuf.timestamp_pb2.Timestamp | None = ...,
                 trigger_mode: base.mgmt.v1alpha.metric_pb2.Mode.ValueType = ...,
                 status: base.mgmt.v1alpha.metric_pb2.Status.ValueType = ...,
+                pipeline_release_id: builtins.str = ...,
+                pipeline_release_uid: builtins.str = ...,
             ) -> None: ...
             def HasField(self, field_name: typing_extensions.Literal["trigger_time", b"trigger_time"]) -> builtins.bool: ...
-            def ClearField(self, field_name: typing_extensions.Literal["pipeline_uid", b"pipeline_uid", "status", b"status", "trigger_mode", b"trigger_mode", "trigger_time", b"trigger_time", "trigger_uid", b"trigger_uid"]) -> None: ...
+            def ClearField(self, field_name: typing_extensions.Literal["pipeline_release_id", b"pipeline_release_id", "pipeline_release_uid", b"pipeline_release_uid", "pipeline_uid", b"pipeline_uid", "status", b"status", "trigger_mode", b"trigger_mode", "trigger_time", b"trigger_time", "trigger_uid", b"trigger_uid"]) -> None: ...
 
         USER_UID_FIELD_NUMBER: builtins.int
         PIPELINE_TRIGGER_DATA_FIELD_NUMBER: builtins.int

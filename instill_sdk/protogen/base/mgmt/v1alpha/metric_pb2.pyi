@@ -83,6 +83,8 @@ class PipelineTriggerRecord(google.protobuf.message.Message):
     TRIGGER_MODE_FIELD_NUMBER: builtins.int
     COMPUTE_TIME_DURATION_FIELD_NUMBER: builtins.int
     STATUS_FIELD_NUMBER: builtins.int
+    PIPELINE_RELEASE_ID_FIELD_NUMBER: builtins.int
+    PIPELINE_RELEASE_UID_FIELD_NUMBER: builtins.int
     @property
     def trigger_time(self) -> google.protobuf.timestamp_pb2.Timestamp:
         """Timestamp for the pipeline trigger time"""
@@ -98,6 +100,10 @@ class PipelineTriggerRecord(google.protobuf.message.Message):
     """Total compute time duration for this pipeline trigger"""
     status: global___Status.ValueType
     """Final status for pipeline trigger"""
+    pipeline_release_id: builtins.str
+    """Version for the triggered pipeline if it is a release pipeline, else emtpy"""
+    pipeline_release_uid: builtins.str
+    """UID for the triggered pipeline if it is a release pipeline, else emtpy"""
     def __init__(
         self,
         *,
@@ -108,9 +114,11 @@ class PipelineTriggerRecord(google.protobuf.message.Message):
         trigger_mode: global___Mode.ValueType = ...,
         compute_time_duration: builtins.float = ...,
         status: global___Status.ValueType = ...,
+        pipeline_release_id: builtins.str = ...,
+        pipeline_release_uid: builtins.str = ...,
     ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["trigger_time", b"trigger_time"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["compute_time_duration", b"compute_time_duration", "pipeline_id", b"pipeline_id", "pipeline_trigger_id", b"pipeline_trigger_id", "pipeline_uid", b"pipeline_uid", "status", b"status", "trigger_mode", b"trigger_mode", "trigger_time", b"trigger_time"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["compute_time_duration", b"compute_time_duration", "pipeline_id", b"pipeline_id", "pipeline_release_id", b"pipeline_release_id", "pipeline_release_uid", b"pipeline_release_uid", "pipeline_trigger_id", b"pipeline_trigger_id", "pipeline_uid", b"pipeline_uid", "status", b"status", "trigger_mode", b"trigger_mode", "trigger_time", b"trigger_time"]) -> None: ...
 
 global___PipelineTriggerRecord = PipelineTriggerRecord
 
@@ -124,6 +132,8 @@ class PipelineTriggerTableRecord(google.protobuf.message.Message):
     PIPELINE_UID_FIELD_NUMBER: builtins.int
     TRIGGER_COUNT_COMPLETED_FIELD_NUMBER: builtins.int
     TRIGGER_COUNT_ERRORED_FIELD_NUMBER: builtins.int
+    PIPELINE_RELEASE_ID_FIELD_NUMBER: builtins.int
+    PIPELINE_RELEASE_UID_FIELD_NUMBER: builtins.int
     pipeline_id: builtins.str
     """ID for the triggered pipeline"""
     pipeline_uid: builtins.str
@@ -132,6 +142,10 @@ class PipelineTriggerTableRecord(google.protobuf.message.Message):
     """Trigger count with STATUS_COMPLETED"""
     trigger_count_errored: builtins.int
     """Trigger count with STATUS_ERRORED"""
+    pipeline_release_id: builtins.str
+    """Version for the triggered pipeline if it is a release pipeline, else emtpy"""
+    pipeline_release_uid: builtins.str
+    """UID for the triggered pipeline if it is a release pipeline, else emtpy"""
     def __init__(
         self,
         *,
@@ -139,8 +153,10 @@ class PipelineTriggerTableRecord(google.protobuf.message.Message):
         pipeline_uid: builtins.str = ...,
         trigger_count_completed: builtins.int = ...,
         trigger_count_errored: builtins.int = ...,
+        pipeline_release_id: builtins.str = ...,
+        pipeline_release_uid: builtins.str = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["pipeline_id", b"pipeline_id", "pipeline_uid", b"pipeline_uid", "trigger_count_completed", b"trigger_count_completed", "trigger_count_errored", b"trigger_count_errored"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["pipeline_id", b"pipeline_id", "pipeline_release_id", b"pipeline_release_id", "pipeline_release_uid", b"pipeline_release_uid", "pipeline_uid", b"pipeline_uid", "trigger_count_completed", b"trigger_count_completed", "trigger_count_errored", b"trigger_count_errored"]) -> None: ...
 
 global___PipelineTriggerTableRecord = PipelineTriggerTableRecord
 
@@ -157,6 +173,8 @@ class PipelineTriggerChartRecord(google.protobuf.message.Message):
     TIME_BUCKETS_FIELD_NUMBER: builtins.int
     TRIGGER_COUNTS_FIELD_NUMBER: builtins.int
     COMPUTE_TIME_DURATION_FIELD_NUMBER: builtins.int
+    PIPELINE_RELEASE_ID_FIELD_NUMBER: builtins.int
+    PIPELINE_RELEASE_UID_FIELD_NUMBER: builtins.int
     pipeline_id: builtins.str
     """ID for the triggered pipeline"""
     pipeline_uid: builtins.str
@@ -174,6 +192,10 @@ class PipelineTriggerChartRecord(google.protobuf.message.Message):
     @property
     def compute_time_duration(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.float]:
         """Total compute time duration in each time bucket"""
+    pipeline_release_id: builtins.str
+    """Version for the triggered pipeline if it is a release pipeline, else emtpy"""
+    pipeline_release_uid: builtins.str
+    """UID for the triggered pipeline if it is a release pipeline, else emtpy"""
     def __init__(
         self,
         *,
@@ -184,8 +206,10 @@ class PipelineTriggerChartRecord(google.protobuf.message.Message):
         time_buckets: collections.abc.Iterable[google.protobuf.timestamp_pb2.Timestamp] | None = ...,
         trigger_counts: collections.abc.Iterable[builtins.int] | None = ...,
         compute_time_duration: collections.abc.Iterable[builtins.float] | None = ...,
+        pipeline_release_id: builtins.str = ...,
+        pipeline_release_uid: builtins.str = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["compute_time_duration", b"compute_time_duration", "pipeline_id", b"pipeline_id", "pipeline_uid", b"pipeline_uid", "status", b"status", "time_buckets", b"time_buckets", "trigger_counts", b"trigger_counts", "trigger_mode", b"trigger_mode"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["compute_time_duration", b"compute_time_duration", "pipeline_id", b"pipeline_id", "pipeline_release_id", b"pipeline_release_id", "pipeline_release_uid", b"pipeline_release_uid", "pipeline_uid", b"pipeline_uid", "status", b"status", "time_buckets", b"time_buckets", "trigger_counts", b"trigger_counts", "trigger_mode", b"trigger_mode"]) -> None: ...
 
 global___PipelineTriggerChartRecord = PipelineTriggerChartRecord
 
