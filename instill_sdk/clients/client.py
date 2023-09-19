@@ -1,8 +1,5 @@
 # pylint: disable=no-member,wrong-import-position
-import os
 from abc import ABC, abstractmethod
-
-API_TOKEN = os.environ.get("INSTILL_AI_API_TOKEN", default="")
 
 
 class Client(ABC):
@@ -14,32 +11,22 @@ class Client(ABC):
 
     @property
     @abstractmethod
-    def token(self):
+    def hosts(self):
         pass
 
-    @token.setter
+    @hosts.setter
     @abstractmethod
-    def token(self):
-        pass
-
-    @property
-    @abstractmethod
-    def host(self):
-        pass
-
-    @host.setter
-    @abstractmethod
-    def host(self):
+    def hosts(self):
         pass
 
     @property
     @abstractmethod
-    def port(self):
+    def instance(self):
         pass
 
-    @port.setter
+    @instance.setter
     @abstractmethod
-    def port(self):
+    def instance(self):
         pass
 
     @abstractmethod

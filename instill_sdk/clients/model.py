@@ -1,81 +1,70 @@
 # pylint: disable=no-member,wrong-import-position
 import time
-
+from collections import defaultdict
 import grpc
 
-# mgmt
-import instill_sdk.protogen.base.mgmt.v1alpha.mgmt_pb2 as mgmt_interface
-
 # common
+from instill_sdk.configuration import global_config
+from instill_sdk.utils.error_handler import grpc_handler
 import instill_sdk.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
 
 # model
 import instill_sdk.protogen.model.model.v1alpha.model_pb2 as model_interface
 import instill_sdk.protogen.model.model.v1alpha.model_public_service_pb2_grpc as model_service
-from instill_sdk.clients.client import API_TOKEN, Client
-from instill_sdk.utils.error_handler import grpc_handler
+from instill_sdk.clients.client import Client
 
 
 class ModelClient(Client):
-    def __init__(
-        self, user: mgmt_interface.User, token=API_TOKEN, host="localhost", port="9080"
-    ) -> None:
-        """Initialize client for model service with target host.
+    def __init__(self, namespace: str) -> None:
+        self.hosts = defaultdict(dict)
+        self.instance = "default"
+        self.namespace = namespace
 
-        Args:
-            token (str): api token for authentication
-            host (str): host url
-            port (str): host port
-        """
-
-        self.token = token
-        self.host = host
-        self.port = port
-
-        self._user = user
-        if len(token) == 0:
-            self._channel = grpc.insecure_channel(f"{host}:{port}")
-        else:
-            ssl_creds = grpc.ssl_channel_credentials()
-            call_creds = grpc.access_token_call_credentials(token)
-            creds = grpc.composite_channel_credentials(ssl_creds, call_creds)
-            self._channel = grpc.secure_channel(
-                target=f"{host}",
-                credentials=creds,
+        for instance in global_config.hosts.keys():
+            if global_config.hosts[instance].token is None:
+                channel = grpc.insecure_channel(global_config.hosts[instance].url)
+            else:
+                ssl_creds = grpc.ssl_channel_credentials()
+                call_creds = grpc.access_token_call_credentials(
+                    global_config.hosts[instance].token
+                )
+                creds = grpc.composite_channel_credentials(ssl_creds, call_creds)
+                channel = grpc.secure_channel(
+                    target=global_config.hosts[instance].url,
+                    credentials=creds,
+                )
+            self.hosts[instance]["channel"] = channel
+            self.hosts[instance]["client"] = model_service.ModelPublicServiceStub(
+                channel
             )
-        self._stub = model_service.ModelPublicServiceStub(self._channel)
 
     @property
-    def token(self):
-        return self._token
+    def hosts(self):
+        return self._hosts
 
-    @token.setter
-    def token(self, token: str):
-        self._token = token
-
-    @property
-    def host(self):
-        return self._host
-
-    @host.setter
-    def host(self, host: str):
-        self._host = host
+    @hosts.setter
+    def hosts(self, hosts: str):
+        self._hosts = hosts
 
     @property
-    def port(self):
-        return self._port
+    def instance(self):
+        return self._instance
 
-    @port.setter
-    def port(self, port: str):
-        self._port = port
+    @instance.setter
+    def instance(self, instance: str):
+        self._instance = instance
 
     @grpc_handler
     def liveness(self) -> model_interface.LivenessResponse:
-        return self._stub.Liveness(request=model_interface.LivenessRequest())
+        return self.hosts[self.instance]["client"].Liveness(
+            request=model_interface.LivenessRequest()
+        )
 
     @grpc_handler
     def readiness(self) -> model_interface.ReadinessResponse:
-        return self._stub.Readiness(request=model_interface.ReadinessRequest())
+        return self.hosts[self.instance]["client"].Readiness(
+            request=model_interface.ReadinessRequest()
+        )
 
     @grpc_handler
     def is_serving(self) -> bool:
@@ -89,11 +78,15 @@ class ModelClient(Client):
 
     @grpc_handler
     def watch_model(self, model_name: str) -> model_interface.Model.State:
-        return self._stub.WatchUserModel(
-            request=model_interface.WatchUserModelRequest(
-                name=f"{self._user.name}/models/{model_name}"
+        return (
+            self.hosts[self.instance]["client"]
+            .WatchUserModel(
+                request=model_interface.WatchUserModelRequest(
+                    name=f"{self.namespace}/models/{model_name}"
+                )
             )
-        ).state
+            .state
+        )
 
     @grpc_handler
     def create_model_local(
@@ -110,37 +103,45 @@ class ModelClient(Client):
         with open(model_path, "rb") as f:
             data = f.read()
             req = model_interface.CreateUserModelBinaryFileUploadRequest(
-                parent=self._user.name, model=model, content=data
+                parent=self.namespace, model=model, content=data
             )
-        resp = self._stub.CreateUserModelBinaryFileUpload(request_iterator=iter([req]))
+        resp = self.hosts[self.instance]["client"].CreateUserModelBinaryFileUpload(
+            request_iterator=iter([req])
+        )
 
         while (
-            self._stub.GetModelOperation(
+            self.hosts[self.instance]["client"]
+            .GetModelOperation(
                 request=model_interface.GetModelOperationRequest(
                     name=resp.operation.name
                 )
-            ).operation.done
+            )
+            .operation.done
             is not True
         ):
             time.sleep(1)
 
-        watch_resp = self._stub.WatchUserModel(
+        watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
             request=model_interface.WatchUserModelRequest(
-                name=f"{self._user.name}/models/{model_name}"
+                name=f"{self.namespace}/models/{model_name}"
             )
         )
         while watch_resp.state == 0:
             time.sleep(1)
-            watch_resp = self._stub.WatchUserModel(
+            watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
                 request=model_interface.WatchUserModelRequest(
-                    name=f"{self._user.name}/models/{model_name}"
+                    name=f"{self.namespace}/models/{model_name}"
                 )
             )
 
         if watch_resp.state == 1:
-            return self._stub.GetUserModel(
-                request=model_interface.GetUserModelRequest(name=model_name)
-            ).model
+            return (
+                self.hosts[self.instance]["client"]
+                .GetUserModel(
+                    request=model_interface.GetUserModelRequest(name=model_name)
+                )
+                .model
+            )
 
         raise SystemError("model creation failed")
 
@@ -155,62 +156,72 @@ class ModelClient(Client):
         model.id = name
         model.model_definition = definition
         model.configuration.update(configuration)
-        resp = self._stub.CreateUserModel(
+        resp = self.hosts[self.instance]["client"].CreateUserModel(
             request=model_interface.CreateUserModelRequest(
-                model=model, parent=self._user.name
+                model=model, parent=self.namespace
             )
         )
 
         while (
-            self._stub.GetModelOperation(
+            self.hosts[self.instance]["client"]
+            .GetModelOperation(
                 request=model_interface.GetModelOperationRequest(
                     name=resp.operation.name
                 )
-            ).operation.done
+            )
+            .operation.done
             is not True
         ):
             time.sleep(1)
 
-        watch_resp = self._stub.WatchUserModel(
+        # TODO: due to state update delay of controller
+        # TODO: should optimize this in model-backend
+        time.sleep(3)
+
+        watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
             request=model_interface.WatchUserModelRequest(
-                name=f"{self._user.name}/models/{model.id}"
+                name=f"{self.namespace}/models/{model.id}"
             )
         )
         while watch_resp.state == 0:
             time.sleep(1)
-            watch_resp = self._stub.WatchUserModel(
+            watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
                 request=model_interface.WatchUserModelRequest(
-                    name=f"{self._user.name}/models/{model.id}"
+                    name=f"{self.namespace}/models/{model.id}"
                 )
             )
 
         if watch_resp.state == 1:
-            return self._stub.GetUserModel(
-                request=model_interface.GetUserModelRequest(
-                    name=f"{self._user.name}/models/{model.id}"
+            return (
+                self.hosts[self.instance]["client"]
+                .GetUserModel(
+                    request=model_interface.GetUserModelRequest(
+                        name=f"{self.namespace}/models/{model.id}"
+                    )
                 )
-            ).model
+                .model
+            )
 
         raise SystemError("model creation failed")
 
     @grpc_handler
     def deploy_model(self, model_name: str) -> model_interface.Model.State:
-        self._stub.DeployUserModel(
+        self.hosts[self.instance]["client"].DeployUserModel(
             request=model_interface.DeployUserModelRequest(
-                name=f"{self._user.name}/models/{model_name}"
+                name=f"{self.namespace}/models/{model_name}"
             )
         )
 
-        watch_resp = self._stub.WatchUserModel(
+        watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
             request=model_interface.WatchUserModelRequest(
-                name=f"{self._user.name}/models/{model_name}"
+                name=f"{self.namespace}/models/{model_name}"
             )
         )
         while watch_resp.state not in (2, 3):
             time.sleep(1)
-            watch_resp = self._stub.WatchUserModel(
+            watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
                 request=model_interface.WatchUserModelRequest(
-                    name=f"{self._user.name}/models/{model_name}"
+                    name=f"{self.namespace}/models/{model_name}"
                 )
             )
 
@@ -218,22 +229,22 @@ class ModelClient(Client):
 
     @grpc_handler
     def undeploy_model(self, model_name: str) -> model_interface.Model.State:
-        self._stub.UndeployUserModel(
+        self.hosts[self.instance]["client"].UndeployUserModel(
             request=model_interface.UndeployUserModelRequest(
-                name=f"{self._user.name}/models/{model_name}"
+                name=f"{self.namespace}/models/{model_name}"
             )
         )
 
-        watch_resp = self._stub.WatchUserModel(
+        watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
             request=model_interface.WatchUserModelRequest(
-                name=f"{self._user.name}/models/{model_name}"
+                name=f"{self.namespace}/models/{model_name}"
             )
         )
         while watch_resp.state not in (1, 3):
             time.sleep(1)
-            watch_resp = self._stub.WatchUserModel(
+            watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
                 request=model_interface.WatchUserModelRequest(
-                    name=f"{self._user.name}/models/{model_name}"
+                    name=f"{self.namespace}/models/{model_name}"
                 )
             )
 
@@ -241,42 +252,83 @@ class ModelClient(Client):
 
     @grpc_handler
     def trigger_model(self, model_name: str, task_inputs: list) -> list:
-        resp = self._stub.TriggerUserModel(
+        resp = self.hosts[self.instance]["client"].TriggerUserModel(
             request=model_interface.TriggerUserModelRequest(
-                name=f"{self._user.name}/models/{model_name}", task_inputs=task_inputs
+                name=f"{self.namespace}/models/{model_name}", task_inputs=task_inputs
             )
         )
         return resp.task_outputs
 
     @grpc_handler
     def delete_model(self, model_name: str):
-        self._stub.DeleteUserModel(
+        self.hosts[self.instance]["client"].DeleteUserModel(
             request=model_interface.DeleteUserModelRequest(
-                name=f"{self._user.name}/models/{model_name}"
+                name=f"{self.namespace}/models/{model_name}"
             )
         )
 
     @grpc_handler
     def get_model(self, model_name: str) -> model_interface.Model:
-        return self._stub.GetUserModel(
-            request=model_interface.GetUserModelRequest(
-                name=f"{self._user.name}/models/{model_name}"
-            )
-        ).model
-
-    @grpc_handler
-    def list_models(self) -> list:
-        models = []
-        resp = self._stub.ListUserModels(
-            request=model_interface.ListUserModelsRequest(parent=self._user.name)
-        )
-        models.extend(resp.models)
-        while resp.next_page_token != "":
-            resp = self._stub.ListUserModels(
-                request=model_interface.ListUserModelsRequest(
-                    parent=self._user.name,
-                    page_token=resp.next_page_token,
+        return (
+            self.hosts[self.instance]["client"]
+            .GetUserModel(
+                request=model_interface.GetUserModelRequest(
+                    name=f"{self.namespace}/models/{model_name}"
                 )
             )
+            .model
+        )
+
+    @grpc_handler
+    def get_model_by_uid(self, model_uid: str) -> model_interface.Model:
+        return (
+            self.hosts[self.instance]["client"]
+            .GetUserModel(
+                request=model_interface.LookUpModelRequest(
+                    permalink=f"models/{model_uid}"
+                )
+            )
+            .model
+        )
+
+    @grpc_handler
+    def get_model_card(self, model_name: str) -> model_interface.Model:
+        return (
+            self.hosts[self.instance]["client"]
+            .GetUserModel(
+                request=model_interface.GetUserModelCardRequest(
+                    name=f"{self.namespace}/models/{model_name}"
+                )
+            )
+            .readme
+        )
+
+    @grpc_handler
+    def list_models(self, public=False) -> list:
+        models = []
+        if not public:
+            resp = self.hosts[self.instance]["client"].ListUserModels(
+                request=model_interface.ListUserModelsRequest(parent=self.namespace)
+            )
             models.extend(resp.models)
+            while resp.next_page_token != "":
+                resp = self.hosts[self.instance]["client"].ListUserModels(
+                    request=model_interface.ListUserModelsRequest(
+                        parent=self.namespace,
+                        page_token=resp.next_page_token,
+                    )
+                )
+                models.extend(resp.models)
+        else:
+            resp = self.hosts[self.instance]["client"].ListModels(
+                request=model_interface.ListModelsRequest()
+            )
+            models.extend(resp.models)
+            while resp.next_page_token != "":
+                resp = self.hosts[self.instance]["client"].ListUserModels(
+                    request=model_interface.ListModelsRequest(
+                        page_token=resp.next_page_token,
+                    )
+                )
+                models.extend(resp.models)
         return models
