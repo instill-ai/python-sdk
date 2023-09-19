@@ -14,13 +14,12 @@ CONFIG_DIR = Path(
 
 
 class _InstillHost(BaseModel):
-    alias: t.Optional[str] = ""
     url: str
     token: t.Optional[str] = ""
 
 
 class _Config(BaseModel):
-    remotes: t.Optional[t.List[_InstillHost]] = None
+    hosts: t.Optional[t.Dict[str, _InstillHost]] = None
 
 
 class Configuration:
@@ -30,8 +29,8 @@ class Configuration:
         CONFIG_DIR.mkdir(exist_ok=True)
 
     @property
-    def remotes(self) -> t.Optional[t.List[_InstillHost]]:
-        return self._config.remotes
+    def hosts(self) -> t.Optional[t.Dict[str, _InstillHost]]:
+        return self._config.hosts
 
     def load(self) -> None:
         path = CONFIG_DIR / "config.yaml"
@@ -47,5 +46,5 @@ class Configuration:
             raise BaseException(f"Invalid configuration file at '{path}'") from e
 
 
-config = Configuration()
-config.load()
+global_config = Configuration()
+global_config.load()

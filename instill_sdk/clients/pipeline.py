@@ -1,12 +1,9 @@
 # pylint: disable=no-member,wrong-import-position
+from collections import defaultdict
 from typing import Tuple
 
 import grpc
 
-# mgmt
-import instill_sdk.protogen.base.mgmt.v1alpha.mgmt_pb2 as mgmt_interface
-
-# from instill_sdk.utils.logger import Logger
 import instill_sdk.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
 
 # pipeline
@@ -14,70 +11,65 @@ import instill_sdk.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interf
 import instill_sdk.protogen.vdp.pipeline.v1alpha.pipeline_public_service_pb2_grpc as pipeline_service
 
 # common
-from instill_sdk.clients.client import API_TOKEN, Client
+from instill_sdk.clients.client import Client
+from instill_sdk.configuration import global_config
 from instill_sdk.utils.error_handler import grpc_handler
+
+# from instill_sdk.utils.logger import Logger
 
 
 class PipelineClient(Client):
-    def __init__(
-        self, user: mgmt_interface.User, token=API_TOKEN, host="localhost", port="8080"
-    ) -> None:
-        """Initialize client for pipeline service with target host.
+    def __init__(self, namespace: str) -> None:
+        self.hosts = defaultdict(dict)
+        self.instance = "default"
+        self.namespace = namespace
 
-        Args:
-            token (str): api token for authentication
-            host (str): host url
-            port (str): host port
-        """
-
-        self.token = token
-        self.host = host
-        self.port = port
-
-        self._user = user
-        if len(token) == 0:
-            self._channel = grpc.insecure_channel(f"{host}:{port}")
-        else:
-            ssl_creds = grpc.ssl_channel_credentials()
-            call_creds = grpc.access_token_call_credentials(token)
-            creds = grpc.composite_channel_credentials(ssl_creds, call_creds)
-            self._channel = grpc.secure_channel(
-                target=f"{host}",
-                credentials=creds,
-            )
-        self._stub = pipeline_service.PipelinePublicServiceStub(self._channel)
+        if global_config.hosts is not None:
+            for instance in global_config.hosts.keys():
+                if global_config.hosts[instance].token is None:
+                    channel = grpc.insecure_channel(global_config.hosts[instance].url)
+                else:
+                    ssl_creds = grpc.ssl_channel_credentials()
+                    call_creds = grpc.access_token_call_credentials(
+                        global_config.hosts[instance].token
+                    )
+                    creds = grpc.composite_channel_credentials(ssl_creds, call_creds)
+                    channel = grpc.secure_channel(
+                        target=global_config.hosts[instance].url,
+                        credentials=creds,
+                    )
+                self.hosts[instance]["channel"] = channel
+                self.hosts[instance][
+                    "client"
+                ] = pipeline_service.PipelinePublicServiceStub(channel)
 
     @property
-    def token(self):
-        return self._token
+    def hosts(self):
+        return self._hosts
 
-    @token.setter
-    def token(self, token: str):
-        self._token = token
-
-    @property
-    def host(self):
-        return self._host
-
-    @host.setter
-    def host(self, host: str):
-        self._host = host
+    @hosts.setter
+    def hosts(self, hosts: str):
+        self._hosts = hosts
 
     @property
-    def port(self):
-        return self._port
+    def instance(self):
+        return self._instance
 
-    @port.setter
-    def port(self, port: str):
-        self._port = port
+    @instance.setter
+    def instance(self, instance: str):
+        self._instance = instance
 
     @grpc_handler
     def liveness(self) -> pipeline_interface.LivenessResponse:
-        return self._stub.Liveness(request=pipeline_interface.LivenessRequest())
+        return self.hosts[self.instance]["client"].Liveness(
+            request=pipeline_interface.LivenessRequest()
+        )
 
     @grpc_handler
     def readiness(self) -> pipeline_interface.ReadinessResponse:
-        return self._stub.Readiness(request=pipeline_interface.ReadinessRequest())
+        return self.hosts[self.instance]["client"].Readiness(
+            request=pipeline_interface.ReadinessRequest()
+        )
 
     @grpc_handler
     def is_serving(self) -> bool:
@@ -99,59 +91,67 @@ class PipelineClient(Client):
             id=name,
             recipe=recipe,
         )
-        resp = self._stub.CreateUserPipeline(
+        resp = self.hosts[self.instance]["client"].CreateUserPipeline(
             request=pipeline_interface.CreateUserPipelineRequest(
-                pipeline=pipeline, parent=self._user.name
+                pipeline=pipeline, parent=self.namespace
             )
         )
         return resp.pipeline
 
     @grpc_handler
     def get_pipeline(self, name: str) -> pipeline_interface.Pipeline:
-        return self._stub.GetUserPipeline(
-            request=pipeline_interface.GetUserPipelineRequest(
-                name=f"{self._user.name}/pipelines/{name}"
+        return (
+            self.hosts[self.instance]["client"]
+            .GetUserPipeline(
+                request=pipeline_interface.GetUserPipelineRequest(
+                    name=f"{self.namespace}/pipelines/{name}"
+                )
             )
-        ).pipeline
+            .pipeline
+        )
 
     @grpc_handler
     def validate_pipeline(self, name: str) -> pipeline_interface.Pipeline:
-        return self._stub.ValidateUserPipeline(
-            request=pipeline_interface.ValidateUserPipelineRequest(
-                name=f"{self._user.name}/pipelines/{name}"
+        return (
+            self.hosts[self.instance]["client"]
+            .ValidateUserPipeline(
+                request=pipeline_interface.ValidateUserPipelineRequest(
+                    name=f"{self.namespace}/pipelines/{name}"
+                )
             )
-        ).pipeline
+            .pipeline
+        )
 
     @grpc_handler
     def trigger_pipeline(
         self, name: str, inputs: list
     ) -> Tuple[list, pipeline_interface.TriggerMetadata]:
-        resp = self._stub.TriggerUserPipeline(
+        resp = self.hosts[self.instance]["client"].TriggerUserPipeline(
             request=pipeline_interface.TriggerUserPipelineRequest(
-                name=f"{self._user.name}/pipelines/{name}", inputs=inputs
+                name=f"{self.namespace}/pipelines/{name}", inputs=inputs
             )
         )
         return resp.outputs, resp.metadata
 
     @grpc_handler
     def delete_pipeline(self, name: str):
-        self._stub.DeleteUserPipeline(
+        self.hosts[self.instance]["client"].DeleteUserPipeline(
             request=pipeline_interface.DeleteUserPipelineRequest(
-                name=f"{self._user.name}/pipelines/{name}"
+                name=f"{self.namespace}/pipelines/{name}"
             )
         )
 
     @grpc_handler
     def list_pipelines(self) -> list:
         pipelines = []
-        resp = self._stub.ListUserPipelines(
-            pipeline_interface.ListUserPipelinesRequest(parent=self._user.name)
+        resp = self.hosts[self.instance]["client"].ListUserPipelines(
+            pipeline_interface.ListUserPipelinesRequest(parent=self.namespace)
         )
         pipelines.extend(resp.pipelines)
         while resp.next_page_token != "":
-            resp = self._stub.ListUserPipelines(
+            resp = self.hosts[self.instance]["client"].ListUserPipelines(
                 pipeline_interface.ListUserPipelinesRequest(
-                    parent=self._user.name,
+                    parent=self.namespace,
                     page_token=resp.next_page_token,
                 )
             )
