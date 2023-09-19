@@ -1,5 +1,6 @@
 # pylint: disable=redefined-outer-name,unused-variable,expression-not-assigned
 
+from collections import defaultdict
 
 from instill_sdk.clients.connector import ConnectorClient
 from instill_sdk.clients.mgmt import MgmtClient
@@ -8,77 +9,54 @@ from instill_sdk.clients.pipeline import PipelineClient
 
 
 def describe_client():
+    def describe_instance():
+        def when_not_set(expect):
+            mgmt_client = MgmtClient()
+            expect(mgmt_client.instance) == "default"
+            model_client = ModelClient(namespace="")
+            expect(model_client.instance) == "default"
+            pipeline_client = PipelineClient(namespace="")
+            expect(pipeline_client.instance) == "default"
+            connector_client = ConnectorClient(namespace="")
+            expect(connector_client.instance) == "default"
+
+        def when_set_correct_type(expect):
+            mgmt_client = MgmtClient()
+            mgmt_client.instance = "staging"
+            expect(mgmt_client.instance) == "staging"
+            model_client = ModelClient(namespace="")
+            model_client.instance = "staging"
+            expect(model_client.instance) == "staging"
+            pipeline_client = PipelineClient(namespace="")
+            pipeline_client.instance = "staging"
+            expect(pipeline_client.instance) == "staging"
+            connector_client = ConnectorClient(namespace="")
+            connector_client.instance = "staging"
+            expect(connector_client.instance) == "staging"
+
     def describe_host():
         def when_not_set(expect):
             mgmt_client = MgmtClient()
-            expect(mgmt_client.host) == "localhost"
-            model_client = ModelClient(user=mgmt_client.get_user())
-            expect(model_client.host) == "localhost"
-            pipeline_client = PipelineClient(user=mgmt_client.get_user())
-            expect(pipeline_client.host) == "localhost"
-            connector_client = ConnectorClient(user=mgmt_client.get_user())
-            expect(connector_client.host) == "localhost"
+            expect(mgmt_client.hosts) is None
+            model_client = ModelClient(namespace="")
+            expect(model_client.hosts) is None
+            pipeline_client = PipelineClient(namespace="")
+            expect(pipeline_client.hosts) is None
+            connector_client = ConnectorClient(namespace="")
+            expect(connector_client.hosts) is None
 
         def when_set_correct_type(expect):
             mgmt_client = MgmtClient()
-            mgmt_client.host = "instill"
-            expect(mgmt_client.host) == "instill"
-            model_client = ModelClient(user=mgmt_client.get_user())
-            model_client.host = "instill"
-            expect(model_client.host) == "instill"
-            pipeline_client = PipelineClient(user=mgmt_client.get_user())
-            pipeline_client.host = "instill"
-            expect(pipeline_client.host) == "instill"
-            connector_client = ConnectorClient(user=mgmt_client.get_user())
-            connector_client.host = "instill"
-            expect(connector_client.host) == "instill"
-
-    def describe_token():
-        def when_not_set(expect):
-            mgmt_client = MgmtClient()
-            expect(mgmt_client.token) == ""
-            model_client = ModelClient(user=mgmt_client.get_user())
-            expect(model_client.token) == ""
-            pipeline_client = PipelineClient(user=mgmt_client.get_user())
-            expect(pipeline_client.token) == ""
-            connector_client = ConnectorClient(user=mgmt_client.get_user())
-            expect(connector_client.token) == ""
-
-        def when_set_correct_type(expect):
-            mgmt_client = MgmtClient()
-            mgmt_client.token = "instill"
-            expect(mgmt_client.token) == "instill"
-            model_client = ModelClient(user=mgmt_client.get_user())
-            model_client.token = "instill"
-            expect(model_client.token) == "instill"
-            pipeline_client = PipelineClient(user=mgmt_client.get_user())
-            pipeline_client.token = "instill"
-            expect(pipeline_client.token) == "instill"
-            connector_client = ConnectorClient(user=mgmt_client.get_user())
-            connector_client.token = "instill"
-            expect(connector_client.token) == "instill"
-
-    def describe_port():
-        def when_not_set(expect):
-            mgmt_client = MgmtClient()
-            expect(mgmt_client.port) == "7080"
-            model_client = ModelClient(user=mgmt_client.get_user())
-            expect(model_client.port) == "9080"
-            pipeline_client = PipelineClient(user=mgmt_client.get_user())
-            expect(pipeline_client.port) == "8080"
-            connector_client = ConnectorClient(user=mgmt_client.get_user())
-            expect(connector_client.port) == "8080"
-
-        def when_set_correct_type(expect):
-            mgmt_client = MgmtClient()
-            mgmt_client.port = "instill"
-            expect(mgmt_client.port) == "instill"
-            model_client = ModelClient(user=mgmt_client.get_user())
-            model_client.port = "instill"
-            expect(model_client.port) == "instill"
-            pipeline_client = PipelineClient(user=mgmt_client.get_user())
-            pipeline_client.port = "instill"
-            expect(pipeline_client.port) == "instill"
-            connector_client = ConnectorClient(user=mgmt_client.get_user())
-            connector_client.port = "instill"
-            expect(connector_client.port) == "instill"
+            d = defaultdict(dict)  # type: ignore
+            d["test_instance"] = dict({"url": "test_url"})
+            mgmt_client.hosts = d
+            expect(mgmt_client.hosts["test_instance"]["url"]) == "test_url"
+            model_client = ModelClient(namespace="")
+            model_client.hosts = d
+            expect(model_client.hosts["test_instance"]["url"]) == "test_url"
+            pipeline_client = PipelineClient(namespace="")
+            pipeline_client.hosts = d
+            expect(pipeline_client.hosts["test_instance"]["url"]) == "test_url"
+            connector_client = ConnectorClient(namespace="")
+            connector_client.hosts = d
+            expect(connector_client.hosts["test_instance"]["url"]) == "test_url"

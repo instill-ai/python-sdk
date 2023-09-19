@@ -1,20 +1,21 @@
 # pylint: disable=no-member,wrong-import-position
-from typing import Tuple
 from collections import defaultdict
+from typing import Tuple
+
 import grpc
 
-# common
-from instill_sdk.clients.client import Client
-from instill_sdk.utils.error_handler import grpc_handler
-from instill_sdk.configuration import global_config
 import instill_sdk.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
-
-# from instill_sdk.utils.logger import Logger
-
 
 # pipeline
 import instill_sdk.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
 import instill_sdk.protogen.vdp.pipeline.v1alpha.pipeline_public_service_pb2_grpc as pipeline_service
+
+# common
+from instill_sdk.clients.client import Client
+from instill_sdk.configuration import global_config
+from instill_sdk.utils.error_handler import grpc_handler
+
+# from instill_sdk.utils.logger import Logger
 
 
 class PipelineClient(Client):
@@ -23,23 +24,24 @@ class PipelineClient(Client):
         self.instance = "default"
         self.namespace = namespace
 
-        for instance in global_config.hosts.keys():
-            if global_config.hosts[instance].token is None:
-                channel = grpc.insecure_channel(global_config.hosts[instance].url)
-            else:
-                ssl_creds = grpc.ssl_channel_credentials()
-                call_creds = grpc.access_token_call_credentials(
-                    global_config.hosts[instance].token
-                )
-                creds = grpc.composite_channel_credentials(ssl_creds, call_creds)
-                channel = grpc.secure_channel(
-                    target=global_config.hosts[instance].url,
-                    credentials=creds,
-                )
-            self.hosts[instance]["channel"] = channel
-            self.hosts[instance]["client"] = pipeline_service.PipelinePublicServiceStub(
-                channel
-            )
+        if global_config.hosts is not None:
+            for instance in global_config.hosts.keys():
+                if global_config.hosts[instance].token is None:
+                    channel = grpc.insecure_channel(global_config.hosts[instance].url)
+                else:
+                    ssl_creds = grpc.ssl_channel_credentials()
+                    call_creds = grpc.access_token_call_credentials(
+                        global_config.hosts[instance].token
+                    )
+                    creds = grpc.composite_channel_credentials(ssl_creds, call_creds)
+                    channel = grpc.secure_channel(
+                        target=global_config.hosts[instance].url,
+                        credentials=creds,
+                    )
+                self.hosts[instance]["channel"] = channel
+                self.hosts[instance][
+                    "client"
+                ] = pipeline_service.PipelinePublicServiceStub(channel)
 
     @property
     def hosts(self):

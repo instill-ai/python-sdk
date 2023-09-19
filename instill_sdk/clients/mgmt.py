@@ -1,5 +1,6 @@
 # pylint: disable=no-member,wrong-import-position
 from collections import defaultdict
+
 import grpc
 
 import instill_sdk.protogen.base.mgmt.v1alpha.metric_pb2 as metric_interface
@@ -26,21 +27,24 @@ class MgmtClient(Client):
         self.hosts = defaultdict(dict)
         self.instance = "default"
 
-        for instance in global_config.hosts.keys():
-            if global_config.hosts[instance].token is None:
-                channel = grpc.insecure_channel(global_config.hosts[instance].url)
-            else:
-                ssl_creds = grpc.ssl_channel_credentials()
-                call_creds = grpc.access_token_call_credentials(
-                    global_config.hosts[instance].token
+        if global_config.hosts is not None:
+            for instance in global_config.hosts.keys():
+                if global_config.hosts[instance].token is None:
+                    channel = grpc.insecure_channel(global_config.hosts[instance].url)
+                else:
+                    ssl_creds = grpc.ssl_channel_credentials()
+                    call_creds = grpc.access_token_call_credentials(
+                        global_config.hosts[instance].token
+                    )
+                    creds = grpc.composite_channel_credentials(ssl_creds, call_creds)
+                    channel = grpc.secure_channel(
+                        target=global_config.hosts[instance].url,
+                        credentials=creds,
+                    )
+                self.hosts[instance]["channel"] = channel
+                self.hosts[instance]["client"] = mgmt_service.MgmtPublicServiceStub(
+                    channel
                 )
-                creds = grpc.composite_channel_credentials(ssl_creds, call_creds)
-                channel = grpc.secure_channel(
-                    target=global_config.hosts[instance].url,
-                    credentials=creds,
-                )
-            self.hosts[instance]["channel"] = channel
-            self.hosts[instance]["client"] = mgmt_service.MgmtPublicServiceStub(channel)
 
     @property
     def hosts(self):
@@ -66,7 +70,9 @@ class MgmtClient(Client):
 
     @grpc_handler
     def readiness(self) -> mgmt_interface.ReadinessResponse:
-        return self.hosts[self.instance]["client"].Readiness(request=mgmt_interface.ReadinessRequest())
+        return self.hosts[self.instance]["client"].Readiness(
+            request=mgmt_interface.ReadinessRequest()
+        )
 
     @grpc_handler
     def is_serving(self) -> bool:
