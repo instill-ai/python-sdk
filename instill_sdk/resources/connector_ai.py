@@ -1,12 +1,12 @@
-# pylint: disable=no-member,wrong-import-position
-from instill_sdk.clients.connector import ConnectorClient
+# pylint: disable=no-member,wrong-import-position,no-name-in-module
+from instill_sdk.clients import InstillClient
 from instill_sdk.resources.connector import Connector
 
 
 class InstillModelConnector(Connector):
     def __init__(
         self,
-        client: ConnectorClient,
+        client: InstillClient,
         name: str,
         api_token: str,
         server_url: str,
@@ -24,7 +24,7 @@ class InstillModelConnector(Connector):
 class StabilityAIConnector(Connector):
     def __init__(
         self,
-        client: ConnectorClient,
+        client: InstillClient,
         name: str,
         api_key: str,
         task: str,
@@ -42,7 +42,7 @@ class StabilityAIConnector(Connector):
 class OpenAIConnector(Connector):
     def __init__(
         self,
-        client: ConnectorClient,
+        client: InstillClient,
         name: str,
         api_key: str,
         task: str,

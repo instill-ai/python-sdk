@@ -7,7 +7,7 @@ import instill_sdk.protogen.base.mgmt.v1alpha.metric_pb2 as metric_interface
 import instill_sdk.protogen.base.mgmt.v1alpha.mgmt_pb2 as mgmt_interface
 import instill_sdk.protogen.base.mgmt.v1alpha.mgmt_public_service_pb2_grpc as mgmt_service
 import instill_sdk.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
-from instill_sdk.clients.client import Client
+from instill_sdk.clients.base import Client
 from instill_sdk.configuration import global_config
 from instill_sdk.utils.error_handler import grpc_handler
 
@@ -16,14 +16,6 @@ from instill_sdk.utils.error_handler import grpc_handler
 
 class MgmtClient(Client):
     def __init__(self) -> None:
-        """Initialize client for management service with target host.
-
-        Args:
-            token (str): api token for authentication
-            host (str): host url
-            port (str): host port
-        """
-
         self.hosts = defaultdict(dict)
         self.instance = "default"
 
@@ -62,19 +54,16 @@ class MgmtClient(Client):
     def instance(self, instance: str):
         self._instance = instance
 
-    @grpc_handler
     def liveness(self) -> mgmt_interface.LivenessResponse:
         return self.hosts[self.instance]["client"].Liveness(
             request=mgmt_interface.LivenessRequest()
         )
 
-    @grpc_handler
     def readiness(self) -> mgmt_interface.ReadinessResponse:
         return self.hosts[self.instance]["client"].Readiness(
             request=mgmt_interface.ReadinessRequest()
         )
 
-    @grpc_handler
     def is_serving(self) -> bool:
         try:
             return (

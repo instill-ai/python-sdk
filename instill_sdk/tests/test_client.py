@@ -1,6 +1,6 @@
 """Sample unit test module using pytest-describe and expecter."""
-# pylint: disable=redefined-outer-name,unused-variable,expression-not-assigned,singleton-comparison
-from instill_sdk.clients.mgmt import MgmtClient
+# pylint: disable=no-name-in-module,unused-variable,expression-not-assigned
+from instill_sdk.clients import MgmtClient
 
 
 def set_and_get_instance_to_client():

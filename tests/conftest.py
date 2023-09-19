@@ -1,12 +1,9 @@
 """Integration tests configuration file."""
-# pylint: disable=unused-import
+# pylint: disable=unused-import,no-name-in-module
 
 import pytest
 
-from instill_sdk.clients.connector import ConnectorClient
-from instill_sdk.clients.mgmt import MgmtClient
-from instill_sdk.clients.model import ModelClient
-from instill_sdk.clients.pipeline import PipelineClient
+from instill_sdk.clients import ConnectorClient, MgmtClient, ModelClient, PipelineClient
 from instill_sdk.tests.conftest import pytest_configure
 
 

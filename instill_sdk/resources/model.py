@@ -1,26 +1,26 @@
-# pylint: disable=no-member,wrong-import-position
+# pylint: disable=no-member,wrong-import-position,no-name-in-module
 import instill_sdk.protogen.model.model.v1alpha.model_pb2 as model_interface
-from instill_sdk.clients.model import ModelClient
+from instill_sdk.clients import InstillClient
 from instill_sdk.resources.resource import Resource
 
 
 class Model(Resource):
     def __init__(
         self,
-        client: ModelClient,
+        client: InstillClient,
         name: str,
         definition: str,
         configuration: dict,
     ) -> None:
         super().__init__()
         self.client = client
-        model = client.create_model(
-            name=name,
-            definition=definition,
-            configuration=configuration,
-        )
+        model = client.model_serevice.get_model(model_name=name)
         if model is None:
-            model = client.get_model(model_name=name)
+            model = client.model_serevice.create_model(
+                name=name,
+                definition=definition,
+                configuration=configuration,
+            )
             if model is None:
                 raise BaseException("model creation failed")
 
@@ -28,17 +28,17 @@ class Model(Resource):
 
     def __del__(self):
         if self.resource is not None:
-            self.client.delete_model(self.resource.id)
+            self.client.model_serevice.delete_model(self.resource.id)
 
     def __call__(self, task_inputs: list) -> list:
-        return self.client.trigger_model(self.resource.id, task_inputs)
+        return self.client.model_serevice.trigger_model(self.resource.id, task_inputs)
 
     @property
     def client(self):
         return self._client
 
     @client.setter
-    def client(self, client: ModelClient):
+    def client(self, client: InstillClient):
         self._client = client
 
     @property
@@ -50,21 +50,26 @@ class Model(Resource):
         self._resource = resource
 
     def _update(self):
-        self.resource = self.client.get_model(model_name=self.resource.id)
+        self.resource = self.client.model_serevice.get_model(
+            model_name=self.resource.id
+        )
 
     def get_definition(self) -> str:
         return self.resource.model_definition
 
+    def get_readme(self) -> str:
+        return self.client.model_serevice.get_model_card(self.resource.id)
+
     def get_state(self) -> model_interface.Model.State:
-        return self.client.watch_model(self.resource.id)
+        return self.client.model_serevice.watch_model(self.resource.id)
 
     def deploy(self) -> model_interface.Model:
-        self.client.deploy_model(self.resource.id)
+        self.client.model_serevice.deploy_model(self.resource.id)
         self._update()
         return self._resource
 
     def undeploy(self) -> model_interface.Model:
-        self.client.undeploy_model(self.resource.id)
+        self.client.model_serevice.undeploy_model(self.resource.id)
         self._update()
         return self._resource
 
@@ -72,7 +77,7 @@ class Model(Resource):
 class GithubModel(Model):
     def __init__(
         self,
-        client: ModelClient,
+        client: InstillClient,
         name: str,
         model_repo: str,
         model_tag: str,
@@ -90,7 +95,7 @@ class GithubModel(Model):
 class HugginfaceModel(Model):
     def __init__(
         self,
-        client: ModelClient,
+        client: InstillClient,
         name: str,
         model_repo: str,
     ) -> None:

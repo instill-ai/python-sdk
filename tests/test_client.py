@@ -1,11 +1,8 @@
-# pylint: disable=redefined-outer-name,unused-variable,expression-not-assigned
+# pylint: disable=redefined-outer-name,unused-variable,expression-not-assigned,no-name-in-module
 
 from collections import defaultdict
 
-from instill_sdk.clients.connector import ConnectorClient
-from instill_sdk.clients.mgmt import MgmtClient
-from instill_sdk.clients.model import ModelClient
-from instill_sdk.clients.pipeline import PipelineClient
+from instill_sdk.clients import ConnectorClient, MgmtClient, ModelClient, PipelineClient
 
 
 def describe_client():
