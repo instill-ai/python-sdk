@@ -14,14 +14,13 @@ homepage = "https://pypi.org/project/instill-sdk"
 documentation = "https://instill-sdk.readthedocs.io"
 repository = "https://github.com/instill-ai/python-sdk"
 
-keywords = [
-]
+keywords = []
 classifiers = [
-    "Development Status :: 1 - Planning",
-    "Natural Language :: English",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
+  "Development Status :: 1 - Planning",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
 ]
 
 [tool.poetry.dependencies]
@@ -41,14 +40,14 @@ types-pyyaml = "^6.0.12.11"
 
 # Formatters
 black = "^22.1"
-tomli = "*" # missing 'black' dependency
+tomli = "*"     # missing 'black' dependency
 isort = "^5.10"
 
 # Linters
 mypy = "^1.0"
 pydocstyle = "^6.1"
 pylint = "~2.15"
-wrapt = "*" # missing 'pylint' dependency
+wrapt = "*"         # missing 'pylint' dependency
 
 # Testing
 pytest = "^7.3"
@@ -116,6 +115,11 @@ check_untyped_defs = true
 cache_dir = ".cache/mypy/"
 
 [tool.pytest.ini_options]
+
+filterwarnings = [
+  "ignore:::.*google",
+  "ignore:::.*pkg_resources*",
+]
 
 addopts = """
 --strict-markers
