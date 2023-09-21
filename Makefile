@@ -13,12 +13,6 @@ dev: install .clean-test ## Continuously run CI tasks when files chanage
 
 # SYSTEM DEPENDENCIES #########################################################
 
-.PHONY: bootstrap
-bootstrap: ## Attempt to install system dependencies
-	asdf plugin add python || asdf plugin update python
-	asdf plugin add poetry || asdf plugin update poetry
-	asdf install
-
 .PHONY: doctor
 doctor: ## Confirm system dependencies are available
 	bin/verchew
@@ -117,7 +111,7 @@ endif
 MKDOCS_INDEX := site/index.html
 
 .PHONY: docs
-docs: mkdocs uml ## Generate documentation and UML
+docs: mkdocs ## Generate documentation
 ifndef CI
 	@ eval "sleep 3; open http://127.0.0.1:8000" &
 	poetry run mkdocs serve
@@ -129,7 +123,7 @@ $(MKDOCS_INDEX): docs/requirements.txt mkdocs.yml docs/*.md
 	@ mkdir -p docs/about
 	@ cd docs && ln -sf ../README.md index.md
 	@ cd docs/about && ln -sf ../../CHANGELOG.md changelog.md
-	@ cd docs/about && ln -sf ../../CONTRIBUTING.md contributing.md
+	@ cd docs/about && ln -sf ../../.github/CONTRIBUTING.md contributing.md
 	@ cd docs/about && ln -sf ../../LICENSE.md license.md
 	poetry run mkdocs build --clean --strict
 
@@ -137,13 +131,6 @@ docs/requirements.txt: poetry.lock
 	@ poetry export --with dev --without-hashes | grep mkdocs > $@
 	@ poetry export --with dev --without-hashes | grep pygments >> $@
 	@ poetry export --with dev --without-hashes | grep jinja2 >> $@
-
-.PHONY: uml
-uml: install docs/*.png
-docs/*.png: $(MODULES)
-	poetry run pyreverse $(PACKAGE) -p $(PACKAGE) -a 1 -f ALL -o png --ignore tests
-	- mv -f classes_$(PACKAGE).png docs/classes.png
-	- mv -f packages_$(PACKAGE).png docs/packages.png
 
 # DEMO ########################################################################
 

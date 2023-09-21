@@ -8,24 +8,28 @@ python sdk for Instill AI products
 [![PyPI Version](https://img.shields.io/pypi/v/instill-python-sdk.svg)](https://pypi.org/project/instill-python-sdk)
 [![PyPI Downloads](https://img.shields.io/pypi/dm/instill-python-sdk.svg?color=orange)](https://pypistats.org/packages/instill-python-sdk)
 
+> :exclamation: **This SDK tool is under heavy development!!**  
+> Currently there is no official wheel on `pypi`, and documentation on how to setup and tutorials will be available soon.Stay tuned!  
+> For now, you can refer to the `Contributing Guidelines` to setup a development environment
+
 ## Setup
 
 ### Requirements
 
-* Python 3.8+
+- Python 3.8+
 
 ### Installation
 
 Install it directly into an activated virtual environment:
 
 ```text
-$ pip install instill-python-sdk
+$ pip install instill-sdk
 ```
 
 or add it to your [Poetry](https://poetry.eustace.io/) project:
 
 ```text
-$ poetry add instill-python-sdk
+$ poetry add instill-sdk
 ```
 
 ## Usage
@@ -37,4 +41,9 @@ $ python
 >>> import instill_sdk
 >>> instill_sdk.__version__
 ```
+
 ### You can find a [_notebook example_](notebooks/model_usage.ipynb) here
+
+## Contributing
+
+Please refer to the [Contributing Guidelines](./.github/CONTRIBUTING.md) for more details.
