@@ -1,6 +1,7 @@
 # pylint: disable=no-member,wrong-import-position
 import time
 from collections import defaultdict
+from typing import Tuple
 
 import grpc
 
@@ -304,31 +305,14 @@ class ModelClient(Client):
         )
 
     @grpc_handler
-    def list_models(self, public=False) -> list:
-        models = []
+    def list_models(self, public=False) -> Tuple[list, str, int]:
         if not public:
             resp = self.hosts[self.instance]["client"].ListUserModels(
                 request=model_interface.ListUserModelsRequest(parent=self.namespace)
             )
-            models.extend(resp.models)
-            while resp.next_page_token != "":
-                resp = self.hosts[self.instance]["client"].ListUserModels(
-                    request=model_interface.ListUserModelsRequest(
-                        parent=self.namespace,
-                        page_token=resp.next_page_token,
-                    )
-                )
-                models.extend(resp.models)
         else:
             resp = self.hosts[self.instance]["client"].ListModels(
                 request=model_interface.ListModelsRequest()
             )
-            models.extend(resp.models)
-            while resp.next_page_token != "":
-                resp = self.hosts[self.instance]["client"].ListUserModels(
-                    request=model_interface.ListModelsRequest(
-                        page_token=resp.next_page_token,
-                    )
-                )
-                models.extend(resp.models)
-        return models
+
+        return resp.models, resp.next_page_token, resp.total_size

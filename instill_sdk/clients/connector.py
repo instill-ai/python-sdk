@@ -1,5 +1,6 @@
 # pylint: disable=no-member,wrong-import-position
 from collections import defaultdict
+from typing import Tuple
 
 import grpc
 
@@ -109,30 +110,6 @@ class ConnectorClient(Client):
         )
 
     @grpc_handler
-    def connect_connector(self, name: str) -> connector_interface.ConnectorResource:
-        return (
-            self.hosts[self.instance]["client"]
-            .ConnectUserConnectorResource(
-                request=connector_interface.ConnectUserConnectorResourceRequest(
-                    name=f"{self.namespace}/connector-resources/{name}"
-                )
-            )
-            .connector_resource
-        )
-
-    @grpc_handler
-    def disconnect_connector(self, name: str) -> connector_interface.ConnectorResource:
-        return (
-            self.hosts[self.instance]["client"]
-            .DisconnectUserConnectorResource(
-                request=connector_interface.DisconnectUserConnectorResourceRequest(
-                    name=f"{self.namespace}/connector-resources/{name}"
-                )
-            )
-            .connector_resource
-        )
-
-    @grpc_handler
     def test_connector(self, name: str) -> connector_interface.ConnectorResource.State:
         return (
             self.hosts[self.instance]["client"]
@@ -170,7 +147,6 @@ class ConnectorClient(Client):
 
     @grpc_handler
     def delete_connector(self, name: str):
-        self.disconnect_connector(name)
         self.hosts[self.instance]["client"].DeleteUserConnectorResource(
             request=connector_interface.DeleteUserConnectorResourceRequest(
                 name=f"{self.namespace}/connector-resources/{name}"
@@ -178,19 +154,16 @@ class ConnectorClient(Client):
         )
 
     @grpc_handler
-    def list_connectors(self) -> list:
-        connectors = []
-        resp = self.hosts[self.instance]["client"].ListUserConnectorResources(
-            connector_interface.ListUserConnectorResourcesRequest(parent=self.namespace)
-        )
-        connectors.extend(resp.connector_resources)
-        while resp.next_page_token != "":
+    def list_connectors(self, public=False) -> Tuple[list, str, int]:
+        if not public:
             resp = self.hosts[self.instance]["client"].ListUserConnectorResources(
                 connector_interface.ListUserConnectorResourcesRequest(
-                    parent=self.namespace,
-                    page_token=resp.next_page_token,
+                    parent=self.namespace
                 )
             )
-            connectors.extend(resp.connector_resources)
+        else:
+            resp = self.hosts[self.instance]["client"].ListConnectorResources(
+                connector_interface.ListConnectorResourcesRequest()
+            )
 
-        return connectors
+        return resp.connector_resources, resp.next_page_token, resp.total_size
