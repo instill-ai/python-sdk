@@ -1,0 +1,36 @@
+name: Build and Push Images
+
+on:
+  push:
+    branches:
+      - release-please--branches--main
+  release:
+    types: [published]
+
+jobs:
+  pypi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.botGitHubToken }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - uses: Gr1N/setup-poetry@v8
+
+      - name: Build and push (test)
+        if: github.ref == 'refs/heads/release-please--branches--main'
+        run: |
+          poetry config repositories.testpypi https://test.pypi.org/legacy/
+          poetry config pypi-token.testpypi ${{ secrets.pypiTestToken }}
+          make upload
+
+      - name: Build and push (release)
+        if: github.event_name == 'release'
+        run: |
+          poetry config pypi-token.pypi ${{ secrets.pypiTestToken }}
+          make upload

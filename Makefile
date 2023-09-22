@@ -170,8 +170,11 @@ $(PACKAGE).spec:
 .PHONY: upload
 upload: dist ## Upload the current version to PyPI
 	git diff --name-only --exit-code
+ifeq (${TEST_REPO}, true)
+	poetry publish -r testpypi
+else
 	poetry publish
-	open https://pypi.org/project/$(PROJECT)
+endif
 
 # CLEANUP #####################################################################
 
