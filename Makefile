@@ -23,7 +23,7 @@ VIRTUAL_ENV ?= .venv
 DEPENDENCIES := $(VIRTUAL_ENV)/.poetry-$(shell bin/checksum pyproject.toml poetry.lock)
 
 .PHONY: install
-install: $(DEPENDENCIES) .cache ## Install project dependencies
+install: $(DEPENDENCIES) .cache proto ## Install project dependencies
 
 $(DEPENDENCIES): poetry.lock
 	@ rm -rf $(VIRTUAL_ENV)/.poetry-*
@@ -40,6 +40,9 @@ endif
 
 .cache:
 	@ mkdir -p .cache
+
+proto:
+	@ git submodule update --remote --merge
 
 # TEST ########################################################################
 
