@@ -62,6 +62,10 @@ class PipelineClient(Client):
     def instance(self):
         return self._instance
 
+    @instance.setter
+    def instance(self, instance: str):
+        self._instance = instance
+
     @property
     def metadata(self):
         return self._metadata
@@ -69,10 +73,6 @@ class PipelineClient(Client):
     @metadata.setter
     def metadata(self, metadata: str):
         self._metadata = metadata
-
-    @instance.setter
-    def instance(self, instance: str):
-        self._instance = instance
 
     def liveness(self) -> pipeline_interface.LivenessResponse:
         return self.hosts[self.instance]["client"].Liveness(
