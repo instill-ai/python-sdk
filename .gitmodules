@@ -1,0 +1,3 @@
+[submodule "instill_sdk/protogen"]
+	path = instill_sdk/protogen
+	url = git@github.com:instill-ai/protogen-python.git
