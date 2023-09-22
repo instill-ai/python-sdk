@@ -42,6 +42,7 @@ endif
 	@ mkdir -p .cache
 
 proto:
+	@ git submodule update --init --recursive
 	@ git submodule update --remote --merge
 
 # TEST ########################################################################

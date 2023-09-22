@@ -33,11 +33,6 @@ $ make doctor
 
 #### Installation
 
-First pull the submodule, which contains the generated proto files
-```bash
-$ git submodule update --init --recursive
-```
-
 Install project dependencies into a virtual environment:
 
 ```text
