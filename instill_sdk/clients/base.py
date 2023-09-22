@@ -28,6 +28,16 @@ class Client(ABC):
     def instance(self):
         pass
 
+    @property
+    @abstractmethod
+    def metadata(self):
+        pass
+
+    @metadata.setter
+    @abstractmethod
+    def metadata(self):
+        pass
+
     @abstractmethod
     def liveness(self):
         raise NotImplementedError

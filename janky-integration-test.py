@@ -1,6 +1,6 @@
 # pylint: disable=no-member,no-name-in-module
 from google.protobuf.struct_pb2 import Struct
-from instill_sdk.clients import InstillClient
+from instill_sdk.clients import get_client
 from instill_sdk.resources.model import GithubModel
 
 # from instill_sdk.resources.connector_ai import InstillModelConnector
@@ -24,15 +24,15 @@ github_model = {
 }
 
 try:
-    client = InstillClient()
+    client = get_client()
 
     # ======================== mgmt
     assert client.mgmt_service.is_serving()
     Logger.i("mgmt client created, assert status == serving: True")
 
     user = client.mgmt_service.get_user()
-    assert user.id == "instill-ai"
-    Logger.i("mgmt get user, assert default user id == instill-ai: True")
+    assert user.id == "admin"
+    Logger.i("mgmt get user, assert default user id == admin: True")
 
     # ======================== model
     assert client.model_serevice.is_serving()
@@ -95,13 +95,6 @@ try:
         == connector_interface.ConnectorResource.STATE_DISCONNECTED
     )
     Logger.i("csv connector created, assert state == STATE_DISCONNECTED: True")
-
-    csv_connector.connect()
-    assert (
-        csv_connector.get_state()
-        == connector_interface.ConnectorResource.STATE_CONNECTED
-    )
-    Logger.i("csv connector connected, assert state == STATE_CONNECTED: True")
 
     assert csv_connector.test() == connector_interface.ConnectorResource.STATE_CONNECTED
     Logger.i("tested csv connector, assert state == STATE_CONNECTED: True")

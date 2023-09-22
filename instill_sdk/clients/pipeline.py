@@ -21,12 +21,19 @@ from instill_sdk.utils.error_handler import grpc_handler
 class PipelineClient(Client):
     def __init__(self, namespace: str) -> None:
         self.hosts = defaultdict(dict)
-        self.instance = "default"
-        self.namespace = namespace
+        self.instance: str = "default"
+        self.namespace: str = namespace
+        self.metadata: str = ""
 
         if global_config.hosts is not None:
             for instance in global_config.hosts.keys():
-                if global_config.hosts[instance].token is None:
+                if instance == "default":
+                    self.metadata = (
+                        (
+                            "authorization",
+                            f"Bearer {global_config.hosts[instance].token}",
+                        ),
+                    )
                     channel = grpc.insecure_channel(global_config.hosts[instance].url)
                 else:
                     ssl_creds = grpc.ssl_channel_credentials()
@@ -54,6 +61,14 @@ class PipelineClient(Client):
     @property
     def instance(self):
         return self._instance
+
+    @property
+    def metadata(self):
+        return self._metadata
+
+    @metadata.setter
+    def metadata(self, metadata: str):
+        self._metadata = metadata
 
     @instance.setter
     def instance(self, instance: str):
@@ -91,7 +106,8 @@ class PipelineClient(Client):
         resp = self.hosts[self.instance]["client"].CreateUserPipeline(
             request=pipeline_interface.CreateUserPipelineRequest(
                 pipeline=pipeline, parent=self.namespace
-            )
+            ),
+            metadata=self.metadata,
         )
         return resp.pipeline
 
@@ -102,7 +118,8 @@ class PipelineClient(Client):
             .GetUserPipeline(
                 request=pipeline_interface.GetUserPipelineRequest(
                     name=f"{self.namespace}/pipelines/{name}"
-                )
+                ),
+                metadata=self.metadata,
             )
             .pipeline
         )
@@ -114,7 +131,8 @@ class PipelineClient(Client):
             .ValidateUserPipeline(
                 request=pipeline_interface.ValidateUserPipelineRequest(
                     name=f"{self.namespace}/pipelines/{name}"
-                )
+                ),
+                metadata=self.metadata,
             )
             .pipeline
         )
@@ -126,7 +144,8 @@ class PipelineClient(Client):
         resp = self.hosts[self.instance]["client"].TriggerUserPipeline(
             request=pipeline_interface.TriggerUserPipelineRequest(
                 name=f"{self.namespace}/pipelines/{name}", inputs=inputs
-            )
+            ),
+            metadata=self.metadata,
         )
         return resp.outputs, resp.metadata
 
@@ -135,18 +154,23 @@ class PipelineClient(Client):
         self.hosts[self.instance]["client"].DeleteUserPipeline(
             request=pipeline_interface.DeleteUserPipelineRequest(
                 name=f"{self.namespace}/pipelines/{name}"
-            )
+            ),
+            metadata=self.metadata,
         )
 
     @grpc_handler
     def list_pipelines(self, public=False) -> Tuple[list, str, int]:
         if not public:
             resp = self.hosts[self.instance]["client"].ListUserPipelines(
-                pipeline_interface.ListUserPipelinesRequest(parent=self.namespace)
+                request=pipeline_interface.ListUserPipelinesRequest(
+                    parent=self.namespace
+                ),
+                metadata=self.metadata,
             )
         else:
             resp = self.hosts[self.instance]["client"].ListPipelines(
-                pipeline_interface.ListPipelinesRequest()
+                request=pipeline_interface.ListPipelinesRequest(),
+                metadata=self.metadata,
             )
 
         return resp.pipelines, resp.next_page_token, resp.total_size
