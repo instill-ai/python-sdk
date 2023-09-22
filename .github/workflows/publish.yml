@@ -22,15 +22,30 @@ jobs:
 
       - uses: Gr1N/setup-poetry@v8
 
-      - name: Build and push (test)
+      - name: Check dependencies
+        run: make doctor
+
+      - uses: actions/cache@v3
+        with:
+          path: .venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+
+      - name: Clean and Build
+        run: |
+          make clean
+          make dist
+
+      - name: Publish (test)
         if: github.ref == 'refs/heads/release-please--branches--main'
+        env:
+          POETRY_PYPI_TOKEN_TESTPYPI: ${{ secrets.PYPITESTTOKEN }}
         run: |
           poetry config repositories.testpypi https://test.pypi.org/legacy/
-          poetry config pypi-token.testpypi ${{ secrets.pypiTestToken }}
           make upload TEST_REPO=true
 
-      - name: Build and push (release)
+      - name: Publish (release)
         if: github.event_name == 'release'
+        env:
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPITOKEN }}
         run: |
-          poetry config pypi-token.pypi ${{ secrets.pypiTestToken }}
           make upload
