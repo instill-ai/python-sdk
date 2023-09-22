@@ -12,7 +12,7 @@ else:
     notify = Notifier.notify
 
 
-watch_paths = ["instill_sdk", "tests"]
+watch_paths = ["instill", "tests"]
 
 
 class Options:

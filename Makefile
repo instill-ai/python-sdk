@@ -1,5 +1,5 @@
 PROJECT := instill-sdk
-PACKAGE := instill_sdk
+PACKAGE := instill
 MODULES := $(wildcard $(PACKAGE)/*.py)
 
 # MAIN TASKS ##################################################################

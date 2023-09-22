@@ -4,7 +4,7 @@ name = "instill-sdk"
 version = "0.0.0"
 description = "python sdk for Instill AI products"
 
-packages = [{ include = "instill_sdk" }]
+packages = [{ include = "instill" }]
 
 license = "MIT"
 authors = ["instill-ai <drop@instill.tech>"]
@@ -76,7 +76,7 @@ twine = "^4.0.2"
 
 [tool.poetry.scripts]
 
-# python-sdk = "instill_sdk.cli:main"
+# python-sdk = "instill.cli:main"
 
 [tool.black]
 

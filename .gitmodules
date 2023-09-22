@@ -1,4 +1,0 @@
-[submodule "instill_sdk/protogen"]
-	path = instill_sdk/protogen
-	url = https://github.com/instill-ai/protogen-python
-	ignore = dirty

@@ -38,8 +38,8 @@ After installation, the package can be imported:
 
 ```text
 $ python
->>> import instill_sdk
->>> instill_sdk.__version__
+>>> import instill
+>>> instill.__version__
 ```
 
 ### You can find a [_notebook example_](notebooks/model_usage.ipynb) here
