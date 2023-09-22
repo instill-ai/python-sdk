@@ -23,10 +23,17 @@ class ConnectorClient(Client):
         self.hosts = defaultdict(dict)
         self.instance = "default"
         self.namespace = namespace
+        self.metadata: str = ""
 
         if global_config.hosts is not None:
             for instance in global_config.hosts.keys():
-                if global_config.hosts[instance].token is None:
+                if instance == "default":
+                    self.metadata = (
+                        (
+                            "authorization",
+                            f"Bearer {global_config.hosts[instance].token}",
+                        ),
+                    )
                     channel = grpc.insecure_channel(global_config.hosts[instance].url)
                 else:
                     ssl_creds = grpc.ssl_channel_credentials()
@@ -58,6 +65,14 @@ class ConnectorClient(Client):
     @instance.setter
     def instance(self, instance: str):
         self._instance = instance
+
+    @property
+    def metadata(self):
+        return self._metadata
+
+    @metadata.setter
+    def metadata(self, metadata: str):
+        self._metadata = metadata
 
     def liveness(self) -> connector_interface.LivenessResponse:
         return self.hosts[self.instance]["client"].Liveness(
@@ -92,7 +107,8 @@ class ConnectorClient(Client):
         resp = self.hosts[self.instance]["client"].CreateUserConnectorResource(
             request=connector_interface.CreateUserConnectorResourceRequest(
                 connector_resource=connector, parent=self.namespace
-            )
+            ),
+            metadata=self.metadata,
         )
 
         return resp.connector_resource
@@ -104,7 +120,8 @@ class ConnectorClient(Client):
             .GetUserConnectorResource(
                 request=connector_interface.GetUserConnectorResourceRequest(
                     name=f"{self.namespace}/connector-resources/{name}"
-                )
+                ),
+                metadata=self.metadata,
             )
             .connector_resource
         )
@@ -116,7 +133,8 @@ class ConnectorClient(Client):
             .TestUserConnectorResource(
                 request=connector_interface.TestUserConnectorResourceRequest(
                     name=f"{self.namespace}/connector-resources/{name}"
-                )
+                ),
+                metadata=self.metadata,
             )
             .state
         )
@@ -128,7 +146,8 @@ class ConnectorClient(Client):
             .ExecuteUserConnectorResource(
                 request=connector_interface.ExecuteUserConnectorResourceRequest(
                     name=f"{self.namespace}/connector-resources/{name}", inputs=inputs
-                )
+                ),
+                metadata=self.metadata,
             )
             .outputs
         )
@@ -140,7 +159,8 @@ class ConnectorClient(Client):
             .WatchUserConnectorResource(
                 request=connector_interface.WatchUserConnectorResourceRequest(
                     name=f"{self.namespace}/connector-resources/{name}"
-                )
+                ),
+                metadata=self.metadata,
             )
             .state
         )
@@ -150,20 +170,23 @@ class ConnectorClient(Client):
         self.hosts[self.instance]["client"].DeleteUserConnectorResource(
             request=connector_interface.DeleteUserConnectorResourceRequest(
                 name=f"{self.namespace}/connector-resources/{name}"
-            )
+            ),
+            metadata=self.metadata,
         )
 
     @grpc_handler
     def list_connectors(self, public=False) -> Tuple[list, str, int]:
         if not public:
             resp = self.hosts[self.instance]["client"].ListUserConnectorResources(
-                connector_interface.ListUserConnectorResourcesRequest(
+                request=connector_interface.ListUserConnectorResourcesRequest(
                     parent=self.namespace
-                )
+                ),
+                metadata=self.metadata,
             )
         else:
             resp = self.hosts[self.instance]["client"].ListConnectorResources(
-                connector_interface.ListConnectorResourcesRequest()
+                request=connector_interface.ListConnectorResourcesRequest(),
+                metadata=(self.metadata,),
             )
 
         return resp.connector_resources, resp.next_page_token, resp.total_size

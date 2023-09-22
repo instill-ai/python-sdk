@@ -17,11 +17,18 @@ from instill_sdk.utils.error_handler import grpc_handler
 class MgmtClient(Client):
     def __init__(self) -> None:
         self.hosts = defaultdict(dict)
-        self.instance = "default"
+        self.instance: str = "default"
+        self.metadata: str = ""
 
         if global_config.hosts is not None:
             for instance in global_config.hosts.keys():
-                if global_config.hosts[instance].token is None:
+                if instance == "default":
+                    self.metadata = (
+                        (
+                            "authorization",
+                            f"Bearer {global_config.hosts[instance].token}",
+                        ),
+                    )
                     channel = grpc.insecure_channel(global_config.hosts[instance].url)
                 else:
                     ssl_creds = grpc.ssl_channel_credentials()
@@ -54,6 +61,14 @@ class MgmtClient(Client):
     def instance(self, instance: str):
         self._instance = instance
 
+    @property
+    def metadata(self):
+        return self._metadata
+
+    @metadata.setter
+    def metadata(self, metadata: str):
+        self._metadata = metadata
+
     def liveness(self) -> mgmt_interface.LivenessResponse:
         return self.hosts[self.instance]["client"].Liveness(
             request=mgmt_interface.LivenessRequest()
@@ -74,9 +89,30 @@ class MgmtClient(Client):
             return False
 
     @grpc_handler
+    def login(self, username="admin", password="password") -> str:
+        return (
+            self.hosts[self.instance]["client"]
+            .AuthLogin(
+                request=mgmt_interface.AuthLoginRequest(
+                    username=username, password=password
+                )
+            )
+            .access_token
+        )
+
+    @grpc_handler
+    def get_token(self, name: str) -> mgmt_interface.ApiToken:
+        response = self.hosts[self.instance]["client"].GetToken(
+            request=mgmt_interface.GetTokenRequest(name=name),
+            metadata=self.metadata,
+        )
+        return response.token
+
+    @grpc_handler
     def get_user(self) -> mgmt_interface.User:
         response = self.hosts[self.instance]["client"].QueryAuthenticatedUser(
-            request=mgmt_interface.QueryAuthenticatedUserRequest()
+            request=mgmt_interface.QueryAuthenticatedUserRequest(),
+            metadata=self.metadata,
         )
         return response.user
 
@@ -85,7 +121,8 @@ class MgmtClient(Client):
         self,
     ) -> metric_interface.ListPipelineTriggerRecordsResponse:
         return self.hosts[self.instance]["client"].ListPipelineTriggerRecords(
-            request=metric_interface.ListPipelineTriggerChartRecordsRequest()
+            request=metric_interface.ListPipelineTriggerChartRecordsRequest(),
+            metadata=self.metadata,
         )
 
     @grpc_handler
@@ -93,7 +130,8 @@ class MgmtClient(Client):
         self,
     ) -> metric_interface.ListPipelineTriggerTableRecordsRequest:
         return self.hosts[self.instance]["client"].ListPipelineTriggerRecords(
-            request=metric_interface.ListPipelineTriggerTableRecordsResponse()
+            request=metric_interface.ListPipelineTriggerTableRecordsResponse(),
+            metadata=self.metadata,
         )
 
     @grpc_handler
@@ -101,7 +139,8 @@ class MgmtClient(Client):
         self,
     ) -> metric_interface.ListPipelineTriggerChartRecordsResponse:
         return self.hosts[self.instance]["client"].ListPipelineTriggerRecords(
-            request=metric_interface.ListPipelineTriggerChartRecordsRequest()
+            request=metric_interface.ListPipelineTriggerChartRecordsRequest(),
+            metadata=self.metadata,
         )
 
     @grpc_handler
@@ -109,7 +148,8 @@ class MgmtClient(Client):
         self,
     ) -> metric_interface.ListConnectorExecuteRecordsResponse:
         return self.hosts[self.instance]["client"].ListPipelineTriggerRecords(
-            request=metric_interface.ListConnectorExecuteRecordsRequest()
+            request=metric_interface.ListConnectorExecuteRecordsRequest(),
+            metadata=self.metadata,
         )
 
     @grpc_handler
@@ -117,7 +157,8 @@ class MgmtClient(Client):
         self,
     ) -> metric_interface.ListConnectorExecuteTableRecordsResponse:
         return self.hosts[self.instance]["client"].ListPipelineTriggerRecords(
-            request=metric_interface.ListConnectorExecuteTableRecordsRequest()
+            request=metric_interface.ListConnectorExecuteTableRecordsRequest(),
+            metadata=self.metadata,
         )
 
     @grpc_handler
@@ -125,5 +166,6 @@ class MgmtClient(Client):
         self,
     ) -> metric_interface.ListConnectorExecuteChartRecordsResponse:
         return self.hosts[self.instance]["client"].ListPipelineTriggerRecords(
-            request=metric_interface.ListConnectorExecuteChartRecordsRequest()
+            request=metric_interface.ListConnectorExecuteChartRecordsRequest(),
+            metadata=self.metadata,
         )

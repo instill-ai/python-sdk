@@ -8,9 +8,8 @@ Logger.initialize()
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "protogen"))
 
-
 try:
-    __version__ = version("instill-python-sdk")
+    __version__ = version("instill-sdk")
 except PackageNotFoundError:
     __version__ = "(local)"
 

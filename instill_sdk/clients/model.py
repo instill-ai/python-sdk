@@ -20,12 +20,19 @@ from instill_sdk.utils.error_handler import grpc_handler
 class ModelClient(Client):
     def __init__(self, namespace: str) -> None:
         self.hosts = defaultdict(dict)
-        self.instance = "default"
-        self.namespace = namespace
+        self.instance: str = "default"
+        self.namespace: str = namespace
+        self.metadata: str = ""
 
         if global_config.hosts is not None:
             for instance in global_config.hosts.keys():
-                if global_config.hosts[instance].token is None:
+                if instance == "default":
+                    self.metadata = (
+                        (
+                            "authorization",
+                            f"Bearer {global_config.hosts[instance].token}",
+                        ),
+                    )
                     channel = grpc.insecure_channel(global_config.hosts[instance].url)
                 else:
                     ssl_creds = grpc.ssl_channel_credentials()
@@ -58,6 +65,14 @@ class ModelClient(Client):
     def instance(self, instance: str):
         self._instance = instance
 
+    @property
+    def metadata(self):
+        return self._metadata
+
+    @metadata.setter
+    def metadata(self, metadata: str):
+        self._metadata = metadata
+
     def liveness(self) -> model_interface.LivenessResponse:
         return self.hosts[self.instance]["client"].Liveness(
             request=model_interface.LivenessRequest()
@@ -84,7 +99,8 @@ class ModelClient(Client):
             .WatchUserModel(
                 request=model_interface.WatchUserModelRequest(
                     name=f"{self.namespace}/models/{model_name}"
-                )
+                ),
+                metadata=self.metadata,
             )
             .state
         )
@@ -107,7 +123,8 @@ class ModelClient(Client):
                 parent=self.namespace, model=model, content=data
             )
         resp = self.hosts[self.instance]["client"].CreateUserModelBinaryFileUpload(
-            request_iterator=iter([req])
+            request_iterator=iter([req]),
+            metadata=self.metadata,
         )
 
         while (
@@ -115,7 +132,8 @@ class ModelClient(Client):
             .GetModelOperation(
                 request=model_interface.GetModelOperationRequest(
                     name=resp.operation.name
-                )
+                ),
+                metadata=self.metadata,
             )
             .operation.done
             is not True
@@ -125,21 +143,24 @@ class ModelClient(Client):
         watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
             request=model_interface.WatchUserModelRequest(
                 name=f"{self.namespace}/models/{model_name}"
-            )
+            ),
+            metadata=self.metadata,
         )
         while watch_resp.state == 0:
             time.sleep(1)
             watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
                 request=model_interface.WatchUserModelRequest(
                     name=f"{self.namespace}/models/{model_name}"
-                )
+                ),
+                metadata=self.metadata,
             )
 
         if watch_resp.state == 1:
             return (
                 self.hosts[self.instance]["client"]
                 .GetUserModel(
-                    request=model_interface.GetUserModelRequest(name=model_name)
+                    request=model_interface.GetUserModelRequest(name=model_name),
+                    metadata=self.metadata,
                 )
                 .model
             )
@@ -160,7 +181,8 @@ class ModelClient(Client):
         resp = self.hosts[self.instance]["client"].CreateUserModel(
             request=model_interface.CreateUserModelRequest(
                 model=model, parent=self.namespace
-            )
+            ),
+            metadata=self.metadata,
         )
 
         while (
@@ -168,7 +190,8 @@ class ModelClient(Client):
             .GetModelOperation(
                 request=model_interface.GetModelOperationRequest(
                     name=resp.operation.name
-                )
+                ),
+                metadata=self.metadata,
             )
             .operation.done
             is not True
@@ -182,14 +205,16 @@ class ModelClient(Client):
         watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
             request=model_interface.WatchUserModelRequest(
                 name=f"{self.namespace}/models/{model.id}"
-            )
+            ),
+            metadata=self.metadata,
         )
         while watch_resp.state == 0:
             time.sleep(1)
             watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
                 request=model_interface.WatchUserModelRequest(
                     name=f"{self.namespace}/models/{model.id}"
-                )
+                ),
+                metadata=self.metadata,
             )
 
         if watch_resp.state == 1:
@@ -198,7 +223,8 @@ class ModelClient(Client):
                 .GetUserModel(
                     request=model_interface.GetUserModelRequest(
                         name=f"{self.namespace}/models/{model.id}"
-                    )
+                    ),
+                    metadata=self.metadata,
                 )
                 .model
             )
@@ -210,20 +236,23 @@ class ModelClient(Client):
         self.hosts[self.instance]["client"].DeployUserModel(
             request=model_interface.DeployUserModelRequest(
                 name=f"{self.namespace}/models/{model_name}"
-            )
+            ),
+            metadata=self.metadata,
         )
 
         watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
             request=model_interface.WatchUserModelRequest(
                 name=f"{self.namespace}/models/{model_name}"
-            )
+            ),
+            metadata=self.metadata,
         )
         while watch_resp.state not in (2, 3):
             time.sleep(1)
             watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
                 request=model_interface.WatchUserModelRequest(
                     name=f"{self.namespace}/models/{model_name}"
-                )
+                ),
+                metadata=self.metadata,
             )
 
         return watch_resp.state
@@ -233,20 +262,23 @@ class ModelClient(Client):
         self.hosts[self.instance]["client"].UndeployUserModel(
             request=model_interface.UndeployUserModelRequest(
                 name=f"{self.namespace}/models/{model_name}"
-            )
+            ),
+            metadata=self.metadata,
         )
 
         watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
             request=model_interface.WatchUserModelRequest(
                 name=f"{self.namespace}/models/{model_name}"
-            )
+            ),
+            metadata=self.metadata,
         )
         while watch_resp.state not in (1, 3):
             time.sleep(1)
             watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
                 request=model_interface.WatchUserModelRequest(
                     name=f"{self.namespace}/models/{model_name}"
-                )
+                ),
+                metadata=self.metadata,
             )
 
         return watch_resp.state
@@ -256,7 +288,8 @@ class ModelClient(Client):
         resp = self.hosts[self.instance]["client"].TriggerUserModel(
             request=model_interface.TriggerUserModelRequest(
                 name=f"{self.namespace}/models/{model_name}", task_inputs=task_inputs
-            )
+            ),
+            metadata=self.metadata,
         )
         return resp.task_outputs
 
@@ -265,7 +298,8 @@ class ModelClient(Client):
         self.hosts[self.instance]["client"].DeleteUserModel(
             request=model_interface.DeleteUserModelRequest(
                 name=f"{self.namespace}/models/{model_name}"
-            )
+            ),
+            metadata=self.metadata,
         )
 
     @grpc_handler
@@ -275,7 +309,8 @@ class ModelClient(Client):
             .GetUserModel(
                 request=model_interface.GetUserModelRequest(
                     name=f"{self.namespace}/models/{model_name}"
-                )
+                ),
+                metadata=self.metadata,
             )
             .model
         )
@@ -287,7 +322,8 @@ class ModelClient(Client):
             .GetUserModel(
                 request=model_interface.LookUpModelRequest(
                     permalink=f"models/{model_uid}"
-                )
+                ),
+                metadata=self.metadata,
             )
             .model
         )
@@ -299,7 +335,8 @@ class ModelClient(Client):
             .GetUserModel(
                 request=model_interface.GetUserModelCardRequest(
                     name=f"{self.namespace}/models/{model_name}"
-                )
+                ),
+                metadata=self.metadata,
             )
             .readme
         )
@@ -308,11 +345,13 @@ class ModelClient(Client):
     def list_models(self, public=False) -> Tuple[list, str, int]:
         if not public:
             resp = self.hosts[self.instance]["client"].ListUserModels(
-                request=model_interface.ListUserModelsRequest(parent=self.namespace)
+                request=model_interface.ListUserModelsRequest(parent=self.namespace),
+                metadata=self.metadata,
             )
         else:
             resp = self.hosts[self.instance]["client"].ListModels(
-                request=model_interface.ListModelsRequest()
+                request=model_interface.ListModelsRequest(),
+                metadata=self.metadata,
             )
 
         return resp.models, resp.next_page_token, resp.total_size
