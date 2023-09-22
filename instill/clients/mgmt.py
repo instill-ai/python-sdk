@@ -3,15 +3,15 @@ from collections import defaultdict
 
 import grpc
 
-import instill_sdk.protogen.base.mgmt.v1alpha.metric_pb2 as metric_interface
-import instill_sdk.protogen.base.mgmt.v1alpha.mgmt_pb2 as mgmt_interface
-import instill_sdk.protogen.base.mgmt.v1alpha.mgmt_public_service_pb2_grpc as mgmt_service
-import instill_sdk.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
-from instill_sdk.clients.base import Client
-from instill_sdk.configuration import global_config
-from instill_sdk.utils.error_handler import grpc_handler
+import instill.protogen.base.mgmt.v1alpha.metric_pb2 as metric_interface
+import instill.protogen.base.mgmt.v1alpha.mgmt_pb2 as mgmt_interface
+import instill.protogen.base.mgmt.v1alpha.mgmt_public_service_pb2_grpc as mgmt_service
+import instill.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
+from instill.clients.base import Client
+from instill.configuration import global_config
+from instill.utils.error_handler import grpc_handler
 
-# from instill_sdk.utils.logger import Logger
+# from instill.utils.logger import Logger
 
 
 class MgmtClient(Client):

@@ -1,4 +1,5 @@
-[submodule "instill_sdk/protogen"]
-	path = instill_sdk/protogen
-	url = https://github.com/instill-ai/protogen-python
+[submodule "instill/protogen"]
+	path = instill/protogen
+	url = https://github.com/instill-ai/protogen-python.git
 	ignore = dirty
+

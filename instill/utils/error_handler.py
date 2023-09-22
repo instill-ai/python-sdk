@@ -3,7 +3,7 @@ import os
 
 import grpc
 
-from instill_sdk.utils.logger import Logger
+from instill.utils.logger import Logger
 
 
 class NotServingException(Exception):

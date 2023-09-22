@@ -1,16 +1,16 @@
 # pylint: disable=no-member,no-name-in-module
 from google.protobuf.struct_pb2 import Struct
-from instill_sdk.clients import get_client
-from instill_sdk.resources.model import GithubModel
+from instill.clients import get_client
+from instill.resources.model import GithubModel
 
-# from instill_sdk.resources.connector_ai import InstillModelConnector
-from instill_sdk.resources.connector import Connector
-from instill_sdk.resources.pipeline import Pipeline
-import instill_sdk.protogen.model.model.v1alpha.model_pb2 as model_interface
-import instill_sdk.protogen.vdp.connector.v1alpha.connector_pb2 as connector_interface
-import instill_sdk.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
-import instill_sdk.protogen.model.model.v1alpha.task_classification_pb2 as classification
-from instill_sdk.utils.logger import Logger
+# from instill.resources.connector_ai import InstillModelConnector
+from instill.resources.connector import Connector
+from instill.resources.pipeline import Pipeline
+import instill.protogen.model.model.v1alpha.model_pb2 as model_interface
+import instill.protogen.vdp.connector.v1alpha.connector_pb2 as connector_interface
+import instill.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
+import instill.protogen.model.model.v1alpha.task_classification_pb2 as classification
+from instill.utils.logger import Logger
 
 local_model = {
     "model_name": "test1",

@@ -4,18 +4,18 @@ from typing import Tuple
 
 import grpc
 
-import instill_sdk.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
+import instill.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
 
 # connector
-import instill_sdk.protogen.vdp.connector.v1alpha.connector_pb2 as connector_interface
-import instill_sdk.protogen.vdp.connector.v1alpha.connector_public_service_pb2_grpc as connector_service
-from instill_sdk.clients.base import Client
+import instill.protogen.vdp.connector.v1alpha.connector_pb2 as connector_interface
+import instill.protogen.vdp.connector.v1alpha.connector_public_service_pb2_grpc as connector_service
+from instill.clients.base import Client
 
 # common
-from instill_sdk.configuration import global_config
-from instill_sdk.utils.error_handler import grpc_handler
+from instill.configuration import global_config
+from instill.utils.error_handler import grpc_handler
 
-# from instill_sdk.utils.logger import Logger
+# from instill.utils.logger import Logger
 
 
 class ConnectorClient(Client):

@@ -2,7 +2,7 @@ import os
 import sys
 from importlib.metadata import PackageNotFoundError, version
 
-from instill_sdk.utils.logger import Logger
+from instill.utils.logger import Logger
 
 Logger.initialize()
 

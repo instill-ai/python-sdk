@@ -3,7 +3,7 @@
 """Package entry point."""
 import pprint
 
-from instill_sdk.configuration import global_config
+from instill.configuration import global_config
 
 if __name__ == "__main__":  # pragma: no cover
     # main()  # pylint: disable=no-value-for-parameter

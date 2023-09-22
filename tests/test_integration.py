@@ -1,6 +1,6 @@
 # pylint: disable=no-member,unused-import
-import instill_sdk.protogen.model.model.v1alpha.model_pb2 as model_interface
-from instill_sdk.resources.model import GithubModel
+import instill.protogen.model.model.v1alpha.model_pb2 as model_interface
+from instill.resources.model import GithubModel
 
 local_model = {
     "model_name": "test1",

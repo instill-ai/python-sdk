@@ -1,6 +1,6 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module
-from instill_sdk.clients import InstillClient
-from instill_sdk.resources.connector import Connector
+from instill.clients import InstillClient
+from instill.resources.connector import Connector
 
 
 class InstillModelConnector(Connector):

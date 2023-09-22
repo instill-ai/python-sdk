@@ -4,18 +4,18 @@ from typing import Tuple
 
 import grpc
 
-import instill_sdk.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
+import instill.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
 
 # pipeline
-import instill_sdk.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
-import instill_sdk.protogen.vdp.pipeline.v1alpha.pipeline_public_service_pb2_grpc as pipeline_service
+import instill.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
+import instill.protogen.vdp.pipeline.v1alpha.pipeline_public_service_pb2_grpc as pipeline_service
 
 # common
-from instill_sdk.clients.base import Client
-from instill_sdk.configuration import global_config
-from instill_sdk.utils.error_handler import grpc_handler
+from instill.clients.base import Client
+from instill.configuration import global_config
+from instill.utils.error_handler import grpc_handler
 
-# from instill_sdk.utils.logger import Logger
+# from instill.utils.logger import Logger
 
 
 class PipelineClient(Client):

@@ -2,7 +2,7 @@
 
 from collections import defaultdict
 
-from instill_sdk.clients import ConnectorClient, MgmtClient, ModelClient, PipelineClient
+from instill.clients import ConnectorClient, MgmtClient, ModelClient, PipelineClient
 
 
 def describe_client():

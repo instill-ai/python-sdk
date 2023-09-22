@@ -1,7 +1,7 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module
-import instill_sdk.protogen.model.model.v1alpha.model_pb2 as model_interface
-from instill_sdk.clients import InstillClient
-from instill_sdk.resources.resource import Resource
+import instill.protogen.model.model.v1alpha.model_pb2 as model_interface
+from instill.clients import InstillClient
+from instill.resources.resource import Resource
 
 
 class Model(Resource):

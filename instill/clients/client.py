@@ -1,8 +1,8 @@
 # pylint: disable=no-name-in-module
-from instill_sdk.clients.connector import ConnectorClient
-from instill_sdk.clients.mgmt import MgmtClient
-from instill_sdk.clients.model import ModelClient
-from instill_sdk.clients.pipeline import PipelineClient
+from instill.clients.connector import ConnectorClient
+from instill.clients.mgmt import MgmtClient
+from instill.clients.model import ModelClient
+from instill.clients.pipeline import PipelineClient
 
 _mgmt_client = None
 _connector_client = None

@@ -3,8 +3,8 @@
 
 import pytest
 
-from instill_sdk.clients import ConnectorClient, MgmtClient, ModelClient, PipelineClient
-from instill_sdk.tests.conftest import pytest_configure
+from instill.clients import ConnectorClient, MgmtClient, ModelClient, PipelineClient
+from instill.tests.conftest import pytest_configure
 
 
 @pytest.fixture(scope="session")

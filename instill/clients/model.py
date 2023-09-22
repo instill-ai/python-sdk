@@ -5,16 +5,16 @@ from typing import Tuple
 
 import grpc
 
-import instill_sdk.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
+import instill.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
 
 # model
-import instill_sdk.protogen.model.model.v1alpha.model_pb2 as model_interface
-import instill_sdk.protogen.model.model.v1alpha.model_public_service_pb2_grpc as model_service
-from instill_sdk.clients.base import Client
+import instill.protogen.model.model.v1alpha.model_pb2 as model_interface
+import instill.protogen.model.model.v1alpha.model_public_service_pb2_grpc as model_service
+from instill.clients.base import Client
 
 # common
-from instill_sdk.configuration import global_config
-from instill_sdk.utils.error_handler import grpc_handler
+from instill.configuration import global_config
+from instill.utils.error_handler import grpc_handler
 
 
 class ModelClient(Client):
