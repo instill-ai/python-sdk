@@ -25,15 +25,12 @@ class Connector(Resource):
                 raise BaseException("connector creation failed")
 
         self.resource = connector
-        self._is_connect = False
 
     def __del__(self):
         if self.resource is not None:
             self.client.connector_service.delete_connector(self.resource.id)
 
     def __call__(self, task_inputs: list, mode="execute") -> list:
-        if not self._is_connect:
-            raise BaseException("test and connect the connector first")
         if mode == "execute":
             return self.client.connector_service.execute_connector(
                 self.resource.id, task_inputs
@@ -65,16 +62,4 @@ class Connector(Resource):
         return self.client.connector_service.watch_connector(self.resource.id)
 
     def test(self) -> connector_interface.ConnectorResource.State:
-        state = self.client.connector_service.test_connector(self.resource.id)
-        if state == connector_interface.ConnectorResource.STATE_CONNECTED:
-            self._is_connect = True
-        else:
-            self._is_connect = False
-
-        return state
-
-    def connect(self):
-        connector = self.client.connector_service.connect_connector(self.resource.id)
-        self._is_connect = (
-            connector.state == connector_interface.ConnectorResource.STATE_CONNECTED
-        )
+        return self.client.connector_service.test_connector(self.resource.id)

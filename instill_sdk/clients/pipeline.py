@@ -139,19 +139,14 @@ class PipelineClient(Client):
         )
 
     @grpc_handler
-    def list_pipelines(self) -> list:
-        pipelines = []
-        resp = self.hosts[self.instance]["client"].ListUserPipelines(
-            pipeline_interface.ListUserPipelinesRequest(parent=self.namespace)
-        )
-        pipelines.extend(resp.pipelines)
-        while resp.next_page_token != "":
+    def list_pipelines(self, public=False) -> Tuple[list, str, int]:
+        if not public:
             resp = self.hosts[self.instance]["client"].ListUserPipelines(
-                pipeline_interface.ListUserPipelinesRequest(
-                    parent=self.namespace,
-                    page_token=resp.next_page_token,
-                )
+                pipeline_interface.ListUserPipelinesRequest(parent=self.namespace)
             )
-            pipelines.extend(resp.pipelines)
+        else:
+            resp = self.hosts[self.instance]["client"].ListPipelines(
+                pipeline_interface.ListPipelinesRequest()
+            )
 
-        return pipelines
+        return resp.pipelines, resp.next_page_token, resp.total_size
