@@ -85,9 +85,7 @@ try:
     mobilenet_connector = InstillModelConnector(
         client,
         "mobilenetv2",
-        client.model_serevice.hosts[client.model_serevice.instance]["token"],
         "http://model-backend:8083",
-        "users/admin/models/mobilenetv2",
     )
     assert (
         mobilenet_connector.get_state()
