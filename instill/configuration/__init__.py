@@ -16,6 +16,7 @@ CONFIG_DIR = Path(
 
 class _InstillHost(BaseModel):
     url: str
+    secure: bool
     token: t.Optional[str] = ""
 
 
