@@ -35,7 +35,7 @@ jobs:
         id: get-rc-version
         continue-on-error: true
         run: |
-          rc_version=$(curl https://pypi.org/pypi/instill-sdk/json | jq '.releases | keys[-1]' | grep -Eo 'rc[0-9]+$' | grep -Eo '[0-9]+$'
+          rc_version=$(curl https://pypi.org/pypi/instill-sdk/json | jq '.releases | keys[-1]' | grep -Eo 'rc[0-9]' | grep -Eo '[0-9]+$')
           echo "rc_version=$rc_version" >> $GITHUB_OUTPUT
 
       - name: Tag rc version
