@@ -10,13 +10,11 @@ class InstillModelConnector(Connector):
         name: str,
         api_token: str,
         server_url: str,
-        model_name: str,
     ) -> None:
         definition = "connector-definitions/ai-instill-model"
         configuration = {
             "api_token": api_token,
             "server_url": server_url,
-            "model_id": model_name,
         }
         super().__init__(client, name, definition, configuration)
 

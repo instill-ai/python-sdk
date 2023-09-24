@@ -43,6 +43,7 @@ class PipelineClient(Client):
                         target=config.url,
                         credentials=creds,
                     )
+                self.hosts[instance]["token"] = config.token
                 self.hosts[instance]["channel"] = channel
                 self.hosts[instance][
                     "client"
