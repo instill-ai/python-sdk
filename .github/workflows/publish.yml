@@ -30,6 +30,24 @@ jobs:
           path: .venv
           key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
 
+      - name: Get rc version
+        if: github.ref == 'refs/heads/release-please--branches--main'
+        id: get-rc-version
+        continue-on-error: true
+        run: |
+          rc_version=$(curl https://test.pypi.org/pypi/instill-sdk/json | jq '.releases | keys[-1]' | grep -Eo '[0-9]+$')
+          echo "rc_version=$rc_version" >> $GITHUB_OUTPUT
+
+      - name: Tag rc version
+        if: github.ref == 'refs/heads/release-please--branches--main'
+        run: |
+          if [ ${{ steps.get-rc-version.outcome }} == 'failure' ]; then
+            rc_version=0
+          else
+            rc_version=${{ steps.get-rc-version.outputs.rc_version }}
+          fi
+          poetry version "$(poetry version -s).rc$(echo $rc_version)"
+
       - name: Clean and Build
         run: |
           make clean
@@ -41,11 +59,11 @@ jobs:
           POETRY_PYPI_TOKEN_TESTPYPI: ${{ secrets.PYPITESTTOKEN }}
         run: |
           poetry config repositories.testpypi https://test.pypi.org/legacy/
-          make upload TEST_REPO=true
+          poetry publish -r testpypi
 
       - name: Publish (release)
         if: github.event_name == 'release'
         env:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPITOKEN }}
         run: |
-          make upload
+          poetry publish
