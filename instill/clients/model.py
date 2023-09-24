@@ -25,23 +25,21 @@ class ModelClient(Client):
         self.metadata: str = ""
 
         if global_config.hosts is not None:
-            for instance in global_config.hosts.keys():
-                if instance == "default":
+            for instance, config in global_config.hosts.items():
+                if not config.secure:
                     self.metadata = (
                         (
                             "authorization",
-                            f"Bearer {global_config.hosts[instance].token}",
+                            f"Bearer {config.token}",
                         ),
                     )
-                    channel = grpc.insecure_channel(global_config.hosts[instance].url)
+                    channel = grpc.insecure_channel(config.url)
                 else:
                     ssl_creds = grpc.ssl_channel_credentials()
-                    call_creds = grpc.access_token_call_credentials(
-                        global_config.hosts[instance].token
-                    )
+                    call_creds = grpc.access_token_call_credentials(config.token)
                     creds = grpc.composite_channel_credentials(ssl_creds, call_creds)
                     channel = grpc.secure_channel(
-                        target=global_config.hosts[instance].url,
+                        target=config.url,
                         credentials=creds,
                     )
                 self.hosts[instance]["channel"] = channel
