@@ -3,7 +3,7 @@ from google.protobuf.struct_pb2 import Struct
 from instill.clients import get_client
 from instill.resources.model import GithubModel
 
-# from instill.resources.connector_ai import InstillModelConnector
+from instill.resources.connector_ai import InstillModelConnector
 from instill.resources.connector import Connector
 from instill.resources.pipeline import Pipeline
 import instill.protogen.model.model.v1alpha.model_pb2 as model_interface
@@ -82,7 +82,25 @@ try:
     assert client.connector_service.is_serving()
     Logger.i("connector client created, assert status == serving: True")
 
-    # mobilenet_connector = InstillModelConnector(co, "mobilenetv2_connector", "", "http://model-backend:9080", "mobilenetv2")
+    mobilenet_connector = InstillModelConnector(
+        client,
+        "mobilenetv2",
+        "http://model-backend:8083",
+    )
+    assert (
+        mobilenet_connector.get_state()
+        == connector_interface.ConnectorResource.STATE_DISCONNECTED
+    )
+    Logger.i(
+        "instill model connector created, assert state == STATE_DISCONNECTED: True"
+    )
+
+    # assert (
+    #     mobilenet_connector.test()
+    #     == connector_interface.ConnectorResource.STATE_CONNECTED
+    # )
+    # Logger.i("instill model connector, assert state == STATE_CONNECTED: True")
+
     config = {"destination_path": "/local/test-1"}
     csv_connector = Connector(
         client,
