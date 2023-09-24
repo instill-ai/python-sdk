@@ -35,7 +35,7 @@ jobs:
         id: get-rc-version
         continue-on-error: true
         run: |
-          rc_version=$(curl https://test.pypi.org/pypi/instill-sdk/json | jq '.releases | keys[-1]' | grep -Eo '[0-9]+$')
+          rc_version=$(curl https://pypi.org/pypi/instill-sdk/json | jq '.releases | keys[-1]' | grep -Eo 'rc[0-9]+$' | grep -Eo '[0-9]+$'
           echo "rc_version=$rc_version" >> $GITHUB_OUTPUT
 
       - name: Tag rc version
@@ -45,24 +45,16 @@ jobs:
             rc_version=0
           else
             rc_version=${{ steps.get-rc-version.outputs.rc_version }}
+            rc_version=$((rc_version+1))
           fi
-          poetry version "$(poetry version -s).rc$(echo $rc_version)"
+          poetry version "$(poetry version -s)rc$(echo $rc_version)"
 
       - name: Clean and Build
         run: |
           make clean
           make dist
 
-      - name: Publish (test)
-        if: github.ref == 'refs/heads/release-please--branches--main'
-        env:
-          POETRY_PYPI_TOKEN_TESTPYPI: ${{ secrets.PYPITESTTOKEN }}
-        run: |
-          poetry config repositories.testpypi https://test.pypi.org/legacy/
-          poetry publish -r testpypi
-
-      - name: Publish (release)
-        if: github.event_name == 'release'
+      - name: Publish
         env:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPITOKEN }}
         run: |
