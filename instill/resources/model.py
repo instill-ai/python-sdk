@@ -15,7 +15,7 @@ class Model(Resource):
     ) -> None:
         super().__init__()
         self.client = client
-        model = client.model_serevice.get_model(model_name=name)
+        model = client.model_serevice.get_model(model_name=name, silent=True)
         if model is None:
             model = client.model_serevice.create_model(
                 name=name,
