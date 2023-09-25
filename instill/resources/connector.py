@@ -1,4 +1,5 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module
+import instill.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
 import instill.protogen.vdp.connector.v1alpha.connector_definition_pb2 as connector_definition_interface
 import instill.protogen.vdp.connector.v1alpha.connector_pb2 as connector_interface
 from instill.clients import InstillClient
@@ -55,6 +56,14 @@ class Connector(Resource):
     @resource.setter
     def resource(self, resource: connector_interface.ConnectorResource):
         self._resource = resource
+
+    def create_component(self, name: str, config: dict) -> pipeline_interface.Component:
+        component = pipeline_interface.Component()
+        component.id = name
+        component.definition_name = self.get_definition().name
+        component.resource_name = self.resource.name
+        component.configuration.update(config)
+        return component
 
     def get_definition(self) -> connector_definition_interface.ConnectorDefinition:
         return self.resource.connector_definition

@@ -1,18 +1,24 @@
 # pylint: disable=no-member,no-name-in-module
-import requests
 import base64
+import requests
 
 from google.protobuf.struct_pb2 import Struct
 from instill.clients import get_client
 from instill.resources.model import GithubModel
 
-from instill.resources.connector_ai import InstillModelConnector
-from instill.resources.connector import Connector
-from instill.resources.pipeline import Pipeline
-import instill.protogen.model.model.v1alpha.model_pb2 as model_interface
-import instill.protogen.vdp.connector.v1alpha.connector_pb2 as connector_interface
-import instill.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
-import instill.protogen.model.model.v1alpha.task_classification_pb2 as classification
+from instill.resources import (
+    Connector,
+    InstillModelConnector,
+    Pipeline,
+    model_pb,
+    connector_pb,
+    pipeline_pb,
+    task_detection,
+    create_start_operator,
+    create_end_operator,
+    create_recipe,
+)
+
 from instill.utils.logger import Logger
 
 local_model = {
@@ -50,26 +56,26 @@ try:
         model_tag=github_model["model_tag"],
     )
 
-    assert model.get_state() == model_interface.Model.STATE_OFFLINE
+    assert model.get_state() == model_pb.Model.STATE_OFFLINE
     Logger.i("model created, assert STATE_OFFLINE: True")
 
     model.deploy()
-    assert model.get_state() == model_interface.Model.STATE_ONLINE
+    assert model.get_state() == model_pb.Model.STATE_ONLINE
     Logger.i("model deployed, assert STATE_ONLINE: True")
 
     task_inputs = [
-        model_interface.TaskInput(
-            classification=classification.ClassificationInput(
+        model_pb.TaskInput(
+            detection=task_detection.DetectionInput(
                 image_url="https://artifacts.instill.tech/imgs/dog.jpg"
             )
         ),
-        model_interface.TaskInput(
-            classification=classification.ClassificationInput(
+        model_pb.TaskInput(
+            detection=task_detection.DetectionInput(
                 image_url="https://artifacts.instill.tech/imgs/bear.jpg"
             )
         ),
-        model_interface.TaskInput(
-            classification=classification.ClassificationInput(
+        model_pb.TaskInput(
+            detection=task_detection.DetectionInput(
                 image_url="https://artifacts.instill.tech/imgs/polar-bear.jpg"
             )
         ),
@@ -97,16 +103,13 @@ try:
     )
     assert (
         instill_connector.get_state()
-        == connector_interface.ConnectorResource.STATE_DISCONNECTED
+        == connector_pb.ConnectorResource.STATE_DISCONNECTED
     )
     Logger.i(
         "instill model connector created, assert state == STATE_DISCONNECTED: True"
     )
 
-    assert (
-        instill_connector.test()
-        == connector_interface.ConnectorResource.STATE_CONNECTED
-    )
+    assert instill_connector.test() == connector_pb.ConnectorResource.STATE_CONNECTED
     Logger.i("instill model connector, assert state == STATE_CONNECTED: True")
 
     config = {"destination_path": "/local/test-1"}
@@ -117,12 +120,11 @@ try:
         configuration=config,
     )
     assert (
-        csv_connector.get_state()
-        == connector_interface.ConnectorResource.STATE_DISCONNECTED
+        csv_connector.get_state() == connector_pb.ConnectorResource.STATE_DISCONNECTED
     )
     Logger.i("csv connector created, assert state == STATE_DISCONNECTED: True")
 
-    assert csv_connector.test() == connector_interface.ConnectorResource.STATE_CONNECTED
+    assert csv_connector.test() == connector_pb.ConnectorResource.STATE_CONNECTED
     Logger.i("tested csv connector, assert state == STATE_CONNECTED: True")
 
     # ================================================================================================================
@@ -130,34 +132,24 @@ try:
     assert client.pipeline_service.is_serving()
     Logger.i("pipeline client created, assert status == serving: True")
 
-    start_operator_component = pipeline_interface.Component()
-    start_operator_component.id = "start"
-    start_operator_component.definition_name = "operator-definitions/start-operator"
-    start_operator_component.configuration.update(
-        {"metadata": {"input": {"title": "Input", "type": "text"}}}
+    start_operator_component = create_start_operator(
+        config={"metadata": {"input": {"title": "Input", "type": "text"}}}
     )
-    end_operator_component = pipeline_interface.Component()
-    end_operator_component.id = "end"
-    end_operator_component.definition_name = "operator-definitions/end-operator"
-    end_operator_component.configuration.update(
-        {
+
+    end_operator_component = create_end_operator(
+        config={
             "metadata": {"answer": {"title": "Answer"}},
             "input": {"answer": "{ d01.input }"},
         }
     )
-    csv_connector_component = pipeline_interface.Component()
-    csv_connector_component.id = "d01"
-    csv_connector_component.resource_name = f"{user.name}/connector-resources/csv"
-    csv_connector_component.definition_name = (
-        "connector-definitions/airbyte-destination-csv"
-    )
-    csv_connector_component.configuration.update({"input": {"text": "{ start.input }"}})
 
-    recipe = pipeline_interface.Recipe()
-    recipe.version = "v1alpha"
-    recipe.components.append(start_operator_component)
-    recipe.components.append(end_operator_component)
-    recipe.components.append(csv_connector_component)
+    csv_connector_component = csv_connector.create_component(
+        name="d01", config={"input": {"text": "{ start.input }"}}
+    )
+
+    recipe = create_recipe(
+        [start_operator_component, end_operator_component, csv_connector_component]
+    )
 
     csv_pipeline = Pipeline(client=client, name="csv-pipeline", recipe=recipe)
     csv_pipeline.validate_pipeline()
@@ -169,38 +161,29 @@ try:
 
     # =================================================================================================================
     # ============================================= instill model pipeline ============================================
-    start_operator_component = pipeline_interface.Component()
-    start_operator_component.id = "start"
-    start_operator_component.definition_name = "operator-definitions/start-operator"
-    start_operator_component.configuration.update(
+    start_operator_component = create_start_operator(
         {"metadata": {"input": {"title": "input", "type": "image"}}}
     )
-    instill_model_connector_component = pipeline_interface.Component()
-    instill_model_connector_component.id = "yolov7"
-    instill_model_connector_component.resource_name = (
-        f"{user.name}/connector-resources/instill"
+
+    end_operator_component = create_end_operator(
+        config={
+            "input": {"output": "{ yolov7.output.objects }"},
+            "metadata": {"output": {}},
+        }
     )
-    instill_model_connector_component.definition_name = (
-        instill_connector.get_definition().name
-    )
-    instill_model_connector_component.configuration.update(
-        {
+
+    instill_model_connector_component = instill_connector.create_component(
+        name="yolov7",
+        config={
             "input": {
                 "task": "TASK_DETECTION",
                 "image_base64": "{ start.input }",
                 "model_name": "users/admin/models/yolov7",
             },
-        }
+        },
     )
 
-    end_operator_component = pipeline_interface.Component()
-    end_operator_component.id = "end"
-    end_operator_component.definition_name = "operator-definitions/end-operator"
-    end_operator_component.configuration.update(
-        {"input": {"output": "{ yolov7.output.objects }"}, "metadata": {"output": {}}}
-    )
-
-    recipe = pipeline_interface.Recipe()
+    recipe = pipeline_pb.Recipe()
     recipe.version = "v1alpha"
     recipe.components.append(start_operator_component)
     recipe.components.append(instill_model_connector_component)

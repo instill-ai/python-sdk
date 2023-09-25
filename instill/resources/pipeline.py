@@ -1,4 +1,5 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module
+from typing import Tuple
 import instill.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
 from instill.clients import InstillClient
 from instill.resources.resource import Resource
@@ -25,7 +26,9 @@ class Pipeline(Resource):
         if self.resource is not None:
             self.client.pipeline_service.delete_pipeline(self.resource.id)
 
-    def __call__(self, task_inputs: list) -> list:
+    def __call__(
+        self, task_inputs: list
+    ) -> Tuple[list, pipeline_interface.TriggerMetadata]:
         return self.client.pipeline_service.trigger_pipeline(
             self.resource.id, task_inputs
         )
