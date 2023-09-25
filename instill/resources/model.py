@@ -15,9 +15,9 @@ class Model(Resource):
     ) -> None:
         super().__init__()
         self.client = client
-        model = client.model_serevice.get_model(model_name=name, silent=True)
+        model = client.model_service.get_model(model_name=name, silent=True)
         if model is None:
-            model = client.model_serevice.create_model(
+            model = client.model_service.create_model(
                 name=name,
                 definition=definition,
                 configuration=configuration,
@@ -29,10 +29,10 @@ class Model(Resource):
 
     def __del__(self):
         if self.resource is not None:
-            self.client.model_serevice.delete_model(self.resource.id)
+            self.client.model_service.delete_model(self.resource.id)
 
     def __call__(self, task_inputs: list) -> list:
-        return self.client.model_serevice.trigger_model(self.resource.id, task_inputs)
+        return self.client.model_service.trigger_model(self.resource.id, task_inputs)
 
     @property
     def client(self):
@@ -51,26 +51,24 @@ class Model(Resource):
         self._resource = resource
 
     def _update(self):
-        self.resource = self.client.model_serevice.get_model(
-            model_name=self.resource.id
-        )
+        self.resource = self.client.model_service.get_model(model_name=self.resource.id)
 
     def get_definition(self) -> model_definition_interface.ModelDefinition:
         return self.resource.model_definition
 
     def get_readme(self) -> str:
-        return self.client.model_serevice.get_model_card(self.resource.id)
+        return self.client.model_service.get_model_card(self.resource.id)
 
     def get_state(self) -> model_interface.Model.State:
-        return self.client.model_serevice.watch_model(self.resource.id)
+        return self.client.model_service.watch_model(self.resource.id)
 
     def deploy(self) -> model_interface.Model:
-        self.client.model_serevice.deploy_model(self.resource.id)
+        self.client.model_service.deploy_model(self.resource.id)
         self._update()
         return self._resource
 
     def undeploy(self) -> model_interface.Model:
-        self.client.model_serevice.undeploy_model(self.resource.id)
+        self.client.model_service.undeploy_model(self.resource.id)
         self._update()
         return self._resource
 

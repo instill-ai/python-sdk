@@ -54,13 +54,13 @@ class InstillClient:
         self.mgmt_service = _get_mgmt_client()
         self.connector_service = _get_connector_clinet()
         self.pipeline_service = _get_pipeline_clinet()
-        self.model_serevice = _get_model_clinet()
+        self.model_service = _get_model_clinet()
 
     def set_instance(self, instance: str):
         self.mgmt_service.instance = instance
         self.connector_service.instance = instance
         self.pipeline_service.instance = instance
-        self.model_serevice.instance = instance
+        self.model_service.instance = instance
 
 
 def get_client() -> InstillClient:
