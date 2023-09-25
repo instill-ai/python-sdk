@@ -91,11 +91,283 @@ hosts:
 
 ## Usage
 
-Comming soon
+### Create client
 
+Simply import the `get_client` function to get the client that are connected to all services with the config you setup previously.
 
-### You can find a [_notebook example_](notebooks/model_usage.ipynb) here
+```python
+from instill.clients import get_client
+
+client = get_clinet()
+```
+
+You can check the readiness of each service
+
+```python
+client.mgmt_service.is_serving()
+# True
+client.connector_service.is_serving()
+# True
+client.pipeline_service.is_serving()
+# True
+client.model_service.is_serving()
+# True
+```
+
+> [!NOTE]  
+> Depends on which project(`Instill VDP` or `Instill Model` or both) you had launched locally, some services might not be available.
+
+After making sure all desired services are serving, we can check the user status by
+
+```python
+client.mgmt_service.get_user()
+```
+
+If you have a valid `api_token` in your config file, you should see something like this
+
+```
+name: "users/admin"
+uid: "4767b74d-640a-4cdf-9c6d-7bb0e36098a0"
+id: "admin"
+type: OWNER_TYPE_USER
+create_time {
+  seconds: 1695589596
+  nanos: 36522000
+}
+update_time {
+  seconds: 1695589749
+  nanos: 544980000
+}
+email: "hello@instill.tech"
+first_name: "Instill"
+last_name: "AI"
+org_name: "Instill AI"
+role: "hobbyist"
+newsletter_subscription: true
+cookie_token: ""
+```
+
+#### Now we can proceed to create resources
+
+### Create Model
+
+Let's say we want to serve a `yolov7` model from `github` with the following configs
+
+```python
+model = {
+    "model_name": "yolov7",
+    "model_repo": "instill-ai/model-yolov7-dvc",
+    "model_tag": "v1.0-cpu",
+}
+```
+
+Simply import the GithubModel resource and fill in the corresponding fields
+
+```python
+from instill.resources.model import GithubModel
+
+yolov7 = GithubModel(
+    client=client,
+    name=model["model_name"],
+    model_repo=model["model_repo"],
+    model_tag=model["model_tag"],
+)
+```
+
+After the creation is done, we can check the status of the model
+
+```python
+yolov7.get_state()
+# 1
+# means STATE_OFFLINE
+```
+
+> [!NOTE]  
+> Returned is an enum type of ModelState, check out our [openapi](https://github.com/instill-ai/protobufs/blob/main/openapiv2/openapiv2.swagger.yaml#L7018-L7031)
+
+Now we can deploy the model
+
+```python
+yolov7.deploy()
+```
+
+Check the status
+
+```python
+yolov7.get_state()
+# 2
+# means STATE_ONLINE
+```
+
+Trigger the model with the correct `task` type
+
+> [!NOTE]  
+> Find out the definition in the [doc](https://www.instill.tech/docs/model/core-concepts/ai-task)
+
+```python
+from instill.resources import model_pb, task_detection
+task_inputs = [
+    model_pb.TaskInput(
+        detection=task_detection.DetectionInput(
+            image_url="https://artifacts.instill.tech/imgs/dog.jpg"
+        )
+    ),
+    model_pb.TaskInput(
+        detection=task_detection.DetectionInput(
+            image_url="https://artifacts.instill.tech/imgs/bear.jpg"
+        )
+    ),
+    model_pb.TaskInput(
+        detection=task_detection.DetectionInput(
+            image_url="https://artifacts.instill.tech/imgs/polar-bear.jpg"
+        )
+    ),
+]
+
+outputs = yolov7(task_inputs=task_inputs)
+```
+
+Now if you `print` the outputs, you will get a list of specific `task` output, in this case is a list of `TASK_DETECTION` output
+
+```
+[detection {
+  objects {
+    category: "dog"
+    score: 0.958271801
+    bounding_box {
+      top: 102
+      left: 324
+      width: 208
+      height: 403
+    }
+  }
+  objects {
+    category: "dog"
+    score: 0.945684791
+    bounding_box {
+      top: 198
+      left: 130
+      width: 198
+      height: 236
+    }
+  }
+}
+, detection {
+  objects {
+    category: "bear"
+    score: 0.968335629
+    bounding_box {
+      top: 85
+      left: 291
+      width: 554
+      height: 756
+    }
+  }
+}
+, detection {
+  objects {
+    category: "bear"
+    score: 0.948612273
+    bounding_box {
+      top: 458
+      left: 1373
+      width: 1298
+      height: 2162
+    }
+  }
+}
+]
+```
+
+### Create connector
+
+With similiar conecpt as creating `model`, below is the script to create a `instill model connector`
+
+```python
+from instill.resources import InstillModelConnector, connector_pb
+
+# specify the `Instill Model` host url
+instill_model = InstillModelConnector(
+    client,
+    name="instill",
+    server_url="http://api-gateway:8080",
+)
+# after creation the state is `STATE_DISCONNECTED`
+instill_model.get_state() == connector_pb.ConnectorResource.STATE_DISCONNECTED
+
+# we can test the connection to make sure the connection with the host can be established
+instill_model.test() == connector_pb.ConnectorResource.STATE_CONNECTED
+```
+
+### Create pipeline
+
+> [!NOTE]  
+> Before starting to create a pipleine, we suggest you read through our [docs](https://www.instill.tech/docs/vdp/core-concepts/overview) first to grasp the core concepts
+
+Since we have created a `Instill Model Connector` that connect to our `Instill Model` instance, we can now create a pipeline that utilize both `Instill VDP` and `Instill Model`
+
+```python
+from instill.resources import (
+    Pipeline,
+    pipeline_pb,
+    create_start_operator,
+    create_end_operator,
+    create_recipe,
+)
+
+# create start operator
+start_operator_component = create_start_operator(
+    {"metadata": {"input": {"title": "input", "type": "image"}}}
+)
+# create end operator
+end_operator_component = create_end_operator(
+    config={
+        "input": {"output": "{ yolov7.output.objects }"},
+        "metadata": {"output": {}},
+    }
+)
+# create model connector component from the connector resource we had previously
+# here we need to specify which model we want to use on our `Instill Model` instance
+# in this case there is only one model we deployed, which is the yolov7 model
+instill_model_connector_component = instill_model.create_component(
+    name="yolov7",
+    config={
+        "input": {
+            "task": "TASK_DETECTION",
+            "image_base64": "{ start.input }",
+            "model_name": "users/admin/models/yolov7",
+        },
+    },
+)
+# create a recipe to construct the pipeline
+recipe = create_recipe([start_operator_component, instill_model_connector_component, end_operator_component])
+# create pipeline
+instill_model_pipeline = Pipeline(
+    client=client, name="instill-model-pipeline", recipe=recipe
+)
+# we can trigger the pipeline now
+i = Struct()
+i.update(
+    {
+        "input": base64.b64encode(
+            requests.get(
+                "https://artifacts.instill.tech/imgs/dog.jpg", timeout=5
+            ).content
+        ).decode("ascii")
+    }
+)
+# verify the output
+instill_model_pipeline([i])[0][0]["output"][0]["category"] == "dog"
+```
 
 ## Contributing
 
 Please refer to the [Contributing Guidelines](./.github/CONTRIBUTING.md) for more details.
+
+## Community support
+
+Please refer to the [community](https://github.com/instill-ai/community) repository.
+
+## License
+
+See the [LICENSE](./LICENSE) file for licensing information.
