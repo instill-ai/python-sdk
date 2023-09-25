@@ -15,7 +15,7 @@ class Connector(Resource):
     ) -> None:
         super().__init__()
         self.client = client
-        connector = client.connector_service.get_connector(name=name)
+        connector = client.connector_service.get_connector(name=name, silent=True)
         if connector is None:
             connector = client.connector_service.create_connector(
                 name=name,

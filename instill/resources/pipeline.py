@@ -13,7 +13,7 @@ class Pipeline(Resource):
     ) -> None:
         super().__init__()
         self.client = client
-        pipeline = client.pipeline_service.get_pipeline(name=name)
+        pipeline = client.pipeline_service.get_pipeline(name=name, silent=True)
         if pipeline is None:
             pipeline = client.pipeline_service.create_pipeline(name=name, recipe=recipe)
             if pipeline is None:

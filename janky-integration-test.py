@@ -29,7 +29,8 @@ github_model = {
 try:
     client = get_client()
 
-    # ======================== mgmt
+    # ================================================================================================================
+    # ===================================================== mgmt =====================================================
     assert client.mgmt_service.is_serving()
     Logger.i("mgmt client created, assert status == serving: True")
 
@@ -37,7 +38,8 @@ try:
     assert user.id == "admin"
     Logger.i("mgmt get user, assert default user id == admin: True")
 
-    # ======================== model
+    # ================================================================================================================
+    # ===================================================== model ====================================================
     assert client.model_serevice.is_serving()
     Logger.i("model client created, assert status == serving: True")
 
@@ -83,7 +85,8 @@ try:
     assert outputs[2].detection.objects[0].category == "bear"
     Logger.i("inference done, assert output 2 category == bear: True")
 
-    # ======================== connector
+    # ================================================================================================================
+    # ================================================== connector ===================================================
     assert client.connector_service.is_serving()
     Logger.i("connector client created, assert status == serving: True")
 
@@ -122,7 +125,8 @@ try:
     assert csv_connector.test() == connector_interface.ConnectorResource.STATE_CONNECTED
     Logger.i("tested csv connector, assert state == STATE_CONNECTED: True")
 
-    # ======================== csv pipeline
+    # ================================================================================================================
+    # ================================================= csv pipeline =================================================
     assert client.pipeline_service.is_serving()
     Logger.i("pipeline client created, assert status == serving: True")
 
@@ -163,7 +167,8 @@ try:
     assert csv_pipeline([i])[0][0]["answer"]["text"] == "instill-ai rocks"
     Logger.i("csv-pipeline triggered, output matched input: True")
 
-    # ======================== instill model pipeline
+    # =================================================================================================================
+    # ============================================= instill model pipeline ============================================
     start_operator_component = pipeline_interface.Component()
     start_operator_component.id = "start"
     start_operator_component.definition_name = "operator-definitions/start-operator"
