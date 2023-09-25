@@ -46,7 +46,7 @@ try:
 
     # ================================================================================================================
     # ===================================================== model ====================================================
-    assert client.model_serevice.is_serving()
+    assert client.model_service.is_serving()
     Logger.i("model client created, assert status == serving: True")
 
     model = GithubModel(
@@ -183,11 +183,7 @@ try:
         },
     )
 
-    recipe = pipeline_pb.Recipe()
-    recipe.version = "v1alpha"
-    recipe.components.append(start_operator_component)
-    recipe.components.append(instill_model_connector_component)
-    recipe.components.append(end_operator_component)
+    recipe = create_recipe([start_operator_component, instill_model_connector_component, end_operator_component])
     instill_model_pipeline = Pipeline(
         client=client, name="instill-model-pipeline", recipe=recipe
     )
