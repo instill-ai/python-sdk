@@ -1,5 +1,6 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module
 from typing import Tuple
+
 import instill.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
 from instill.clients import InstillClient
 from instill.resources.resource import Resource

@@ -1,7 +1,7 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module
-import instill.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
 import instill.protogen.vdp.connector.v1alpha.connector_definition_pb2 as connector_definition_interface
 import instill.protogen.vdp.connector.v1alpha.connector_pb2 as connector_interface
+import instill.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
 from instill.clients import InstillClient
 from instill.resources.resource import Resource
 
