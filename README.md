@@ -14,6 +14,9 @@ python sdk for Instill AI products
 
 ## Setup
 
+> [!NOTE]  
+> For setting up development environment, please refer to [Controbuting](#contributing)
+
 ### Requirements
 
 - Python 3.8+
