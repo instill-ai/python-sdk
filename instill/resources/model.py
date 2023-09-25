@@ -51,9 +51,7 @@ class Model(Resource):
         self._resource = resource
 
     def _update(self):
-        self.resource = self.client.model_service.get_model(
-            model_name=self.resource.id
-        )
+        self.resource = self.client.model_service.get_model(model_name=self.resource.id)
 
     def get_definition(self) -> model_definition_interface.ModelDefinition:
         return self.resource.model_definition
