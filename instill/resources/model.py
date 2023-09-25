@@ -1,5 +1,6 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module
 import instill.protogen.model.model.v1alpha.model_pb2 as model_interface
+import instill.protogen.model.model.v1alpha.model_definition_pb2 as model_definition_interface
 from instill.clients import InstillClient
 from instill.resources.resource import Resource
 
@@ -54,7 +55,7 @@ class Model(Resource):
             model_name=self.resource.id
         )
 
-    def get_definition(self) -> str:
+    def get_definition(self) -> model_definition_interface.ModelDefinition:
         return self.resource.model_definition
 
     def get_readme(self) -> str:

@@ -1,5 +1,6 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module
 import instill.protogen.vdp.connector.v1alpha.connector_pb2 as connector_interface
+import instill.protogen.vdp.connector.v1alpha.connector_definition_pb2 as connector_definition_interface
 from instill.clients import InstillClient
 from instill.resources.resource import Resource
 
@@ -55,7 +56,7 @@ class Connector(Resource):
     def resource(self, resource: connector_interface.ConnectorResource):
         self._resource = resource
 
-    def get_definition(self) -> str:
+    def get_definition(self) -> connector_definition_interface.ConnectorDefinition:
         return self.resource.connector_definition
 
     def get_state(self) -> connector_interface.ConnectorResource.State:
