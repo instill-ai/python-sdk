@@ -3,6 +3,8 @@ from instill.clients.connector import ConnectorClient
 from instill.clients.mgmt import MgmtClient
 from instill.clients.model import ModelClient
 from instill.clients.pipeline import PipelineClient
+from instill.utils.error_handler import NotServingException
+from instill.utils.logger import Logger
 
 _mgmt_client = None
 _connector_client = None
@@ -52,9 +54,21 @@ def _get_model_clinet() -> ModelClient:
 class InstillClient:
     def __init__(self) -> None:
         self.mgmt_service = _get_mgmt_client()
+        if not self.mgmt_service.is_serving():
+            Logger.w("Instill Base is required")
+            raise NotServingException
         self.connector_service = _get_connector_clinet()
         self.pipeline_service = _get_pipeline_clinet()
+        if (
+            not self.connector_service.is_serving()
+            and not self.pipeline_service.is_serving()
+        ):
+            Logger.w("Instill VDP is not serving, VDP functionalities will not work")
         self.model_service = _get_model_clinet()
+        if not self.model_service.is_serving():
+            Logger.w(
+                "Instill Model is not serving, Model functionalities will not work"
+            )
 
     def set_instance(self, instance: str):
         self.mgmt_service.instance = instance

@@ -104,6 +104,12 @@ from instill.clients import get_client
 client = get_clinet()
 ```
 
+If you have not set up `Instill VDP` or `Instill Model`, you will get a warning like this
+```bash
+2023-09-27 18:49:04,871.871 WARNING  Instill VDP is not serving, VDP functionalities will not work
+2023-09-27 18:49:04,907.907 WARNING  Instill Model is not serving, Model functionalities will not work
+```
+
 You can check the readiness of each service
 
 ```python
