@@ -12,7 +12,6 @@ from instill.resources import (
     Pipeline,
     model_pb,
     connector_pb,
-    pipeline_pb,
     task_detection,
     create_start_operator,
     create_end_operator,
