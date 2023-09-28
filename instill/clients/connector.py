@@ -20,21 +20,20 @@ from instill.utils.error_handler import grpc_handler
 
 class ConnectorClient(Client):
     def __init__(self, namespace: str) -> None:
-        self.hosts = defaultdict(dict)
+        self.hosts: defaultdict = defaultdict(dict)
         self.instance = "default"
         self.namespace = namespace
-        self.metadata: str = ""
 
         if global_config.hosts is not None:
             for instance, config in global_config.hosts.items():
                 if not config.secure:
-                    self.metadata = (
+                    channel = grpc.insecure_channel(config.url)
+                    self.hosts[instance]["metadata"] = (
                         (
                             "authorization",
                             f"Bearer {config.token}",
                         ),
                     )
-                    channel = grpc.insecure_channel(config.url)
                 else:
                     ssl_creds = grpc.ssl_channel_credentials()
                     call_creds = grpc.access_token_call_credentials(config.token)
@@ -43,6 +42,7 @@ class ConnectorClient(Client):
                         target=config.url,
                         credentials=creds,
                     )
+                    self.hosts[instance]["metadata"] = ""
                 self.hosts[instance]["token"] = config.token
                 self.hosts[instance]["channel"] = channel
                 self.hosts[instance][
@@ -107,7 +107,7 @@ class ConnectorClient(Client):
             request=connector_interface.CreateUserConnectorResourceRequest(
                 connector_resource=connector, parent=self.namespace
             ),
-            metadata=self.metadata,
+            metadata=self.hosts[self.instance]["metadata"],
         )
 
         return resp.connector_resource
@@ -120,7 +120,7 @@ class ConnectorClient(Client):
                 request=connector_interface.GetUserConnectorResourceRequest(
                     name=f"{self.namespace}/connector-resources/{name}"
                 ),
-                metadata=self.metadata,
+                metadata=self.hosts[self.instance]["metadata"],
             )
             .connector_resource
         )
@@ -133,7 +133,7 @@ class ConnectorClient(Client):
                 request=connector_interface.TestUserConnectorResourceRequest(
                     name=f"{self.namespace}/connector-resources/{name}"
                 ),
-                metadata=self.metadata,
+                metadata=self.hosts[self.instance]["metadata"],
             )
             .state
         )
@@ -146,7 +146,7 @@ class ConnectorClient(Client):
                 request=connector_interface.ExecuteUserConnectorResourceRequest(
                     name=f"{self.namespace}/connector-resources/{name}", inputs=inputs
                 ),
-                metadata=self.metadata,
+                metadata=self.hosts[self.instance]["metadata"],
             )
             .outputs
         )
@@ -159,7 +159,7 @@ class ConnectorClient(Client):
                 request=connector_interface.WatchUserConnectorResourceRequest(
                     name=f"{self.namespace}/connector-resources/{name}"
                 ),
-                metadata=self.metadata,
+                metadata=self.hosts[self.instance]["metadata"],
             )
             .state
         )
@@ -170,7 +170,7 @@ class ConnectorClient(Client):
             request=connector_interface.DeleteUserConnectorResourceRequest(
                 name=f"{self.namespace}/connector-resources/{name}"
             ),
-            metadata=self.metadata,
+            metadata=self.hosts[self.instance]["metadata"],
         )
 
     @grpc_handler
@@ -180,12 +180,12 @@ class ConnectorClient(Client):
                 request=connector_interface.ListUserConnectorResourcesRequest(
                     parent=self.namespace
                 ),
-                metadata=self.metadata,
+                metadata=self.hosts[self.instance]["metadata"],
             )
         else:
             resp = self.hosts[self.instance]["client"].ListConnectorResources(
                 request=connector_interface.ListConnectorResourcesRequest(),
-                metadata=(self.metadata,),
+                metadata=(self.hosts[self.instance]["metadata"],),
             )
 
         return resp.connector_resources, resp.next_page_token, resp.total_size
