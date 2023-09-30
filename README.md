@@ -75,8 +75,7 @@ hosts:
   ...
 ```
 
-> [!NOTE]  
-> You will want to have exactly one instance named `default`. The SDK will attempt to connect to this instance initially, and later on you can swtich to other instances you specified in the config.
+You will want to have exactly one instance named `default`. The SDK will attempt to connect to this instance initially, and later on you can swtich to other instances you specified in the config.
 
 Example:
 
@@ -105,6 +104,7 @@ client = get_clinet()
 ```
 
 If you have not set up `Instill VDP` or `Instill Model`, you will get a warning like this
+
 ```bash
 2023-09-27 18:49:04,871.871 WARNING  Instill VDP is not serving, VDP functionalities will not work
 2023-09-27 18:49:04,907.907 WARNING  Instill Model is not serving, Model functionalities will not work
@@ -157,6 +157,9 @@ cookie_token: ""
 ```
 
 #### Now we can proceed to create resources
+
+> [!NOTE]  
+> Before starting to create resources, we suggest you read through our [docs](https://www.instill.tech/docs/vdp/core-concepts/overview) first to grasp the core concepts
 
 ### Create Model
 
@@ -211,7 +214,7 @@ yolov7.get_state()
 Trigger the model with the correct `task` type
 
 > [!NOTE]  
-> Find out the definition in the [doc](https://www.instill.tech/docs/model/core-concepts/ai-task)
+> Find out the definition in our [json schema](https://raw.githubusercontent.com/instill-ai/connector-ai/8bf4463b57a5b668f3f656e4c168561b623d065d/pkg/instill/config/seed/data.json)
 
 ```python
 from instill.resources import model_pb, task_detection
@@ -290,30 +293,47 @@ Now if you `print` the outputs, you will get a list of specific `task` output, i
 
 ### Create connector
 
-With similiar conecpt as creating `model`, below is the script to create a `instill model connector`
+With similiar conecpt as creating `model`, below is the steps to create a `instill model connector`
+
+First import our predefined `InstillModelConnector`
 
 ```python
 from instill.resources import InstillModelConnector, connector_pb
+```
 
+Then we set up the connector resource information
+
+> [!NOTE]  
+> Find out the resource definition in our [json schema](https://raw.githubusercontent.com/instill-ai/connector-ai/8bf4463b57a5b668f3f656e4c168561b623d065d/pkg/instill/config/seed/resource.json)
+
+```python
 # specify the `Instill Model` host url
 instill_model = InstillModelConnector(
     client,
     name="instill",
     server_url="http://api-gateway:8080",
 )
-# after creation the state is `STATE_DISCONNECTED`
-instill_model.get_state() == connector_pb.ConnectorResource.STATE_DISCONNECTED
+```
 
-# we can test the connection to make sure the connection with the host can be established
+After the connector is created, the state should be `STATE_DISCONNECTED`
+
+```python
+instill_model.get_state() == connector_pb.ConnectorResource.STATE_DISCONNECTED
+# True
+```
+
+Now we can test the connection for the newly configured connector, to make sure the connection with the host can be established
+
+```python
 instill_model.test() == connector_pb.ConnectorResource.STATE_CONNECTED
+# True
 ```
 
 ### Create pipeline
 
-> [!NOTE]  
-> Before starting to create a pipleine, we suggest you read through our [docs](https://www.instill.tech/docs/vdp/core-concepts/overview) first to grasp the core concepts
-
 Since we have created a `Instill Model Connector` that connect to our `Instill Model` instance, we can now create a pipeline that utilize both `Instill VDP` and `Instill Model`
+
+First we import `Pipeline` class and other helper functions
 
 ```python
 from instill.resources import (
@@ -323,7 +343,11 @@ from instill.resources import (
     create_end_operator,
     create_recipe,
 )
+```
 
+To Form a pipeine, it required a `start` operator and a `end` operator, we have helper functions to create both
+
+```python
 # create start operator
 start_operator_component = create_start_operator(
     {"metadata": {"input": {"title": "input", "type": "image"}}}
@@ -335,6 +359,11 @@ end_operator_component = create_end_operator(
         "metadata": {"output": {}},
     }
 )
+```
+
+Now that we have both `start` operator and `end ` operator ready, we can move out to create a `model` `component`. From the already defined `instill Model Connector`, we can now utilize the models serving on `Instill Model`, import them as a `component`.
+
+```python
 # create model connector component from the connector resource we had previously
 # here we need to specify which model we want to use on our `Instill Model` instance
 # in this case there is only one model we deployed, which is the yolov7 model
@@ -344,16 +373,27 @@ instill_model_connector_component = instill_model.create_component(
         "input": {
             "task": "TASK_DETECTION",
             "image_base64": "{ start.input }",
-            "model_name": "users/admin/models/yolov7",
+            "model_namespace": "admin",
+            "model_id": "yolov7",
         },
     },
 )
+```
+
+We now have all the components ready for the pipeline. Next, we add them into the recipe and create a pipeline.
+
+```python
 # create a recipe to construct the pipeline
 recipe = create_recipe([start_operator_component, instill_model_connector_component, end_operator_component])
 # create pipeline
 instill_model_pipeline = Pipeline(
     client=client, name="instill-model-pipeline", recipe=recipe
 )
+```
+
+Finally the pipeline is done, now let us test it by triggering it!
+
+```python
 # we can trigger the pipeline now
 i = Struct()
 i.update(
