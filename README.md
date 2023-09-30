@@ -95,6 +95,8 @@ hosts:
 
 ### Create client
 
+**You can also find some notebook examples [here](https://github.com/instill-ai/python-sdk/tree/main/notebooks)**
+
 Simply import the `get_client` function to get the client that are connected to all services with the config you setup previously.
 
 ```python
@@ -411,7 +413,7 @@ instill_model_pipeline([i])[0][0]["output"][0]["category"] == "dog"
 
 ## Contributing
 
-Please refer to the [Contributing Guidelines](./.github/CONTRIBUTING.md) for more details.
+Please refer to the [Contributing Guidelines](https://github.com/instill-ai/python-sdk/blob/main/.github/CONTRIBUTING.md) for more details.
 
 ## Community support
 
