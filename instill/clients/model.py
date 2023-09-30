@@ -6,10 +6,10 @@ from typing import Tuple
 import grpc
 
 import instill.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
+import instill.protogen.model.model.v1alpha.model_definition_pb2 as model_definition_interface
 
 # model
 import instill.protogen.model.model.v1alpha.model_pb2 as model_interface
-import instill.protogen.model.model.v1alpha.model_definition_pb2 as model_definition_interface
 import instill.protogen.model.model.v1alpha.model_public_service_pb2_grpc as model_service
 from instill.clients.base import Client
 

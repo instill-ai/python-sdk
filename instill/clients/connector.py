@@ -5,10 +5,10 @@ from typing import Tuple
 import grpc
 
 import instill.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
+import instill.protogen.vdp.connector.v1alpha.connector_definition_pb2 as connector_definition_interface
 
 # connector
 import instill.protogen.vdp.connector.v1alpha.connector_pb2 as connector_interface
-import instill.protogen.vdp.connector.v1alpha.connector_definition_pb2 as connector_definition_interface
 import instill.protogen.vdp.connector.v1alpha.connector_public_service_pb2_grpc as connector_service
 from instill.clients.base import Client
 
