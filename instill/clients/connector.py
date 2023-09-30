@@ -8,6 +8,7 @@ import instill.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthchec
 
 # connector
 import instill.protogen.vdp.connector.v1alpha.connector_pb2 as connector_interface
+import instill.protogen.vdp.connector.v1alpha.connector_definition_pb2 as connector_definition_interface
 import instill.protogen.vdp.connector.v1alpha.connector_public_service_pb2_grpc as connector_service
 from instill.clients.base import Client
 
@@ -118,7 +119,8 @@ class ConnectorClient(Client):
             self.hosts[self.instance]["client"]
             .GetUserConnectorResource(
                 request=connector_interface.GetUserConnectorResourceRequest(
-                    name=f"{self.namespace}/connector-resources/{name}"
+                    name=f"{self.namespace}/connector-resources/{name}",
+                    view=connector_definition_interface.VIEW_FULL,
                 ),
                 metadata=self.hosts[self.instance]["metadata"],
             )
