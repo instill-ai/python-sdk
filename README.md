@@ -1,7 +1,3 @@
-# Overview
-
-python sdk for Instill AI products
-
 [![Unix Build Status](https://img.shields.io/github/actions/workflow/status/instill-ai/python-sdk/test.yml?branch=main&label=linux)](https://github.com/instill-ai/python-sdk/actions)
 [![Coverage Status](https://img.shields.io/codecov/c/gh/instill-ai/python-sdk)](https://codecov.io/gh/instill-ai/python-sdk)
 [![PyPI License](https://img.shields.io/pypi/l/instill-sdk.svg)](https://pypi.org/project/instill-sdk)
@@ -10,7 +6,16 @@ python sdk for Instill AI products
 
 > [!IMPORTANT]  
 > **This SDK tool is under heavy development!!**  
-> Currently there has yet to be a stable version release, please feel free to open any issue regarding this SDK in our [community](https://github.com/instill-ai/community/issues) repo
+> Currently there has yet to be a stable version release, please feel free to open any issue regarding this SDK in our [community](https://github.com/instill-ai/community/issues) repo.
+
+# Overview
+
+Welcome to Instill Python SDK, where the world of AI-first application comes alive in the form of Python.
+
+Before you jump into creating your first application with this SDK tool, we recommend you to get familiar with the core concepts of Instill Product first. You can check out our documentation here:
+
+- [Instill Core](http://instill.tech/docs/core/v1.0.0/welcome)
+- [Instill SDK](http://instill.tech/docs/sdk/v1.0.0/welcome)
 
 ## Setup
 
@@ -54,12 +59,13 @@ $ python
 
 ### Config `Instill Core` or `Instill Cloud` instance
 
-Before we can start using this SDK, you will need to create and fill the host related configs, currently the config file path is `${HOME}/.config/instill/config.yaml`
+Before we can start using this SDK, you will need to create a config file under this path `${HOME}/.config/instill/config.yaml`, and within that path you will need to fill in some basic parameters for your desired host.[^1]
 
-> [!NOTE]  
-> For each instance you are going to config, you will have to obtain an `api_token`, by going to Settings > API Tokens page from the console, no matter it is `Instill Core` or `Instill Cloud`.
+[^1]: You can obtain an `api_token`, by simply going to Settings > API Tokens page from the console, no matter it is `Instill Core` or `Instill Cloud`.
 
-Within the config file, you can define multiple instances with the `alias` of your liking, later in the SDK you can refer to this `alias` to switch between the instance.
+Within the config file, you can define multiple instances with the `alias` of your liking, later in the SDK you can refer to this `alias` to switch between instances.[^2]
+
+[^2]: SDK will load the configs for `alias` named `default` when start up. So it is required to have at least one instance named `default`.
 
 ```yaml
 hosts:
@@ -74,8 +80,6 @@ hosts:
   ...
   ...
 ```
-
-You will want to have exactly one instance named `default`. The SDK will attempt to connect to this instance initially, and later on you can swtich to other instances you specified in the config.
 
 Example:
 
@@ -102,17 +106,17 @@ Simply import the `get_client` function to get the client that are connected to 
 ```python
 from instill.clients import get_client
 
-client = get_clinet()
+client = get_client()
 ```
 
-If you have not set up `Instill VDP` or `Instill Model`, you will get a warning like this
+If you have not set up `Instill VDP` or `Instill Model`, you will get a warning like this:
 
 ```bash
 2023-09-27 18:49:04,871.871 WARNING  Instill VDP is not serving, VDP functionalities will not work
 2023-09-27 18:49:04,907.907 WARNING  Instill Model is not serving, Model functionalities will not work
 ```
 
-You can check the readiness of each service
+You can check the readiness of each service:
 
 ```python
 client.mgmt_service.is_serving()
@@ -128,13 +132,13 @@ client.model_service.is_serving()
 > [!NOTE]  
 > Depends on which project(`Instill VDP` or `Instill Model` or both) you had launched locally, some services might not be available.
 
-After making sure all desired services are serving, we can check the user status by
+After making sure all desired services are serving, we can check the user status by:
 
 ```python
 client.mgmt_service.get_user()
 ```
 
-If you have a valid `api_token` in your config file, you should see something like this
+If you have a valid `api_token` in your config file, you should see something like this:
 
 ```
 name: "users/admin"
@@ -159,9 +163,6 @@ cookie_token: ""
 ```
 
 #### Now we can proceed to create resources
-
-> [!NOTE]  
-> Before starting to create resources, we suggest you read through our [docs](https://www.instill.tech/docs/vdp/core-concepts/overview) first to grasp the core concepts
 
 ### Create Model
 
@@ -188,16 +189,15 @@ yolov7 = GithubModel(
 )
 ```
 
-After the creation is done, we can check the status of the model
+After the creation is done, we can check the state of the model[^3]
+
+[^3]: [State definition](https://www.instill.tech/docs/model/core-concepts/overview#state)
 
 ```python
 yolov7.get_state()
 # 1
 # means STATE_OFFLINE
 ```
-
-> [!NOTE]  
-> Returned is an enum type of ModelState, check out our [openapi](https://github.com/instill-ai/protobufs/blob/main/openapiv2/openapiv2.swagger.yaml#L7018-L7031)
 
 Now we can deploy the model
 
@@ -213,10 +213,9 @@ yolov7.get_state()
 # means STATE_ONLINE
 ```
 
-Trigger the model with the correct `task` type
+Trigger the model with the correct `task` type[^4]
 
-> [!NOTE]  
-> Find out the definition in our [json schema](https://raw.githubusercontent.com/instill-ai/connector-ai/8bf4463b57a5b668f3f656e4c168561b623d065d/pkg/instill/config/seed/data.json)
+[^4]: Check out our [task protocol](https://www.instill.tech/docs/model/core-concepts/ai-task) to learn more, or read our [json schema](https://raw.githubusercontent.com/instill-ai/connector-ai/main/pkg/instill/config/seed/data.json) directly
 
 ```python
 from instill.resources import model_pb, task_detection
@@ -303,10 +302,9 @@ First import our predefined `InstillModelConnector`
 from instill.resources import InstillModelConnector, connector_pb
 ```
 
-Then we set up the connector resource information
+Then we set up the connector resource information[^5]
 
-> [!NOTE]  
-> Find out the resource definition in our [json schema](https://raw.githubusercontent.com/instill-ai/connector-ai/8bf4463b57a5b668f3f656e4c168561b623d065d/pkg/instill/config/seed/resource.json)
+[^5]: Find out the resource definition in our [json schema](https://raw.githubusercontent.com/instill-ai/connector-ai/8bf4463b57a5b668f3f656e4c168561b623d065d/pkg/instill/config/seed/resource.json)
 
 ```python
 # specify the `Instill Model` host url
