@@ -17,11 +17,11 @@ CONFIG_DIR = Path(
 class _InstillHost(BaseModel):
     url: str
     secure: bool
-    token: t.Optional[str] = ""
+    token: str
 
 
 class _Config(BaseModel):
-    hosts: t.Optional[t.Dict[str, _InstillHost]] = None
+    hosts: t.Dict[str, _InstillHost] = {}
 
 
 class Configuration:
@@ -31,7 +31,7 @@ class Configuration:
         CONFIG_DIR.mkdir(exist_ok=True)
 
     @property
-    def hosts(self) -> t.Optional[t.Dict[str, _InstillHost]]:
+    def hosts(self) -> t.Dict[str, _InstillHost]:
         return self._config.hosts
 
     def load(self) -> None:

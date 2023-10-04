@@ -9,6 +9,7 @@ import instill.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthchec
 # pipeline
 import instill.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
 import instill.protogen.vdp.pipeline.v1alpha.pipeline_public_service_pb2_grpc as pipeline_service
+from instill.clients import constant
 
 # common
 from instill.clients.base import Client
@@ -21,8 +22,12 @@ from instill.utils.error_handler import grpc_handler
 class PipelineClient(Client):
     def __init__(self, namespace: str) -> None:
         self.hosts: defaultdict = defaultdict(dict)
-        self.instance: str = "default"
         self.namespace: str = namespace
+        self.instance: str = (
+            constant.DEFAULT_INSTANCE
+            if constant.DEFAULT_INSTANCE in global_config.hosts
+            else list(global_config.hosts.keys())[0]
+        )
 
         if global_config.hosts is not None:
             for instance, config in global_config.hosts.items():

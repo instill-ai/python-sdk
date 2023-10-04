@@ -11,6 +11,7 @@ import instill.protogen.model.model.v1alpha.model_definition_pb2 as model_defini
 # model
 import instill.protogen.model.model.v1alpha.model_pb2 as model_interface
 import instill.protogen.model.model.v1alpha.model_public_service_pb2_grpc as model_service
+from instill.clients import constant
 from instill.clients.base import Client
 
 # common
@@ -21,8 +22,12 @@ from instill.utils.error_handler import grpc_handler
 class ModelClient(Client):
     def __init__(self, namespace: str) -> None:
         self.hosts: defaultdict = defaultdict(dict)
-        self.instance: str = "default"
         self.namespace: str = namespace
+        self.instance: str = (
+            constant.DEFAULT_INSTANCE
+            if constant.DEFAULT_INSTANCE in global_config.hosts
+            else list(global_config.hosts.keys())[0]
+        )
 
         if global_config.hosts is not None:
             for instance, config in global_config.hosts.items():

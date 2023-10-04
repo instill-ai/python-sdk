@@ -10,6 +10,7 @@ import instill.protogen.vdp.connector.v1alpha.connector_definition_pb2 as connec
 # connector
 import instill.protogen.vdp.connector.v1alpha.connector_pb2 as connector_interface
 import instill.protogen.vdp.connector.v1alpha.connector_public_service_pb2_grpc as connector_service
+from instill.clients import constant
 from instill.clients.base import Client
 
 # common
@@ -22,8 +23,12 @@ from instill.utils.error_handler import grpc_handler
 class ConnectorClient(Client):
     def __init__(self, namespace: str) -> None:
         self.hosts: defaultdict = defaultdict(dict)
-        self.instance = "default"
-        self.namespace = namespace
+        self.namespace: str = namespace
+        self.instance: str = (
+            constant.DEFAULT_INSTANCE
+            if constant.DEFAULT_INSTANCE in global_config.hosts.keys()
+            else list(global_config.hosts.keys())[0]
+        )
 
         if global_config.hosts is not None:
             for instance, config in global_config.hosts.items():
