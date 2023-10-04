@@ -3,10 +3,14 @@ from collections import defaultdict
 
 import grpc
 
+# mgmt
 import instill.protogen.base.mgmt.v1alpha.metric_pb2 as metric_interface
 import instill.protogen.base.mgmt.v1alpha.mgmt_pb2 as mgmt_interface
 import instill.protogen.base.mgmt.v1alpha.mgmt_public_service_pb2_grpc as mgmt_service
 import instill.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
+from instill.clients import constant
+
+# common
 from instill.clients.base import Client
 from instill.configuration import global_config
 from instill.utils.error_handler import grpc_handler
@@ -17,7 +21,12 @@ from instill.utils.error_handler import grpc_handler
 class MgmtClient(Client):
     def __init__(self) -> None:
         self.hosts: defaultdict = defaultdict(dict)
-        self.instance: str = "default"
+        if constant.DEFAULT_INSTANCE in global_config.hosts:
+            self.instance = constant.DEFAULT_INSTANCE
+        elif len(global_config.hosts) == 0:
+            self.instance = ""
+        else:
+            self.instance = list(global_config.hosts.keys())[0]
 
         if global_config.hosts is not None:
             for instance, config in global_config.hosts.items():

@@ -65,7 +65,7 @@ Before we can start using this SDK, you will need to create a config file under 
 
 Within the config file, you can define multiple instances with the `alias` of your liking, later in the SDK you can refer to this `alias` to switch between instances.[^2]
 
-[^2]: SDK will load the configs for `alias` named `default` when start up. So it is required to have at least one instance named `default`.
+[^2]: SDK is default to look for instance named `default` first, and will fall back to the first instance entry in the config file if `default` not found
 
 ```yaml
 hosts:
@@ -127,6 +127,14 @@ client.pipeline_service.is_serving()
 # True
 client.model_service.is_serving()
 # True
+```
+
+You can also switch to other instances
+
+```python
+client.set_instance("your-instance-in-config")
+client.mgmt_service.instance
+# 'your-instance-in-config'
 ```
 
 > [!NOTE]  

@@ -22,7 +22,7 @@ def _get_mgmt_client() -> MgmtClient:
     return _mgmt_client
 
 
-def _get_connector_clinet() -> ConnectorClient:
+def _get_connector_client() -> ConnectorClient:
     global _connector_client
 
     if _connector_client is None:
@@ -33,7 +33,7 @@ def _get_connector_clinet() -> ConnectorClient:
     return _connector_client
 
 
-def _get_pipeline_clinet() -> PipelineClient:
+def _get_pipeline_client() -> PipelineClient:
     global _pipeline_client
 
     if _pipeline_client is None:
@@ -42,7 +42,7 @@ def _get_pipeline_clinet() -> PipelineClient:
     return _pipeline_client
 
 
-def _get_model_clinet() -> ModelClient:
+def _get_model_client() -> ModelClient:
     global _model_client
 
     if _model_client is None:
@@ -57,14 +57,14 @@ class InstillClient:
         if not self.mgmt_service.is_serving():
             Logger.w("Instill Base is required")
             raise NotServingException
-        self.connector_service = _get_connector_clinet()
-        self.pipeline_service = _get_pipeline_clinet()
+        self.connector_service = _get_connector_client()
+        self.pipeline_service = _get_pipeline_client()
         if (
             not self.connector_service.is_serving()
             and not self.pipeline_service.is_serving()
         ):
             Logger.w("Instill VDP is not serving, VDP functionalities will not work")
-        self.model_service = _get_model_clinet()
+        self.model_service = _get_model_client()
         if not self.model_service.is_serving():
             Logger.w(
                 "Instill Model is not serving, Model functionalities will not work"
