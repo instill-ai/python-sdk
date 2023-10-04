@@ -21,11 +21,12 @@ from instill.utils.error_handler import grpc_handler
 class MgmtClient(Client):
     def __init__(self) -> None:
         self.hosts: defaultdict = defaultdict(dict)
-        self.instance: str = (
-            constant.DEFAULT_INSTANCE
-            if constant.DEFAULT_INSTANCE in global_config.hosts
-            else list(global_config.hosts.keys())[0]
-        )
+        if constant.DEFAULT_INSTANCE in global_config.hosts:
+            self.instance = constant.DEFAULT_INSTANCE
+        elif len(global_config.hosts) == 0:
+            self.instance = ""
+        else:
+            self.instance = list(global_config.hosts.keys())[0]
 
         if global_config.hosts is not None:
             for instance, config in global_config.hosts.items():

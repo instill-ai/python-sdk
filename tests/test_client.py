@@ -9,13 +9,13 @@ def describe_client():
     def describe_instance():
         def when_not_set(expect):
             mgmt_client = MgmtClient()
-            expect(mgmt_client.instance) == "default"
+            expect(mgmt_client.instance) == ""
             model_client = ModelClient(namespace="")
-            expect(model_client.instance) == "default"
+            expect(model_client.instance) == ""
             pipeline_client = PipelineClient(namespace="")
-            expect(pipeline_client.instance) == "default"
+            expect(pipeline_client.instance) == ""
             connector_client = ConnectorClient(namespace="")
-            expect(connector_client.instance) == "default"
+            expect(connector_client.instance) == ""
 
         def when_set_correct_type(expect):
             mgmt_client = MgmtClient()
