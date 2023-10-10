@@ -265,11 +265,11 @@ try:
         name="yolov7",
         config={
             "input": {
-                "task": "TASK_DETECTION",
                 "image_base64": "{ start.input }",
                 "model_namespace": "admin",
                 "model_id": "yolov7",
             },
+            "task": "TASK_DETECTION",
         },
     )
 
@@ -322,11 +322,11 @@ try:
         name="m1",
         config={
             "input": {
-                "task": "TASK_CLASSIFICATION",
                 "image_base64": "{ start.input[0] }",
                 "model_namespace": "admin",
                 "model_id": "mobilenetv2",
             },
+            "task": "TASK_CLASSIFICATION",
         },
     )
 
@@ -334,11 +334,11 @@ try:
         name="m2",
         config={
             "input": {
-                "task": "TASK_CLASSIFICATION",
                 "image_base64": "{ start.input[1] }",
                 "model_namespace": "admin",
                 "model_id": "mobilenetv2",
             },
+            "task": "TASK_CLASSIFICATION",
         },
     )
 
@@ -346,7 +346,6 @@ try:
         name="gpt",
         config={
             "input": {
-                "task": "TASK_TEXT_GENERATION",
                 "prompt": "{{ m1.output.category }} and {{ m2.output.category }}",
                 "model": "gpt-3.5-turbo",
                 "system_message": "Write a cute and upbeat story about friendship between the following two animals",
@@ -354,6 +353,7 @@ try:
                 "n": 1,
                 "max_tokens": 128,
             },
+            "task": "TASK_TEXT_GENERATION",
         },
     )
 
@@ -361,13 +361,13 @@ try:
         name="sd",
         config={
             "input": {
-                "task": "TASK_TEXT_TO_IMAGE",
                 "engine": "stable-diffusion-xl-1024-v1-0",
                 "prompts": "{ gpt.output.texts }",
                 "style_preset": "comic-book",
                 "width": 896,
                 "height": 1152,
-            }
+            },
+            "task": "TASK_TEXT_TO_IMAGE",
         },
     )
 
@@ -416,7 +416,7 @@ try:
     with open("./test.jpg", "wb") as f:
         f.write(base64.b64decode(output))
     assert len(output[0]) != 0
-    Logger.i("instill-model-pipeline triggered, output length not 0: True")
+    Logger.i("cute-pipeline triggered, output length not 0: True")
 except AssertionError:
     Logger.w("TEST FAILED, ASSERTION MISMATCHED")
 
