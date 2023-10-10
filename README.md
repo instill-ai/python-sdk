@@ -379,11 +379,11 @@ instill_model_connector_component = instill_model.create_component(
     name="yolov7",
     config={
         "input": {
-            "task": "TASK_DETECTION",
             "image_base64": "{ start.input }",
             "model_namespace": "admin",
             "model_id": "yolov7",
         },
+        "task": "TASK_DETECTION",
     },
 )
 ```
