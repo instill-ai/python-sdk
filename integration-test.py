@@ -239,7 +239,7 @@ try:
     )
 
     csv_connector_component = csv_connector.create_component(
-        name="d01", config={"input": {"text": "{ start.input }"}}
+        name="d01", config={"input": {"data": {"text": "{ start.input }"}}}
     )
 
     recipe = create_recipe(
@@ -251,7 +251,7 @@ try:
     Logger.i("csv-pipeline created, validate without error: True")
     i = Struct()
     i.update({"input": "instill-ai rocks"})
-    assert csv_pipeline([i])[0][0]["answer"]["text"] == "instill-ai rocks"
+    assert csv_pipeline([i])[0][0]["answer"]["data"]["text"] == "instill-ai rocks"
     Logger.i("csv-pipeline triggered, output matched input: True")
 
     Logger.i(
@@ -274,7 +274,7 @@ try:
     )
 
     csv_connector_component = csv_connector.create_component(
-        name="csv", config={"input": {"text": "{{ yolov7.output.objects }}"}}
+        name="csv", config={"input": {"data": {"text": "{{ yolov7.output.objects }}"}}}
     )
 
     end_operator_component = create_end_operator(
