@@ -59,7 +59,7 @@ $ python
 
 ### Config `Instill Core` or `Instill Cloud` instance
 
-Before we can start using this SDK, you will need to create a config file under this path `${HOME}/.config/instill/config.yaml`, and within that path you will need to fill in some basic parameters for your desired host.[^1]
+Before we can start using this SDK, you will need to create a config file under this path `${HOME}/.config/instill/sdk/python/config.yaml`, and within that path you will need to fill in some basic parameters for your desired host.[^1]
 
 [^1]: You can obtain an `api_token`, by simply going to Settings > API Tokens page from the console, no matter it is `Instill Core` or `Instill Cloud`.
 

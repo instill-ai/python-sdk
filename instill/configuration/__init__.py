@@ -9,7 +9,7 @@ from pydantic import BaseModel
 CONFIG_DIR = Path(
     os.getenv(
         "INSTILL_SYSTEM_CONFIG_PATH",
-        Path.home() / ".config/instill/",
+        Path.home() / ".config/instill/sdk/python/",
     )
 )
 

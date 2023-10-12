@@ -9,8 +9,8 @@ class Logger:
 
     @staticmethod
     def initialize(
-        runlog_path=f"{home_dir}/.config/instill/run.log",
-        errorlog_path=f"{home_dir}/.config/instill/error.log",
+        runlog_path=f"{home_dir}/.config/instill/sdk/python/run.log",
+        errorlog_path=f"{home_dir}/.config/instill/sdk/python/error.log",
     ):
         os.makedirs(os.path.dirname(runlog_path), exist_ok=True)
         os.makedirs(os.path.dirname(errorlog_path), exist_ok=True)
