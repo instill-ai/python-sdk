@@ -35,7 +35,7 @@ class Configuration:
         return self._config.hosts
 
     def load(self) -> None:
-        path = CONFIG_DIR / "config.yaml"
+        path = CONFIG_DIR / "config.yml"
         if not path.exists():
             self._config = _Config()
             return
@@ -48,7 +48,7 @@ class Configuration:
             raise BaseException(f"Invalid configuration file at '{path}'") from e
 
     def save(self) -> None:
-        path = CONFIG_DIR / "config.yaml"
+        path = CONFIG_DIR / "config.yml"
 
         CONFIG_DIR.mkdir(exist_ok=True)
 
