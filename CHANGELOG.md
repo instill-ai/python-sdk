@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.0](https://github.com/instill-ai/python-sdk/compare/v0.1.0...v0.2.0) (2023-10-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* **config:** update config file extension
+* **config:** update config file path to avoid collision ([#35](https://github.com/instill-ai/python-sdk/issues/35))
+
+### Documentation
+
+* **readme:** update README ([#29](https://github.com/instill-ai/python-sdk/issues/29)) ([5820fff](https://github.com/instill-ai/python-sdk/commit/5820fff36ab9352463187554603e659800595870))
+
+
+### Code Refactoring
+
+* **config:** update config file extension ([9b0f17f](https://github.com/instill-ai/python-sdk/commit/9b0f17feac128045d9853afd0ae2ef3c78a0e69e))
+* **config:** update config file path to avoid collision ([#35](https://github.com/instill-ai/python-sdk/issues/35)) ([0b5b3bd](https://github.com/instill-ai/python-sdk/commit/0b5b3bd869eb45b4695ade0e9c3dc1ef26283781))
+
 ## 0.1.0 (2023-10-01)
 
 
@@ -21,5 +39,3 @@
 * **contributing,readme:** update docs and workflow for contributing ([#12](https://github.com/instill-ai/python-sdk/issues/12)) ([6fb0c84](https://github.com/instill-ai/python-sdk/commit/6fb0c84e44f654d7eea286405133912fe7967334))
 * **readme,notebook:** add a notebook example ([9f8d728](https://github.com/instill-ai/python-sdk/commit/9f8d7283ad38865c18e4490afb5720dbbc65eb8a))
 * **readme:** add usage in README ([#24](https://github.com/instill-ai/python-sdk/issues/24)) ([5af5f42](https://github.com/instill-ai/python-sdk/commit/5af5f4209391b7cfb657643456b5013ce83a8450))
-
-
