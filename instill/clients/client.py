@@ -55,7 +55,7 @@ class InstillClient:
     def __init__(self) -> None:
         self.mgmt_service = _get_mgmt_client()
         if not self.mgmt_service.is_serving():
-            Logger.w("Instill Base is required")
+            Logger.w("Instill Core is required")
             raise NotServingException
         self.connector_service = _get_connector_client()
         self.pipeline_service = _get_pipeline_client()
