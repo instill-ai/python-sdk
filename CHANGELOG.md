@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/instill-ai/python-sdk/compare/v0.2.0...v0.2.1) (2023-10-27)
+
+
+### Miscellaneous Chores
+
+* **release:** release v0.2.1 ([871d7b9](https://github.com/instill-ai/python-sdk/commit/871d7b9f5a6ebd1a3eb85891a584698b4c2c0090))
+
 ## [0.2.0](https://github.com/instill-ai/python-sdk/compare/v0.1.0...v0.2.0) (2023-10-15)
 
 
