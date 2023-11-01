@@ -6,7 +6,6 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel
 
-
 CLOUD_RAY_ADDRESS = "ray://core_ray_server:10001"
 CORE_RAY_ADDRESS = "ray://ray_server:10001"
 

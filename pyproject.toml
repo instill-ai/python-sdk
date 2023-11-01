@@ -26,7 +26,7 @@ classifiers = [
 [tool.poetry.dependencies]
 
 python = "^3.8"
-grpcio = "^1.58.0"
+grpcio = "^1.59.0"
 protobuf = "^4.24.2"
 google-api-core = "^2.11.1"
 googleapis-common-protos = "^1.60.0"
@@ -70,6 +70,8 @@ sniffer = "*"
 MacFSEvents = { version = "*", platform = "darwin" }
 pync = { version = "*", platform = "darwin" }
 ipython = "^8.10.0"
+mypy-protobuf = "^3.5.0"
+grpcio-tools = "^1.59.0"
 
 # Publish
 twine = "^4.0.2"
@@ -93,6 +95,7 @@ exclude = '''
     | _build
     | buck-out
     | protogen
+    | protobufs
     | build
     | dist
   )/
@@ -104,7 +107,7 @@ exclude = '''
 [tool.isort]
 
 profile = "black"
-skip_glob = ["**/protogen/*"]
+skip_glob = ["**/protogen/*", "**/protobufs/*"]
 
 [tool.mypy]
 
@@ -116,10 +119,7 @@ cache_dir = ".cache/mypy/"
 
 [tool.pytest.ini_options]
 
-filterwarnings = [
-  "ignore:::.*google",
-  "ignore:::.*pkg_resources*",
-]
+filterwarnings = ["ignore:::.*google", "ignore:::.*pkg_resources*"]
 
 addopts = """
 --strict-markers

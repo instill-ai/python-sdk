@@ -1,5 +1,5 @@
-import struct
 import argparse
+import struct
 from enum import Enum
 
 import numpy as np
@@ -48,11 +48,12 @@ def serialize_byte_tensor(input_tensor):
     # into a 1-dimensional array containing the 4-byte byte size followed by the
     # actual element bytes. All elements are concatenated together in "C" order.
     if (input_tensor.dtype == np.object_) or (input_tensor.dtype.type == np.bytes_):
-        flattened_ls = []
+        flattened_ls: list = []
         for obj in np.nditer(input_tensor, flags=["refs_ok"], order="C"):
             # If directly passing bytes to BYTES type,
             # don't convert it to str as Python will encode the
             # bytes which may distort the meaning
+            assert isinstance(obj, np.ndarray)
             if input_tensor.dtype == np.object_:
                 if isinstance(obj.item(), bytes):
                     s = obj.item()
