@@ -1,7 +1,17 @@
+# pylint: disable=no-name-in-module
 import os
 import sys
 from importlib.metadata import PackageNotFoundError, version
 
+from instill.helpers.protobufs.ray_pb2 import (
+    InferTensor,
+    ModelInferRequest,
+    ModelInferResponse,
+    ModelMetadataRequest,
+    ModelMetadataResponse,
+    ModelReadyRequest,
+    ModelReadyResponse,
+)
 from instill.utils.logger import Logger
 
 Logger.initialize()
