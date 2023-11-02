@@ -27,10 +27,6 @@ class Model(Resource):
 
         self.resource = model
 
-    def __del__(self):
-        if self.resource is not None:
-            self.client.model_service.delete_model(self.resource.id)
-
     def __call__(self, task_inputs: list) -> list:
         return self.client.model_service.trigger_model(self.resource.id, task_inputs)
 
@@ -71,6 +67,10 @@ class Model(Resource):
         self.client.model_service.undeploy_model(self.resource.id)
         self._update()
         return self._resource
+
+    def delete(self):
+        if self.resource is not None:
+            self.client.model_service.delete_model(self.resource.id)
 
 
 class GithubModel(Model):

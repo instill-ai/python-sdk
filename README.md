@@ -108,6 +108,8 @@ from instill.clients import get_client
 
 client = get_client()
 ```
+> [!NOTE]  
+> Remember to call `client.close()` at the end of script to release the channel, or the main thread will not exit
 
 If you have not set up `Instill VDP` or `Instill Model`, you will get a warning like this:
 
@@ -136,9 +138,6 @@ client.set_instance("your-instance-in-config")
 client.mgmt_service.instance
 # 'your-instance-in-config'
 ```
-
-> [!NOTE]  
-> Depends on which project(`Instill VDP` or `Instill Model` or both) you had launched locally, some services might not be available.
 
 After making sure all desired services are serving, we can check the user status by:
 

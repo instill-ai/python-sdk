@@ -28,10 +28,6 @@ class Connector(Resource):
 
         self.resource = connector
 
-    def __del__(self):
-        if self.resource is not None:
-            self.client.connector_service.delete_connector(self.resource.id)
-
     def __call__(self, task_inputs: list, mode="execute") -> list:
         if mode == "execute":
             return self.client.connector_service.execute_connector(
@@ -73,3 +69,7 @@ class Connector(Resource):
 
     def test(self) -> connector_interface.ConnectorResource.State:
         return self.client.connector_service.test_connector(self.resource.id)
+
+    def delete(self):
+        if self.resource is not None:
+            self.client.connector_service.delete_connector(self.resource.id)
