@@ -76,6 +76,20 @@ class InstillClient:
         self.pipeline_service.instance = instance
         self.model_service.instance = instance
 
+    def close(self):
+        if self.mgmt_service.is_serving():
+            for host in self.mgmt_service.hosts.values():
+                host["channel"].close()
+        if self.connector_service.is_serving():
+            for host in self.connector_service.hosts.values():
+                host["channel"].close()
+        if self.pipeline_service.is_serving():
+            for host in self.pipeline_service.hosts.values():
+                host["channel"].close()
+        if self.model_service.is_serving():
+            for host in self.model_service.hosts.values():
+                host["channel"].close()
+
 
 def get_client() -> InstillClient:
     global _client

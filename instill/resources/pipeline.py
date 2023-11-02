@@ -23,10 +23,6 @@ class Pipeline(Resource):
 
         self.resource = pipeline
 
-    def __del__(self):
-        if self.resource is not None:
-            self.client.pipeline_service.delete_pipeline(self.resource.id)
-
     def __call__(
         self, task_inputs: list
     ) -> Tuple[list, pipeline_interface.TriggerMetadata]:
@@ -58,3 +54,7 @@ class Pipeline(Resource):
 
     def validate_pipeline(self) -> pipeline_interface.Pipeline:
         return self.client.pipeline_service.validate_pipeline(name=self.resource.id)
+
+    def delete(self):
+        if self.resource is not None:
+            self.client.pipeline_service.delete_pipeline(self.resource.id)
