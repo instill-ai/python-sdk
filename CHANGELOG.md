@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.3.0](https://github.com/instill-ai/python-sdk/compare/v0.2.1...v0.3.0) (2023-11-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* **client:** fix wrongful delete of resources and connection not close ([#42](https://github.com/instill-ai/python-sdk/issues/42))
+
+### Features
+
+* **ray:** add help functions for ray model ([#40](https://github.com/instill-ai/python-sdk/issues/40)) ([39b2cc7](https://github.com/instill-ai/python-sdk/commit/39b2cc7a6bcff73956d0b67f34d45ad2821ffaef))
+
+
+### Bug Fixes
+
+* **client:** fix wrongful delete of resources and connection not close ([#42](https://github.com/instill-ai/python-sdk/issues/42)) ([d32fb83](https://github.com/instill-ai/python-sdk/commit/d32fb838f1711c0a529cc1ad0327e43c9c44de39))
+* **config,pipeline:** allow no config file and fix required pipeline recipe ([#43](https://github.com/instill-ai/python-sdk/issues/43)) ([5290868](https://github.com/instill-ai/python-sdk/commit/5290868ac9d6375bbf7be3a9463aab7eddfd5d59))
+
 ## [0.2.1](https://github.com/instill-ai/python-sdk/compare/v0.2.0...v0.2.1) (2023-10-27)
 
 
