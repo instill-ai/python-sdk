@@ -65,10 +65,10 @@ class Configuration:
                 c,
             )
 
-    def set_token(self, alias: str, token: str) -> None:
-        if self._config.hosts is not None:
-            self._config.hosts[alias].token = token
-            self.save()
+    def set_default(self, url: str, token: str, secure: bool):
+        self._config.hosts["default"] = _InstillHost(
+            url=url, secure=secure, token=token
+        )
 
 
 global_config = Configuration()
