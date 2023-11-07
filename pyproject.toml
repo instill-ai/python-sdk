@@ -1,7 +1,7 @@
 [tool.poetry]
 
 name = "instill-sdk"
-version = "0.2.1"
+version = "0.3.0"
 description = "python sdk for Instill AI products"
 
 packages = [{ include = "instill" }]
