@@ -11,7 +11,7 @@ class Pipeline(Resource):
         self,
         client: InstillClient,
         name: str,
-        recipe: pipeline_interface.Recipe,
+        recipe: pipeline_interface.Recipe | None = None,
     ) -> None:
         super().__init__()
         self.client = client
