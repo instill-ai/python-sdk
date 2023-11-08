@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.1](https://github.com/instill-ai/python-sdk/compare/v0.3.0...v0.3.1) (2023-11-08)
+
+
+### Bug Fixes
+
+* **ray:** fix wrong scope of actor config ([85dd1f1](https://github.com/instill-ai/python-sdk/commit/85dd1f15c7b3d8460fa005bf58d4ef9d56f00838))
+
+
+### Documentation
+
+* **readme:** update readme for optional config file ([4efd5d6](https://github.com/instill-ai/python-sdk/commit/4efd5d6d24d88d992ca96e4044d6547bc741e391))
+
 ## [0.3.0](https://github.com/instill-ai/python-sdk/compare/v0.2.1...v0.3.0) (2023-11-07)
 
 
