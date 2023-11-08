@@ -100,12 +100,17 @@ def deserialize_bytes_tensor(encoded_tensor):
 
 class InstillRayModelConfig:
     def __init__(
-        self, ray_actor_options: dict, ray_autoscaling_options: dict, og_model_path: str
+        self,
+        ray_actor_options: dict,
+        ray_autoscaling_options: dict,
+        max_concurrent_queries: int,
+        og_model_path: str,
     ) -> None:
         og_model_string_parts = og_model_path.split("/")
 
         self.ray_actor_options = ray_actor_options
         self.ray_autoscaling_options = ray_autoscaling_options
+        self.max_concurrent_queries = max_concurrent_queries
 
         self.model_path = og_model_path
         self.application_name = og_model_string_parts[5]
@@ -120,14 +125,12 @@ def entry():
 
     ray_actor_options = {
         "num_cpus": 1,
-        "max_restarts": 5,
-        "max_task_retries": 5,
-        "max_concurrent_queries": 15,
     }
+    max_concurrent_queries = 10
     ray_autoscaling_options = {
-        "target_num_ongoing_requests_per_replica": 10,
+        "target_num_ongoing_requests_per_replica": 7,
         "min_replicas": 0,
-        "max_replicas": 20,
+        "max_replicas": 5,
     }
 
     parser.add_argument(
@@ -149,6 +152,7 @@ def entry():
     model_config = InstillRayModelConfig(
         ray_actor_options=args.ray_actor_options,
         ray_autoscaling_options=args.ray_autoscaling_options,
+        max_concurrent_queries=max_concurrent_queries,
         og_model_path=args.model,
     )
 
