@@ -98,49 +98,58 @@ def deserialize_bytes_tensor(encoded_tensor):
     return np.array(strs, dtype=bytes)
 
 
-def deploy_decorator(func):
-    def func_wrapper(*args, **kwargs):
-        num_cpus = float(kwargs.pop("num_cpus", False))
-        num_replicas = int(kwargs.pop("num_replicas", False))
-        og_model_path = kwargs.pop("model_path", False)
+class InstillRayModelConfig:
+    def __init__(
+        self, ray_actor_options: dict, ray_autoscaling_options: dict, og_model_path: str
+    ) -> None:
         og_model_string_parts = og_model_path.split("/")
-        application_name = og_model_string_parts[5]
-        model_name = "_".join(og_model_string_parts[3].split("#")[:2])
-        route_prefix = f'/{og_model_string_parts[3].split("#")[3]}'
 
-        return func(
-            num_cpus=num_cpus,
-            num_replicas=num_replicas,
-            application_name=application_name,
-            model_path=og_model_path,
-            model_name=model_name,
-            route_prefix=route_prefix,
+        self.ray_actor_options = ray_actor_options
+        self.ray_autoscaling_options = ray_autoscaling_options
+
+        self.model_path = og_model_path
+        self.application_name = og_model_string_parts[5]
+        self.model_name = "_".join(og_model_string_parts[3].split("#")[:2])
+        self.route_prefix = (
+            f'/{self.model_name}/{og_model_string_parts[3].split("#")[3]}'
         )
-
-    return func_wrapper
-
-
-def undeploy_decorator(func):
-    def func_wrapper(*args, **kwargs):
-        og_model_path = kwargs.pop("model_path", False)
-        og_model_string_parts = og_model_path.split("/")
-        model_name = "_".join(og_model_string_parts[3].split("#")[:2])
-
-        return func(model_name=model_name)
-
-    return func_wrapper
 
 
 def entry():
     parser = argparse.ArgumentParser()
+
+    ray_actor_options = {
+        "num_cpus": 1,
+        "max_restarts": 5,
+        "max_task_retries": 5,
+        "max_concurrent_queries": 15,
+    }
+    ray_autoscaling_options = {
+        "target_num_ongoing_requests_per_replica": 10,
+        "min_replicas": 0,
+        "max_replicas": 20,
+    }
+
     parser.add_argument(
         "--func", required=True, choices=["deploy", "undeploy"], help="deploy/undeploy"
     )
-    parser.add_argument("--model", required=True, help="model path ofr the deployment")
-    parser.add_argument("--cpus", default="0.2", help="num of cpus for this deployment")
+    parser.add_argument("--model", required=True, help="model path for the deployment")
     parser.add_argument(
-        "--replicas", default="1", help="num of replicas for this deployment"
+        "--ray-actor-options",
+        default=ray_actor_options,
+        help="custom actor options for the deployment",
+    )
+    parser.add_argument(
+        "--ray-autoscaling-options",
+        default=ray_autoscaling_options,
+        help="custom autoscaling options for the deployment",
     )
     args = parser.parse_args()
 
-    return args
+    model_config = InstillRayModelConfig(
+        ray_actor_options=args.ray_actor_options,
+        ray_autoscaling_options=args.ray_autoscaling_options,
+        og_model_path=args.model,
+    )
+
+    return args.func, model_config
