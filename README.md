@@ -59,7 +59,11 @@ $ python
 
 ### Config `Instill Core` or `Instill Cloud` instance
 
-Before we can start using this SDK, you will need to create a config file under this path `${HOME}/.config/instill/sdk/python/config.yml`, and within that path you will need to fill in some basic parameters for your desired host.[^1]
+Before we can start using this SDK, you will need to properly config your target instance. We support two ways to setup the configs, which are
+
+#### Config file
+
+create a config file under this path `${HOME}/.config/instill/sdk/python/config.yml`, and within that path you will need to fill in some basic parameters for your desired host.[^1]
 
 [^1]: You can obtain an `api_token`, by simply going to Settings > API Tokens page from the console, no matter it is `Instill Core` or `Instill Cloud`.
 
@@ -95,6 +99,20 @@ hosts:
     token: instill_sk***
 ```
 
+#### At runtime
+
+If you do not like the idea of having to create a config file, you can also setup your target instance by doing the following at the very beginning of your script.
+
+```python
+from instill.configuration import global_config
+
+global_config.set_default(
+    url="api.instill.tech",
+    token="instill_sk***",
+    secure=True,
+)
+```
+
 ## Usage
 
 ### Create client
@@ -108,6 +126,7 @@ from instill.clients import get_client
 
 client = get_client()
 ```
+
 > [!NOTE]  
 > Remember to call `client.close()` at the end of script to release the channel, or the main thread will not exit
 
