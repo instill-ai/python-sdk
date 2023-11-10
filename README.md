@@ -376,7 +376,7 @@ To Form a pipeine, it required a `start` operator and a `end` operator, we have 
 ```python
 # create start operator
 start_operator_component = create_start_operator(
-    {"metadata": {"input": {"title": "input", "type": "image"}}}
+    {"metadata": {"input": {"title": "input", "type": "string", "instillFormat": "image/*"}}}
 )
 # create end operator
 end_operator_component = create_end_operator(
