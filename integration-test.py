@@ -228,7 +228,7 @@ try:
     )
 
     start_operator_component = create_start_operator(
-        config={"metadata": {"input": {"title": "Input", "type": "text"}}}
+        config={"metadata": {"input": {"title": "Input", "type": "string", "instillFormat": "string"}}}
     )
 
     end_operator_component = create_end_operator(
@@ -258,7 +258,7 @@ try:
         "==================== instill model + csv pipeline =================================================="
     )
     start_operator_component = create_start_operator(
-        {"metadata": {"input": {"title": "input", "type": "image"}}}
+        {"metadata": {"input": {"title": "input", "type": "string", "instillFormat": "image/*"}}}
     )
 
     instill_model_connector_component = instill_connector.create_component(
@@ -315,7 +315,7 @@ try:
     )
 
     start_operator_component = create_start_operator(
-        {"metadata": {"input": {"title": "input", "type": "image_array"}}}
+        {"metadata": {"input": {"title": "input", "type": "array", "instillFormat": "array:image/*", "items": {"type":"string"}}}}
     )
 
     instill_model_component_mobilenet_1 = instill_connector.create_component(
