@@ -26,12 +26,15 @@ classifiers = [
 [tool.poetry.dependencies]
 
 python = "^3.8"
-grpcio = "^1.57.0"
+grpcio = "^1.54.2"
 pyyaml = "^6.0.1"
 numpy = "^1.21.0"
 protobuf = "^4.24.2"
 types-protobuf = "^4.24.0.1"
 types-pyyaml = "^6.0.12.11"
+google-api-core = "^2.11.1"
+googleapis-common-protos = "^1.60.0"
+protoc-gen-openapiv2 = "^0.0.1"
 pydantic = "*"
 
 [tool.poetry.dev-dependencies]
@@ -69,10 +72,7 @@ MacFSEvents = { version = "*", platform = "darwin" }
 pync = { version = "*", platform = "darwin" }
 ipython = "^8.10.0"
 mypy-protobuf = "^3.5.0"
-grpcio-tools = "^1.57.0"
-google-api-core = "^2.11.1"
-googleapis-common-protos = "^1.60.0"
-protoc-gen-openapiv2 = "^0.0.1"
+grpcio-tools = "^1.54.2"
 
 # Publish
 twine = "^4.0.2"
