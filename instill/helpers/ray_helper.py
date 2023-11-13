@@ -120,7 +120,7 @@ class InstillRayModelConfig:
         )
 
 
-def entry():
+def entry(model_weight_name_or_folder: str):
     parser = argparse.ArgumentParser()
 
     ray_actor_options = {
@@ -153,7 +153,7 @@ def entry():
         ray_actor_options=args.ray_actor_options,
         ray_autoscaling_options=args.ray_autoscaling_options,
         max_concurrent_queries=max_concurrent_queries,
-        og_model_path=args.model,
+        og_model_path="/".join([args.model, model_weight_name_or_folder]),
     )
 
     return args.func, model_config
