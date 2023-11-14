@@ -1,5 +1,5 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module
-from typing import Tuple
+from typing import Tuple, Union
 
 import instill.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
 from instill.clients import InstillClient
@@ -11,7 +11,7 @@ class Pipeline(Resource):
         self,
         client: InstillClient,
         name: str,
-        recipe: pipeline_interface.Recipe | None = None,
+        recipe: Union[pipeline_interface.Recipe, None] = None,
     ) -> None:
         super().__init__()
         self.client = client
