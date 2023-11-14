@@ -1,5 +1,6 @@
 import json
 import struct
+from typing import List
 
 import numpy as np
 from const import TextGenerationInput
@@ -82,7 +83,7 @@ def deserialize_bytes_tensor(encoded_tensor):
     return np.array(strs, dtype=bytes)
 
 
-class RayIO:
+class StandardTaskIO:
     @staticmethod
     def parse_task_text_generation_input(request) -> TextGenerationInput:
         text_generation_input = TextGenerationInput()
@@ -169,3 +170,28 @@ class RayIO:
         text_outputs = [seq["generated_text"].encode("utf-8") for seq in sequences]
 
         return serialize_byte_tensor(np.asarray(text_outputs))
+
+
+class RawIO:
+    @staticmethod
+    def parse_byte_tensor(byte_tensor) -> List[str]:
+        input_tensors = deserialize_bytes_tensor(byte_tensor)
+        outs = [str(tensor.decode("utf-8")) for tensor in input_tensors]
+
+        return outs
+
+    @staticmethod
+    def parse_unsigned_int_tensor(int_tensor) -> int:
+        return int.from_bytes(int_tensor, "little")
+
+    @staticmethod
+    def parse_signed_int_tensor(int_tensor) -> int:
+        return int.from_bytes(int_tensor, "little", signed=True)
+
+    @staticmethod
+    def parse_float_tensor(float_tensor) -> float:
+        return struct.unpack("f", float_tensor)[0]
+
+    @staticmethod
+    def parse_boolean_tensor(bool_tensor) -> bool:
+        return struct.unpack("?", bool_tensor)[0]
