@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict
+from typing import Any, Dict
 
 
 class DataType(Enum):
@@ -24,5 +24,5 @@ class TextGenerationInput:
     top_k = 1
     temperature = 0.8
     random_seed = 0
-    stop_words = ""
+    stop_words: Any = ""
     extra_params: Dict[str, str] = {}

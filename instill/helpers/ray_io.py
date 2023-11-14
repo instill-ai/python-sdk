@@ -3,7 +3,8 @@ import struct
 from typing import List
 
 import numpy as np
-from const import TextGenerationInput
+
+from instill.helpers.const import TextGenerationInput
 
 
 def serialize_byte_tensor(input_tensor):
@@ -77,7 +78,7 @@ def deserialize_bytes_tensor(encoded_tensor):
     while offset < len(val_buf):
         l = struct.unpack_from("<I", val_buf, offset)[0]
         offset += 4
-        sb = struct.unpack_from("<{}s".format(l), val_buf, offset)[0]
+        sb = struct.unpack_from(f"<{l}s", val_buf, offset)[0]
         offset += l
         strs.append(sb)
     return np.array(strs, dtype=bytes)
@@ -95,7 +96,8 @@ class StandardTaskIO:
                 input_tensor = deserialize_bytes_tensor(b_input_tensor)
                 text_generation_input.prompt = str(input_tensor[0].decode("utf-8"))
                 print(
-                    f"[DEBUG] input `prompt` type({type(text_generation_input.prompt)}): {text_generation_input.prompt}"
+                    f"[DEBUG] input `prompt` type\
+                        ({type(text_generation_input.prompt)}): {text_generation_input.prompt}"
                 )
 
             if input_name == "max_new_tokens":
@@ -103,13 +105,15 @@ class StandardTaskIO:
                     b_input_tensor, "little"
                 )
                 print(
-                    f"[DEBUG] input `max_new_tokens` type({type(text_generation_inputmax_new_tokens)}): {text_generation_inputmax_new_tokens}"
+                    f"[DEBUG] input `max_new_tokens` type\
+                        ({type(text_generation_inputmax_new_tokens)}): {text_generation_inputmax_new_tokens}"
                 )
 
             if input_name == "top_k":
                 text_generation_input.top_k = int.from_bytes(b_input_tensor, "little")
                 print(
-                    f"[DEBUG] input `top_k` type({type(text_generation_input.top_k)}): {text_generation_input.top_k}"
+                    f"[DEBUG] input `top_k` type\
+                        ({type(text_generation_input.top_k)}): {text_generation_input.top_k}"
                 )
 
             if input_name == "temperature":
@@ -117,23 +121,28 @@ class StandardTaskIO:
                     0
                 ]
                 print(
-                    f"[DEBUG] input `temperature` type({type(text_generation_input.temperature)}): {text_generation_input.temperature}"
+                    f"[DEBUG] input `temperature` type\
+                        ({type(text_generation_input.temperature)}): {text_generation_input.temperature}"
                 )
-                temperature: float = round(temperature, 2)
+                text_generation_input.temperature = round(
+                    text_generation_input.temperature, 2
+                )
 
             if input_name == "random_seed":
                 text_generation_input.random_seed = int.from_bytes(
                     b_input_tensor, "little"
                 )
                 print(
-                    f"[DEBUG] input `random_seed` type({type(text_generation_input.random_seed)}): {text_generation_input.random_seed}"
+                    f"[DEBUG] input `random_seed` type\
+                        ({type(text_generation_input.random_seed)}): {text_generation_input.random_seed}"
                 )
 
             if input_name == "stop_words":
                 input_tensor = deserialize_bytes_tensor(b_input_tensor)
                 text_generation_input.stop_words = input_tensor[0]
                 print(
-                    f"[DEBUG] input `stop_words` type({type(text_generation_input.stop_words)}): {text_generation_input.stop_words}"
+                    f"[DEBUG] input `stop_words` type\
+                        ({type(text_generation_input.stop_words)}): {text_generation_input.stop_words}"
                 )
                 if len(text_generation_input.stop_words) == 0:
                     text_generation_input.stop_words = None
@@ -147,14 +156,16 @@ class StandardTaskIO:
                         str(text_generation_input.stop_words[0])
                     ]
                 print(
-                    f"[DEBUG] parsed input `stop_words` type({type(text_generation_input.stop_words)}): {text_generation_input.stop_words}"
+                    f"[DEBUG] parsed input `stop_words` type\
+                        ({type(text_generation_input.stop_words)}): {text_generation_input.stop_words}"
                 )
 
             if input_name == "extra_params":
                 input_tensor = deserialize_bytes_tensor(b_input_tensor)
                 extra_params_str = str(input_tensor[0].decode("utf-8"))
                 print(
-                    f"[DEBUG] input `extra_params` type({type(extra_params_str)}): {extra_params_str}"
+                    f"[DEBUG] input `extra_params` type\
+                        ({type(extra_params_str)}): {extra_params_str}"
                 )
 
                 try:
