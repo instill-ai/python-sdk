@@ -8,7 +8,10 @@ class InstillRayModelConfig:
         ray_autoscaling_options: dict,
         max_concurrent_queries: int,
         og_model_path: str,
+        ray_addr: str,
     ) -> None:
+        self.ray_addr = ray_addr
+
         og_model_string_parts = og_model_path.split("/")
 
         self.ray_actor_options = ray_actor_options
@@ -25,10 +28,6 @@ class InstillRayModelConfig:
 
 def get_compose_ray_address(port: int):
     return f"ray://ray_server:{port}"
-
-
-def get_cluster_ray_address(port: int):
-    return f"ray://core_ray_server:{port}"
 
 
 def entry(model_weight_name_or_folder: str):
@@ -50,6 +49,9 @@ def entry(model_weight_name_or_folder: str):
     )
     parser.add_argument("--model", required=True, help="model path for the deployment")
     parser.add_argument(
+        "--ray-addr", default=get_compose_ray_address(10001), help="ray head address"
+    )
+    parser.add_argument(
         "--ray-actor-options",
         default=ray_actor_options,
         help="custom actor options for the deployment",
@@ -62,6 +64,7 @@ def entry(model_weight_name_or_folder: str):
     args = parser.parse_args()
 
     model_config = InstillRayModelConfig(
+        ray_addr=args.ray_addr,
         ray_actor_options=args.ray_actor_options,
         ray_autoscaling_options=args.ray_autoscaling_options,
         max_concurrent_queries=max_concurrent_queries,
