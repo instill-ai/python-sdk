@@ -34,12 +34,12 @@ def entry(model_weight_name_or_folder: str):
     parser = argparse.ArgumentParser()
 
     ray_actor_options = {
-        "num_cpus": 2,
+        "num_cpus": 1,
     }
     max_concurrent_queries = 10
     ray_autoscaling_options = {
         "target_num_ongoing_requests_per_replica": 7,
-        "initial_replicas": 0,
+        "initial_replicas": 1,
         "min_replicas": 0,
         "max_replicas": 5,
     }
