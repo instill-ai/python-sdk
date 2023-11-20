@@ -78,20 +78,22 @@ class MgmtClient(Client):
     def metadata(self, metadata: str):
         self._metadata = metadata
 
-    def liveness(self) -> mgmt_interface.LivenessResponse:
-        return self.hosts[self.instance]["client"].Liveness(
-            request=mgmt_interface.LivenessRequest()
-        )
+    def liveness(self) -> healthcheck.HealthCheckResponse.ServingStatus:
+        resp: mgmt_interface.LivenessResponse = self.hosts[self.instance][
+            "client"
+        ].Liveness(request=mgmt_interface.LivenessRequest())
+        return resp.health_check_response.status
 
-    def readiness(self) -> mgmt_interface.ReadinessResponse:
-        return self.hosts[self.instance]["client"].Readiness(
-            request=mgmt_interface.ReadinessRequest()
-        )
+    def readiness(self) -> healthcheck.HealthCheckResponse.ServingStatus:
+        resp: mgmt_interface.ReadinessResponse = self.hosts[self.instance][
+            "client"
+        ].Readiness(request=mgmt_interface.ReadinessRequest())
+        return resp.health_check_response.status
 
     def is_serving(self) -> bool:
         try:
             return (
-                self.readiness().health_check_response.status
+                self.readiness()
                 == healthcheck.HealthCheckResponse.SERVING_STATUS_SERVING
             )
         except Exception:
@@ -99,31 +101,34 @@ class MgmtClient(Client):
 
     @grpc_handler
     def login(self, username="admin", password="password") -> str:
-        return (
-            self.hosts[self.instance]["client"]
-            .AuthLogin(
-                request=mgmt_interface.AuthLoginRequest(
-                    username=username, password=password
-                )
+        resp: mgmt_interface.AuthLoginResponse = self.hosts[self.instance][
+            "client"
+        ].AuthLogin(
+            request=mgmt_interface.AuthLoginRequest(
+                username=username, password=password
             )
-            .access_token
         )
+        return resp.access_token
 
     @grpc_handler
     def get_token(self, name: str) -> mgmt_interface.ApiToken:
-        response = self.hosts[self.instance]["client"].GetToken(
+        resp: mgmt_interface.GetTokenResponse = self.hosts[self.instance][
+            "client"
+        ].GetToken(
             request=mgmt_interface.GetTokenRequest(name=name),
             metadata=self.hosts[self.instance]["metadata"],
         )
-        return response.token
+        return resp.token
 
     @grpc_handler
     def get_user(self) -> mgmt_interface.User:
-        response = self.hosts[self.instance]["client"].QueryAuthenticatedUser(
-            request=mgmt_interface.QueryAuthenticatedUserRequest(),
+        resp: mgmt_interface.GetUserResponse = self.hosts[self.instance][
+            "client"
+        ].GetUser(
+            request=mgmt_interface.GetUserRequest(),
             metadata=self.hosts[self.instance]["metadata"],
         )
-        return response.user
+        return resp.user
 
     @grpc_handler
     def list_pipeline_trigger_records(

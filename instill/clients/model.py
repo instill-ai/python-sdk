@@ -1,9 +1,11 @@
 # pylint: disable=no-member,wrong-import-position
 import time
 from collections import defaultdict
-from typing import Tuple
+from typing import Iterable, Tuple, Union
 
 import grpc
+from google.longrunning import operations_pb2
+from google.protobuf import field_mask_pb2
 
 import instill.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
 import instill.protogen.model.model.v1alpha.model_definition_pb2 as model_definition_interface
@@ -79,37 +81,38 @@ class ModelClient(Client):
     def metadata(self, metadata: str):
         self._metadata = metadata
 
-    def liveness(self) -> model_interface.LivenessResponse:
-        return self.hosts[self.instance]["client"].Liveness(
-            request=model_interface.LivenessRequest()
-        )
+    def liveness(self) -> healthcheck.HealthCheckResponse.ServingStatus:
+        resp: model_interface.LivenessResponse = self.hosts[self.instance][
+            "client"
+        ].Liveness(request=model_interface.LivenessRequest())
+        return resp.health_check_response.status
 
-    def readiness(self) -> model_interface.ReadinessResponse:
-        return self.hosts[self.instance]["client"].Readiness(
-            request=model_interface.ReadinessRequest()
-        )
+    def readiness(self) -> healthcheck.HealthCheckResponse.ServingStatus:
+        resp: model_interface.ReadinessResponse = self.hosts[self.instance][
+            "client"
+        ].Readiness(request=model_interface.ReadinessRequest())
+        return resp.health_check_response.status
 
     def is_serving(self) -> bool:
         try:
             return (
-                self.readiness().health_check_response.status
+                self.readiness()
                 == healthcheck.HealthCheckResponse.SERVING_STATUS_SERVING
             )
         except Exception:
             return False
 
     @grpc_handler
-    def watch_model(self, model_name: str) -> model_interface.Model.State:
-        return (
-            self.hosts[self.instance]["client"]
-            .WatchUserModel(
-                request=model_interface.WatchUserModelRequest(
-                    name=f"{self.namespace}/models/{model_name}"
-                ),
-                metadata=self.hosts[self.instance]["metadata"],
-            )
-            .state
+    def watch_model(self, model_name: str) -> model_interface.Model.State.ValueType:
+        resp: model_interface.WatchUserModelResponse = self.hosts[self.instance][
+            "client"
+        ].WatchUserModel(
+            request=model_interface.WatchUserModelRequest(
+                name=f"{self.namespace}/models/{model_name}"
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
         )
+        return resp.state
 
     @grpc_handler
     def create_model_local(
@@ -128,48 +131,29 @@ class ModelClient(Client):
             req = model_interface.CreateUserModelBinaryFileUploadRequest(
                 parent=self.namespace, model=model, content=data
             )
-        resp = self.hosts[self.instance]["client"].CreateUserModelBinaryFileUpload(
-            request_iterator=iter([req]),
-            metadata=self.hosts[self.instance]["metadata"],
-        )
-
-        while (
-            self.hosts[self.instance]["client"]
-            .GetModelOperation(
-                request=model_interface.GetModelOperationRequest(
-                    name=resp.operation.name
-                ),
+        create_resp: model_interface.CreateUserModelBinaryFileUploadResponse = (
+            self.hosts[self.instance]["client"].CreateUserModelBinaryFileUpload(
+                request_iterator=iter([req]),
                 metadata=self.hosts[self.instance]["metadata"],
             )
-            .operation.done
-            is not True
-        ):
+        )
+
+        while self.get_operation(name=create_resp.operation.name).done is not True:
             time.sleep(1)
 
-        watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
-            request=model_interface.WatchUserModelRequest(
-                name=f"{self.namespace}/models/{model_name}"
-            ),
-            metadata=self.hosts[self.instance]["metadata"],
-        )
-        while watch_resp.state == 0:
+        state = self.watch_model(model_name=model_name)
+        while state == 0:
             time.sleep(1)
-            watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
-                request=model_interface.WatchUserModelRequest(
-                    name=f"{self.namespace}/models/{model_name}"
-                ),
+            state = self.watch_model(model_name=model_name)
+
+        if state == 1:
+            resp: model_interface.GetUserModelResponse = self.hosts[self.instance][
+                "client"
+            ].GetUserModel(
+                request=model_interface.GetUserModelRequest(name=model_name),
                 metadata=self.hosts[self.instance]["metadata"],
             )
-
-        if watch_resp.state == 1:
-            return (
-                self.hosts[self.instance]["client"]
-                .GetUserModel(
-                    request=model_interface.GetUserModelRequest(name=model_name),
-                    metadata=self.hosts[self.instance]["metadata"],
-                )
-                .model
-            )
+            return resp.model
 
         raise SystemError("model creation failed")
 
@@ -184,56 +168,35 @@ class ModelClient(Client):
         model.id = name
         model.model_definition = definition
         model.configuration.update(configuration)
-        resp = self.hosts[self.instance]["client"].CreateUserModel(
+        create_resp: model_interface.CreateUserModelResponse = self.hosts[
+            self.instance
+        ]["client"].CreateUserModel(
             request=model_interface.CreateUserModelRequest(
                 model=model, parent=self.namespace
             ),
             metadata=self.hosts[self.instance]["metadata"],
         )
 
-        while (
-            self.hosts[self.instance]["client"]
-            .GetModelOperation(
-                request=model_interface.GetModelOperationRequest(
-                    name=resp.operation.name
-                ),
-                metadata=self.hosts[self.instance]["metadata"],
-            )
-            .operation.done
-            is not True
-        ):
+        while self.get_operation(name=create_resp.operation.name).done is not True:
             time.sleep(1)
 
         # TODO: due to state update delay of controller
         # TODO: should optimize this in model-backend
         time.sleep(3)
 
-        watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
-            request=model_interface.WatchUserModelRequest(
-                name=f"{self.namespace}/models/{model.id}"
-            ),
-            metadata=self.hosts[self.instance]["metadata"],
-        )
-        while watch_resp.state == 0:
+        state = self.watch_model(model_name=model.id)
+        while state == 0:
             time.sleep(1)
-            watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
-                request=model_interface.WatchUserModelRequest(
-                    name=f"{self.namespace}/models/{model.id}"
-                ),
+            state = self.watch_model(model_name=model.id)
+
+        if state == 1:
+            resp: model_interface.GetUserModelResponse = self.hosts[self.instance][
+                "client"
+            ].GetUserModel(
+                request=model_interface.GetUserModelRequest(name=model.id),
                 metadata=self.hosts[self.instance]["metadata"],
             )
-
-        if watch_resp.state == 1:
-            return (
-                self.hosts[self.instance]["client"]
-                .GetUserModel(
-                    request=model_interface.GetUserModelRequest(
-                        name=f"{self.namespace}/models/{model.id}"
-                    ),
-                    metadata=self.hosts[self.instance]["metadata"],
-                )
-                .model
-            )
+            return resp.model
 
         raise SystemError("model creation failed")
 
@@ -246,22 +209,12 @@ class ModelClient(Client):
             metadata=self.hosts[self.instance]["metadata"],
         )
 
-        watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
-            request=model_interface.WatchUserModelRequest(
-                name=f"{self.namespace}/models/{model_name}"
-            ),
-            metadata=self.hosts[self.instance]["metadata"],
-        )
-        while watch_resp.state not in (2, 3):
+        state = self.watch_model(model_name=model_name)
+        while state not in (2, 3):
             time.sleep(1)
-            watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
-                request=model_interface.WatchUserModelRequest(
-                    name=f"{self.namespace}/models/{model_name}"
-                ),
-                metadata=self.hosts[self.instance]["metadata"],
-            )
+            state = self.watch_model(model_name=model_name)
 
-        return watch_resp.state
+        return state
 
     @grpc_handler
     def undeploy_model(self, model_name: str) -> model_interface.Model.State:
@@ -272,26 +225,18 @@ class ModelClient(Client):
             metadata=self.hosts[self.instance]["metadata"],
         )
 
-        watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
-            request=model_interface.WatchUserModelRequest(
-                name=f"{self.namespace}/models/{model_name}"
-            ),
-            metadata=self.hosts[self.instance]["metadata"],
-        )
-        while watch_resp.state not in (1, 3):
+        state = self.watch_model(model_name=model_name)
+        while state not in (1, 3):
             time.sleep(1)
-            watch_resp = self.hosts[self.instance]["client"].WatchUserModel(
-                request=model_interface.WatchUserModelRequest(
-                    name=f"{self.namespace}/models/{model_name}"
-                ),
-                metadata=self.hosts[self.instance]["metadata"],
-            )
+            state = self.watch_model(model_name=model_name)
 
-        return watch_resp.state
+        return state
 
     @grpc_handler
-    def trigger_model(self, model_name: str, task_inputs: list) -> list:
-        resp = self.hosts[self.instance]["client"].TriggerUserModel(
+    def trigger_model(self, model_name: str, task_inputs: list) -> Iterable:
+        resp: model_interface.TriggerUserModelResponse = self.hosts[self.instance][
+            "client"
+        ].TriggerUserModel(
             request=model_interface.TriggerUserModelRequest(
                 name=f"{self.namespace}/models/{model_name}", task_inputs=task_inputs
             ),
@@ -310,46 +255,59 @@ class ModelClient(Client):
 
     @grpc_handler
     def get_model(self, model_name: str) -> model_interface.Model:
-        return (
-            self.hosts[self.instance]["client"]
-            .GetUserModel(
-                request=model_interface.GetUserModelRequest(
-                    name=f"{self.namespace}/models/{model_name}",
-                    view=model_definition_interface.VIEW_FULL,
-                ),
-                metadata=self.hosts[self.instance]["metadata"],
-            )
-            .model
+        resp: model_interface.GetUserModelResponse = self.hosts[self.instance][
+            "client"
+        ].GetUserModel(
+            request=model_interface.GetUserModelRequest(
+                name=f"{self.namespace}/models/{model_name}",
+                view=model_definition_interface.VIEW_FULL,
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
         )
+        return resp.model
 
     @grpc_handler
-    def get_model_by_uid(self, model_uid: str) -> model_interface.Model:
-        return (
-            self.hosts[self.instance]["client"]
-            .GetUserModel(
-                request=model_interface.LookUpModelRequest(
-                    permalink=f"models/{model_uid}"
-                ),
-                metadata=self.hosts[self.instance]["metadata"],
-            )
-            .model
+    def update_model(
+        self, model: model_interface.Model, mask: field_mask_pb2.FieldMask
+    ) -> model_interface.Model:
+        resp: model_interface.UpdateUserModelResponse = self.hosts[self.instance][
+            "client"
+        ].UpdateUserModel(
+            request=model_interface.UpdateUserModelRequest(
+                model=model,
+                update_mask=mask,
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
         )
+        return resp.model
 
     @grpc_handler
-    def get_model_card(self, model_name: str) -> model_interface.Model:
-        return (
-            self.hosts[self.instance]["client"]
-            .GetUserModel(
-                request=model_interface.GetUserModelCardRequest(
-                    name=f"{self.namespace}/models/{model_name}"
-                ),
-                metadata=self.hosts[self.instance]["metadata"],
-            )
-            .readme
+    def lookup_model(self, model_uid: str) -> model_interface.Model:
+        resp: model_interface.LookUpModelResponse = self.hosts[self.instance][
+            "client"
+        ].LookUpModel(
+            request=model_interface.LookUpModelRequest(permalink=f"models/{model_uid}"),
+            metadata=self.hosts[self.instance]["metadata"],
         )
+        return resp.model
 
     @grpc_handler
-    def list_models(self, public=False) -> Tuple[list, str, int]:
+    def get_model_card(self, model_name: str) -> model_interface.ModelCard:
+        resp: model_interface.GetUserModelCardResponse = self.hosts[self.instance][
+            "client"
+        ].GetUserModel(
+            request=model_interface.GetUserModelCardRequest(
+                name=f"{self.namespace}/models/{model_name}"
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+        return resp.readme
+
+    @grpc_handler
+    def list_models(self, public=False) -> Tuple[Iterable, str, int]:
+        resp: Union[
+            model_interface.ListModelsResponse, model_interface.ListUserModelsResponse
+        ]
         if not public:
             resp = self.hosts[self.instance]["client"].ListUserModels(
                 request=model_interface.ListUserModelsRequest(parent=self.namespace),
@@ -362,3 +320,15 @@ class ModelClient(Client):
             )
 
         return resp.models, resp.next_page_token, resp.total_size
+
+    @grpc_handler
+    def get_operation(self, name: str) -> operations_pb2.Operation:
+        resp: model_interface.GetModelOperationResponse = self.hosts[self.instance][
+            "client"
+        ].GetModelOperation(
+            request=model_interface.GetModelOperationRequest(
+                name=name,
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+        return resp.operation

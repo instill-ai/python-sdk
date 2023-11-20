@@ -1,12 +1,16 @@
 # pylint: disable=no-member,wrong-import-position
 from collections import defaultdict
-from typing import Tuple
+from typing import Iterable, Tuple, Union
 
 import grpc
+from google.longrunning import operations_pb2
+from google.protobuf import field_mask_pb2
 
 import instill.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
 
 # pipeline
+import instill.protogen.vdp.pipeline.v1alpha.common_pb2 as common_interface
+import instill.protogen.vdp.pipeline.v1alpha.operator_definition_pb2 as operator_interface
 import instill.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
 import instill.protogen.vdp.pipeline.v1alpha.pipeline_public_service_pb2_grpc as pipeline_service
 from instill.clients import constant
@@ -79,24 +83,62 @@ class PipelineClient(Client):
     def metadata(self, metadata: str):
         self._metadata = metadata
 
-    def liveness(self) -> pipeline_interface.LivenessResponse:
-        return self.hosts[self.instance]["client"].Liveness(
-            request=pipeline_interface.LivenessRequest()
-        )
+    def liveness(self) -> healthcheck.HealthCheckResponse.ServingStatus:
+        resp: pipeline_interface.LivenessResponse = self.hosts[self.instance][
+            "client"
+        ].Liveness(request=pipeline_interface.LivenessRequest())
+        return resp.health_check_response.status
 
-    def readiness(self) -> pipeline_interface.ReadinessResponse:
-        return self.hosts[self.instance]["client"].Readiness(
-            request=pipeline_interface.ReadinessRequest()
-        )
+    def readiness(self) -> healthcheck.HealthCheckResponse.ServingStatus:
+        resp: pipeline_interface.ReadinessResponse = self.hosts[self.instance][
+            "client"
+        ].Readiness(request=pipeline_interface.ReadinessRequest())
+        return resp.health_check_response.status
 
     def is_serving(self) -> bool:
         try:
             return (
-                self.readiness().health_check_response.status
+                self.readiness()
                 == healthcheck.HealthCheckResponse.SERVING_STATUS_SERVING
             )
         except Exception:
             return False
+
+    @grpc_handler
+    def list_operator_definitions(
+        self,
+        filer_str: str = "",
+        next_page_token: str = "",
+        total_size: int = 100,
+    ) -> Tuple[Iterable, str, int]:
+        resp: operator_interface.ListOperatorDefinitionsResponse = self.hosts[
+            self.instance
+        ]["client"].ListUserPipelines(
+            request=operator_interface.ListOperatorDefinitionsRequest(
+                filter=filer_str,
+                page_size=total_size,
+                page_token=next_page_token,
+                view=common_interface.VIEW_FULL,
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+
+        return resp.operator_definitions, resp.next_page_token, resp.total_size
+
+    @grpc_handler
+    def get_operator_definition(
+        self, name: str
+    ) -> operator_interface.OperatorDefinition:
+        resp: operator_interface.GetOperatorDefinitionResponse = self.hosts[
+            self.instance
+        ]["client"].GetOperatorDefinition(
+            request=operator_interface.GetOperatorDefinitionRequest(
+                name=f"operator-definitions//{name}",
+                view=common_interface.VIEW_FULL,
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+        return resp.operator_definition
 
     @grpc_handler
     def create_pipeline(
@@ -108,7 +150,9 @@ class PipelineClient(Client):
             id=name,
             recipe=recipe,
         )
-        resp = self.hosts[self.instance]["client"].CreateUserPipeline(
+        resp: pipeline_interface.CreateUserPipelineResponse = self.hosts[self.instance][
+            "client"
+        ].CreateUserPipeline(
             request=pipeline_interface.CreateUserPipelineRequest(
                 pipeline=pipeline, parent=self.namespace
             ),
@@ -118,41 +162,96 @@ class PipelineClient(Client):
 
     @grpc_handler
     def get_pipeline(self, name: str) -> pipeline_interface.Pipeline:
-        return (
-            self.hosts[self.instance]["client"]
-            .GetUserPipeline(
-                request=pipeline_interface.GetUserPipelineRequest(
-                    name=f"{self.namespace}/pipelines/{name}"
-                ),
-                metadata=self.hosts[self.instance]["metadata"],
-            )
-            .pipeline
+        resp: pipeline_interface.GetUserPipelineResponse = self.hosts[self.instance][
+            "client"
+        ].GetUserPipeline(
+            request=pipeline_interface.GetUserPipelineRequest(
+                name=f"{self.namespace}/pipelines/{name}"
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
         )
+        return resp.pipeline
+
+    @grpc_handler
+    def lookup_pipeline(self, pipeline_uid: str) -> pipeline_interface.Pipeline:
+        resp: pipeline_interface.LookUpPipelineResponse = self.hosts[self.instance][
+            "client"
+        ].LookUpPipeline(
+            request=pipeline_interface.LookUpPipelineRequest(
+                permalink=f"pipelines/{pipeline_uid}",
+                view=common_interface.VIEW_FULL,
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+        return resp.pipeline
+
+    @grpc_handler
+    def rename_pipeline(self, name: str, new_name: str) -> pipeline_interface.Pipeline:
+        resp: pipeline_interface.RenameUserPipelineResponse = self.hosts[self.instance][
+            "client"
+        ].RenameUserPipeline(
+            request=pipeline_interface.RenameUserPipelineRequest(
+                name=f"{self.namespace}/pipelines/{name}",
+                new_pipeline_id=new_name,
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+        return resp.pipeline
+
+    @grpc_handler
+    def update_pipeline(
+        self, pipeline: pipeline_interface.Pipeline, mask: field_mask_pb2.FieldMask
+    ) -> pipeline_interface.Pipeline:
+        resp: pipeline_interface.UpdateUserPipelineResponse = self.hosts[self.instance][
+            "client"
+        ].UpdateUserPipeline(
+            request=pipeline_interface.UpdateUserPipelineRequest(
+                pipeline=pipeline,
+                update_mask=mask,
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+        return resp.pipeline
 
     @grpc_handler
     def validate_pipeline(self, name: str) -> pipeline_interface.Pipeline:
-        return (
-            self.hosts[self.instance]["client"]
-            .ValidateUserPipeline(
-                request=pipeline_interface.ValidateUserPipelineRequest(
-                    name=f"{self.namespace}/pipelines/{name}"
-                ),
-                metadata=self.hosts[self.instance]["metadata"],
-            )
-            .pipeline
+        resp: pipeline_interface.ValidateUserPipelineResponse = self.hosts[
+            self.instance
+        ]["client"].ValidateUserPipeline(
+            request=pipeline_interface.ValidateUserPipelineRequest(
+                name=f"{self.namespace}/pipelines/{name}"
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
         )
+        return resp.pipeline
 
     @grpc_handler
     def trigger_pipeline(
         self, name: str, inputs: list
-    ) -> Tuple[list, pipeline_interface.TriggerMetadata]:
-        resp = self.hosts[self.instance]["client"].TriggerUserPipeline(
+    ) -> Tuple[Iterable, pipeline_interface.TriggerMetadata]:
+        resp: pipeline_interface.TriggerUserPipelineResponse = self.hosts[
+            self.instance
+        ]["client"].TriggerUserPipeline(
             request=pipeline_interface.TriggerUserPipelineRequest(
                 name=f"{self.namespace}/pipelines/{name}", inputs=inputs
             ),
             metadata=self.hosts[self.instance]["metadata"],
         )
         return resp.outputs, resp.metadata
+
+    @grpc_handler
+    def trigger_async_pipeline(
+        self, name: str, inputs: list
+    ) -> operations_pb2.Operation:
+        resp: pipeline_interface.TriggerAsyncUserPipelineResponse = self.hosts[
+            self.instance
+        ]["client"].TriggerUserPipeline(
+            request=pipeline_interface.TriggerAsyncUserPipelineRequest(
+                name=f"{self.namespace}/pipelines/{name}", inputs=inputs
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+        return resp.operation
 
     @grpc_handler
     def delete_pipeline(self, name: str):
@@ -164,18 +263,239 @@ class PipelineClient(Client):
         )
 
     @grpc_handler
-    def list_pipelines(self, public=False) -> Tuple[list, str, int]:
+    def list_pipelines(
+        self,
+        filer_str: str = "",
+        next_page_token: str = "",
+        total_size: int = 100,
+        show_deleted: bool = False,
+        public=False,
+    ) -> Tuple[Iterable, str, int]:
+        resp: Union[
+            pipeline_interface.ListPipelinesResponse,
+            pipeline_interface.ListUserPipelinesResponse,
+        ]
         if not public:
             resp = self.hosts[self.instance]["client"].ListUserPipelines(
                 request=pipeline_interface.ListUserPipelinesRequest(
-                    parent=self.namespace
+                    parent=self.namespace,
+                    filter=filer_str,
+                    page_size=total_size,
+                    page_token=next_page_token,
+                    show_deleted=show_deleted,
+                    view=common_interface.VIEW_FULL,
                 ),
                 metadata=self.hosts[self.instance]["metadata"],
             )
         else:
             resp = self.hosts[self.instance]["client"].ListPipelines(
-                request=pipeline_interface.ListPipelinesRequest(),
+                request=pipeline_interface.ListPipelinesRequest(
+                    filter=filer_str,
+                    page_size=total_size,
+                    page_token=next_page_token,
+                    show_deleted=show_deleted,
+                    view=common_interface.VIEW_FULL,
+                ),
                 metadata=self.hosts[self.instance]["metadata"],
             )
 
         return resp.pipelines, resp.next_page_token, resp.total_size
+
+    @grpc_handler
+    def get_operation(self, name: str) -> operations_pb2.Operation:
+        resp: pipeline_interface.GetOperationResponse = self.hosts[self.instance][
+            "client"
+        ].GetOperation(
+            request=pipeline_interface.GetOperationRequest(
+                name=name,
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+        return resp.operation
+
+    @grpc_handler
+    def create_pipeline_release(
+        self,
+        version: str,
+    ) -> pipeline_interface.PipelineRelease:
+        """Create a release version of a pipeline
+
+        Args:
+            name (str): Must be a sematic version vX.Y.Z
+
+        Returns:
+            pipeline_interface.PipelineRelease: Released pipeline
+        """
+        pipeline_release = pipeline_interface.PipelineRelease(
+            id=version,
+        )
+        resp: pipeline_interface.CreateUserPipelineReleaseResponse = self.hosts[
+            self.instance
+        ]["client"].CreateUserPipelineRelease(
+            request=pipeline_interface.CreateUserPipelineReleaseRequest(
+                release=pipeline_release, parent=self.namespace
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+        return resp.release
+
+    @grpc_handler
+    def get_pipeline_release(self, name: str) -> pipeline_interface.PipelineRelease:
+        """Get a released pipeline
+
+        Args:
+            name (str): Must have the format of {name}/releases/*
+
+        Returns:
+            pipeline_interface.Pipeline: Released pipeline
+        """
+        resp: pipeline_interface.GetUserPipelineReleaseResponse = self.hosts[
+            self.instance
+        ]["client"].GetUserPipelineRelease(
+            request=pipeline_interface.GetUserPipelineReleaseRequest(
+                name=f"{self.namespace}/pipelines/{name}",
+                view=common_interface.VIEW_FULL,
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+        return resp.release
+
+    @grpc_handler
+    def rename_pipeline_release(
+        self, name: str, new_version: str
+    ) -> pipeline_interface.PipelineRelease:
+        """Rename a released pipeline
+
+        Args:
+            name (str): Must have the format of {name}/releases/*
+            new_version (str): New release version, must be a sematic version vX.Y.Z
+
+        Returns:
+            pipeline_interface.PipelineRelease: released pipeline
+        """
+        resp: pipeline_interface.RenameUserPipelineReleaseResponse = self.hosts[
+            self.instance
+        ]["client"].RenameUserPipelineRelease(
+            request=pipeline_interface.RenameUserPipelineReleaseRequest(
+                name=f"{self.namespace}/pipelines/{name}",
+                new_pipeline_release_id=new_version,
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+        return resp.release
+
+    @grpc_handler
+    def update_pipeline_release(
+        self,
+        pipeline_release: pipeline_interface.PipelineRelease,
+        mask: field_mask_pb2.FieldMask,
+    ) -> pipeline_interface.PipelineRelease:
+        resp: pipeline_interface.UpdateUserPipelineReleaseResponse = self.hosts[
+            self.instance
+        ]["client"].UpdateUserPipelineRelease(
+            request=pipeline_interface.UpdateUserPipelineReleaseRequest(
+                release=pipeline_release,
+                update_mask=mask,
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+        return resp.release
+
+    @grpc_handler
+    def list_pipeline_releases(
+        self,
+        filer_str: str = "",
+        next_page_token: str = "",
+        total_size: int = 100,
+        show_deleted: bool = False,
+    ) -> Tuple[Iterable, str, int]:
+        resp: pipeline_interface.ListUserPipelineReleasesResponse = self.hosts[
+            self.instance
+        ]["client"].ListUserPipelineReleases(
+            request=pipeline_interface.ListUserPipelineReleasesRequest(
+                parent=self.namespace,
+                filter=filer_str,
+                page_size=total_size,
+                page_token=next_page_token,
+                show_deleted=show_deleted,
+                view=common_interface.VIEW_FULL,
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+
+        return resp.releases, resp.next_page_token, resp.total_size
+
+    @grpc_handler
+    def delete_pipeline_release(self, name: str):
+        self.hosts[self.instance]["client"].DeleteUserPipelineRelease(
+            request=pipeline_interface.DeleteUserPipelineReleaseRequest(
+                name=f"{self.namespace}/pipelines/{name}"
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+
+    @grpc_handler
+    def set_default_pipeline_release(
+        self, name: str
+    ) -> pipeline_interface.PipelineRelease:
+        resp: pipeline_interface.SetDefaultUserPipelineReleaseResponse = self.hosts[
+            self.instance
+        ]["client"].SetDefaultUserPipelineRelease(
+            request=pipeline_interface.SetDefaultUserPipelineReleaseRequest(
+                name=f"{self.namespace}/pipelines/{name}",
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+        return resp.release
+
+    @grpc_handler
+    def restore_pipeline_release(self, name: str) -> pipeline_interface.PipelineRelease:
+        resp: pipeline_interface.RestoreUserPipelineReleaseResponse = self.hosts[
+            self.instance
+        ]["client"].RestoreUserPipelineRelease(
+            request=pipeline_interface.RestoreUserPipelineReleaseRequest(
+                name=f"{self.namespace}/pipelines/{name}",
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+        return resp.release
+
+    @grpc_handler
+    def watch_pipeline_release(self, name: str) -> pipeline_interface.State.ValueType:
+        resp: pipeline_interface.WatchUserPipelineReleaseResponse = self.hosts[
+            self.instance
+        ]["client"].WatchUserPipelineRelease(
+            request=pipeline_interface.WatchUserPipelineReleaseRequest(
+                name=f"{self.namespace}/pipelines/{name}",
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+        return resp.state
+
+    @grpc_handler
+    def trigger_pipeline_release(
+        self, name: str, inputs: list
+    ) -> Tuple[Iterable, pipeline_interface.TriggerMetadata]:
+        resp: pipeline_interface.TriggerUserPipelineReleaseResponse = self.hosts[
+            self.instance
+        ]["client"].TriggerUserPipelineReleas(
+            request=pipeline_interface.TriggerUserPipelineReleaseRequest(
+                name=f"{self.namespace}/pipelines/{name}", inputs=inputs
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+        return resp.outputs, resp.metadata
+
+    @grpc_handler
+    def trigger_async_pipeline_release(
+        self, name: str, inputs: list
+    ) -> operations_pb2.Operation:
+        resp: pipeline_interface.TriggerAsyncUserPipelineReleaseResponse = self.hosts[
+            self.instance
+        ]["client"].TriggerAsyncUserPipelineRelease(
+            request=pipeline_interface.TriggerAsyncUserPipelineReleaseRequest(
+                name=f"{self.namespace}/pipelines/{name}", inputs=inputs
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+        return resp.operation
