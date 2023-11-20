@@ -2,6 +2,7 @@
 import base64
 import requests
 
+from instill.configuration import global_config
 from google.protobuf.struct_pb2 import Struct
 from instill.clients import get_client
 from instill.resources.model import GithubModel
@@ -22,6 +23,12 @@ from instill.resources import (
 )
 
 from instill.utils.logger import Logger
+
+global_config.set_default(
+    url="localhost:8080",
+    token="",
+    secure=False,
+)
 
 local_model = {
     "model_name": "test1",
@@ -228,7 +235,11 @@ try:
     )
 
     start_operator_component = create_start_operator(
-        config={"metadata": {"input": {"title": "Input", "type": "string", "instillFormat": "string"}}}
+        config={
+            "metadata": {
+                "input": {"title": "Input", "type": "string", "instillFormat": "string"}
+            }
+        }
     )
 
     end_operator_component = create_end_operator(
@@ -258,7 +269,15 @@ try:
         "==================== instill model + csv pipeline =================================================="
     )
     start_operator_component = create_start_operator(
-        {"metadata": {"input": {"title": "input", "type": "string", "instillFormat": "image/*"}}}
+        {
+            "metadata": {
+                "input": {
+                    "title": "input",
+                    "type": "string",
+                    "instillFormat": "image/*",
+                }
+            }
+        }
     )
 
     instill_model_connector_component = instill_connector.create_component(
@@ -315,7 +334,16 @@ try:
     )
 
     start_operator_component = create_start_operator(
-        {"metadata": {"input": {"title": "input", "type": "array", "instillFormat": "array:image/*", "items": {"type":"string"}}}}
+        {
+            "metadata": {
+                "input": {
+                    "title": "input",
+                    "type": "array",
+                    "instillFormat": "array:image/*",
+                    "items": {"type": "string"},
+                }
+            }
+        }
     )
 
     instill_model_component_mobilenet_1 = instill_connector.create_component(
@@ -426,12 +454,21 @@ Logger.i(
 Logger.i(
     "==================== Cleanup ======================================================================="
 )
-del csv_pipeline
-del instill_model_pipeline
-del cute_pipeline
-del yolov7
-del mobilenet
-del instill_connector
-del openai_connector
-del stability_connector
-del csv_connector
+if csv_pipeline:
+    csv_pipeline.delete()
+if instill_model_pipeline:
+    instill_model_pipeline.delete()
+if cute_pipeline:
+    cute_pipeline.delete()
+if yolov7:
+    yolov7.delete()
+if mobilenet:
+    mobilenet.delete()
+if instill_connector:
+    instill_connector.delete()
+if openai_connector:
+    openai_connector.delete()
+if stability_connector:
+    stability_connector.delete()
+if csv_connector:
+    csv_connector.delete()
