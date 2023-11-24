@@ -125,7 +125,7 @@ class MgmtClient(Client):
         resp: mgmt_interface.GetUserResponse = self.hosts[self.instance][
             "client"
         ].GetUser(
-            request=mgmt_interface.GetUserRequest(),
+            request=mgmt_interface.GetUserRequest(name="users/me"),
             metadata=self.hosts[self.instance]["metadata"],
         )
         return resp.user

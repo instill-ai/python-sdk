@@ -245,7 +245,7 @@ class PipelineClient(Client):
     ) -> operations_pb2.Operation:
         resp: pipeline_interface.TriggerAsyncUserPipelineResponse = self.hosts[
             self.instance
-        ]["client"].TriggerUserPipeline(
+        ]["client"].TriggerAsyncUserPipeline(
             request=pipeline_interface.TriggerAsyncUserPipelineRequest(
                 name=f"{self.namespace}/pipelines/{name}", inputs=inputs
             ),
