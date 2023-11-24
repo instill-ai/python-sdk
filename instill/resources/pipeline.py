@@ -1,6 +1,8 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module
 from typing import Tuple, Union
 
+from google.longrunning import operations_pb2
+
 import instill.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
 from instill.clients import InstillClient
 from instill.resources.resource import Resource
@@ -48,6 +50,14 @@ class Pipeline(Resource):
 
     def _update(self):
         self.resource = self.client.pipeline_service.get_pipeline(name=self.resource.id)
+
+    def get_operation(self, operation: operations_pb2.Operation):
+        return self.client.pipeline_service.get_operation(operation.name)
+
+    def trigger_async(self, task_inputs: list) -> operations_pb2.Operation:
+        return self.client.pipeline_service.trigger_async_pipeline(
+            self.resource.id, task_inputs
+        )
 
     def get_recipe(self) -> str:
         return self.resource.recipe

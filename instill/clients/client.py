@@ -6,7 +6,6 @@ from instill.utils.error_handler import NotServingException
 from instill.utils.logger import Logger
 
 _mgmt_client = None
-_connector_client = None
 _pipeline_client = None
 _model_client = None
 _client = None
