@@ -1,5 +1,4 @@
 # pylint: disable=no-name-in-module
-from instill.clients.connector import ConnectorClient
 from instill.clients.mgmt import MgmtClient
 from instill.clients.model import ModelClient
 from instill.clients.pipeline import PipelineClient
@@ -20,17 +19,6 @@ def _get_mgmt_client() -> MgmtClient:
         _mgmt_client = MgmtClient()
 
     return _mgmt_client
-
-
-def _get_connector_client() -> ConnectorClient:
-    global _connector_client
-
-    if _connector_client is None:
-        _connector_client = ConnectorClient(
-            namespace=_get_mgmt_client().get_user().name
-        )
-
-    return _connector_client
 
 
 def _get_pipeline_client() -> PipelineClient:
@@ -57,12 +45,8 @@ class InstillClient:
         if not self.mgmt_service.is_serving():
             Logger.w("Instill Core is required")
             raise NotServingException
-        self.connector_service = _get_connector_client()
         self.pipeline_service = _get_pipeline_client()
-        if (
-            not self.connector_service.is_serving()
-            and not self.pipeline_service.is_serving()
-        ):
+        if not self.pipeline_service.is_serving():
             Logger.w("Instill VDP is not serving, VDP functionalities will not work")
         self.model_service = _get_model_client()
         if not self.model_service.is_serving():
@@ -72,16 +56,12 @@ class InstillClient:
 
     def set_instance(self, instance: str):
         self.mgmt_service.instance = instance
-        self.connector_service.instance = instance
         self.pipeline_service.instance = instance
         self.model_service.instance = instance
 
     def close(self):
         if self.mgmt_service.is_serving():
             for host in self.mgmt_service.hosts.values():
-                host["channel"].close()
-        if self.connector_service.is_serving():
-            for host in self.connector_service.hosts.values():
                 host["channel"].close()
         if self.pipeline_service.is_serving():
             for host in self.pipeline_service.hosts.values():

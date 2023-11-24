@@ -9,7 +9,7 @@ from google.protobuf import field_mask_pb2
 import instill.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
 
 # pipeline
-import instill.protogen.vdp.pipeline.v1alpha.common_pb2 as common_interface
+import instill.protogen.vdp.pipeline.v1alpha.connector_pb2 as connector_interface
 import instill.protogen.vdp.pipeline.v1alpha.operator_definition_pb2 as operator_interface
 import instill.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
 import instill.protogen.vdp.pipeline.v1alpha.pipeline_public_service_pb2_grpc as pipeline_service
@@ -118,7 +118,7 @@ class PipelineClient(Client):
                 filter=filer_str,
                 page_size=total_size,
                 page_token=next_page_token,
-                view=common_interface.VIEW_FULL,
+                view=operator_interface.ListOperatorDefinitionsRequest.VIEW_FULL,
             ),
             metadata=self.hosts[self.instance]["metadata"],
         )
@@ -134,7 +134,7 @@ class PipelineClient(Client):
         ]["client"].GetOperatorDefinition(
             request=operator_interface.GetOperatorDefinitionRequest(
                 name=f"operator-definitions//{name}",
-                view=common_interface.VIEW_FULL,
+                view=operator_interface.GetOperatorDefinitionRequest.VIEW_FULL,
             ),
             metadata=self.hosts[self.instance]["metadata"],
         )
@@ -179,7 +179,7 @@ class PipelineClient(Client):
         ].LookUpPipeline(
             request=pipeline_interface.LookUpPipelineRequest(
                 permalink=f"pipelines/{pipeline_uid}",
-                view=common_interface.VIEW_FULL,
+                view=pipeline_interface.LookUpPipelineRequest.VIEW_FULL,
             ),
             metadata=self.hosts[self.instance]["metadata"],
         )
@@ -283,7 +283,7 @@ class PipelineClient(Client):
                     page_size=total_size,
                     page_token=next_page_token,
                     show_deleted=show_deleted,
-                    view=common_interface.VIEW_FULL,
+                    view=pipeline_interface.ListUserPipelinesRequest.VIEW_FULL,
                 ),
                 metadata=self.hosts[self.instance]["metadata"],
             )
@@ -294,7 +294,7 @@ class PipelineClient(Client):
                     page_size=total_size,
                     page_token=next_page_token,
                     show_deleted=show_deleted,
-                    view=common_interface.VIEW_FULL,
+                    view=pipeline_interface.ListPipelinesRequest.VIEW_FULL,
                 ),
                 metadata=self.hosts[self.instance]["metadata"],
             )
@@ -354,7 +354,7 @@ class PipelineClient(Client):
         ]["client"].GetUserPipelineRelease(
             request=pipeline_interface.GetUserPipelineReleaseRequest(
                 name=f"{self.namespace}/pipelines/{name}",
-                view=common_interface.VIEW_FULL,
+                view=pipeline_interface.GetUserPipelineReleaseRequest.VIEW_FULL,
             ),
             metadata=self.hosts[self.instance]["metadata"],
         )
@@ -418,7 +418,7 @@ class PipelineClient(Client):
                 page_size=total_size,
                 page_token=next_page_token,
                 show_deleted=show_deleted,
-                view=common_interface.VIEW_FULL,
+                view=pipeline_interface.ListUserPipelineReleasesRequest.VIEW_FULL,
             ),
             metadata=self.hosts[self.instance]["metadata"],
         )
@@ -499,3 +499,102 @@ class PipelineClient(Client):
             metadata=self.hosts[self.instance]["metadata"],
         )
         return resp.operation
+
+    @grpc_handler
+    def create_connector(
+        self,
+        name: str,
+        definition: str,
+        configuration: dict,
+    ) -> connector_interface.Connector:
+        connector = connector_interface.Connector()
+        connector.id = name
+        connector.connector_definition_name = definition
+        connector.configuration.update(configuration)
+        resp = self.hosts[self.instance]["client"].CreateUserConnector(
+            request=connector_interface.CreateUserConnectorRequest(
+                connector=connector, parent=self.namespace
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+
+        return resp.connector
+
+    @grpc_handler
+    def get_connector(self, name: str) -> connector_interface.Connector:
+        return (
+            self.hosts[self.instance]["client"]
+            .GetUserConnector(
+                request=connector_interface.GetUserConnectorRequest(
+                    name=f"{self.namespace}/connectors/{name}",
+                    view=connector_interface.GetUserConnectorRequest.VIEW_FULL,
+                ),
+                metadata=self.hosts[self.instance]["metadata"],
+            )
+            .connector
+        )
+
+    @grpc_handler
+    def test_connector(self, name: str) -> connector_interface.Connector.State:
+        return (
+            self.hosts[self.instance]["client"]
+            .TestUserConnector(
+                request=connector_interface.TestUserConnectorRequest(
+                    name=f"{self.namespace}/connectors/{name}"
+                ),
+                metadata=self.hosts[self.instance]["metadata"],
+            )
+            .state
+        )
+
+    @grpc_handler
+    def execute_connector(self, name: str, inputs: list) -> list:
+        return (
+            self.hosts[self.instance]["client"]
+            .ExecuteUserConnector(
+                request=connector_interface.ExecuteUserConnectorRequest(
+                    name=f"{self.namespace}/connectors/{name}", inputs=inputs
+                ),
+                metadata=self.hosts[self.instance]["metadata"],
+            )
+            .outputs
+        )
+
+    @grpc_handler
+    def watch_connector(self, name: str) -> connector_interface.Connector.State:
+        return (
+            self.hosts[self.instance]["client"]
+            .WatchUserConnector(
+                request=connector_interface.WatchUserConnectorRequest(
+                    name=f"{self.namespace}/connectors/{name}"
+                ),
+                metadata=self.hosts[self.instance]["metadata"],
+            )
+            .state
+        )
+
+    @grpc_handler
+    def delete_connector(self, name: str):
+        self.hosts[self.instance]["client"].DeleteUserConnector(
+            request=connector_interface.DeleteUserConnectorRequest(
+                name=f"{self.namespace}/connectors/{name}"
+            ),
+            metadata=self.hosts[self.instance]["metadata"],
+        )
+
+    @grpc_handler
+    def list_connectors(self, public=False) -> Tuple[list, str, int]:
+        if not public:
+            resp = self.hosts[self.instance]["client"].ListUserConnectors(
+                request=connector_interface.ListUserConnectorsRequest(
+                    parent=self.namespace
+                ),
+                metadata=self.hosts[self.instance]["metadata"],
+            )
+        else:
+            resp = self.hosts[self.instance]["client"].ListConnectors(
+                request=connector_interface.ListConnectorsRequest(),
+                metadata=(self.hosts[self.instance]["metadata"],),
+            )
+
+        return resp.connectors, resp.next_page_token, resp.total_size

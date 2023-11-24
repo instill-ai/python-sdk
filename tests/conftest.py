@@ -3,7 +3,7 @@
 
 import pytest
 
-from instill.clients import ConnectorClient, MgmtClient, ModelClient, PipelineClient
+from instill.clients import MgmtClient, ModelClient, PipelineClient
 from instill.tests.conftest import pytest_configure
 
 
@@ -12,7 +12,6 @@ def clients():
     pass
     # mgmt_client = MgmtClient()
     # model_client = ModelClient(user=mgmt_client.get_user())
-    # connector_client = ConnectorClient(user=mgmt_client.get_user())
     # pipeline_client = PipelineClient(user=mgmt_client.get_user())
 
-    # return [mgmt_client, model_client, connector_client, pipeline_client]
+    # return [mgmt_client, model_client, pipeline_client]

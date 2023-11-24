@@ -12,8 +12,8 @@ class InstillModelConnector(Connector):
     ) -> None:
         definition = "connector-definitions/ai-instill-model"
         configuration = {
-            "api_token": client.connector_service.hosts[
-                client.connector_service.instance
+            "api_token": client.pipeline_service.hosts[
+                client.pipeline_service.instance
             ]["token"],
             "server_url": server_url,
         }
