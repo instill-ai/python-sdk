@@ -2,7 +2,7 @@
 
 from collections import defaultdict
 
-from instill.clients import ConnectorClient, MgmtClient, ModelClient, PipelineClient
+from instill.clients import MgmtClient, ModelClient, PipelineClient
 
 
 def describe_client():
@@ -14,8 +14,6 @@ def describe_client():
             expect(model_client.instance) == ""
             pipeline_client = PipelineClient(namespace="")
             expect(pipeline_client.instance) == ""
-            connector_client = ConnectorClient(namespace="")
-            expect(connector_client.instance) == ""
 
         def when_set_correct_type(expect):
             mgmt_client = MgmtClient()
@@ -27,9 +25,6 @@ def describe_client():
             pipeline_client = PipelineClient(namespace="")
             pipeline_client.instance = "staging"
             expect(pipeline_client.instance) == "staging"
-            connector_client = ConnectorClient(namespace="")
-            connector_client.instance = "staging"
-            expect(connector_client.instance) == "staging"
 
     def describe_host():
         def when_not_set(expect):
@@ -39,8 +34,6 @@ def describe_client():
             expect(model_client.hosts) is None
             pipeline_client = PipelineClient(namespace="")
             expect(pipeline_client.hosts) is None
-            connector_client = ConnectorClient(namespace="")
-            expect(connector_client.hosts) is None
 
         def when_set_correct_type(expect):
             mgmt_client = MgmtClient()
@@ -54,6 +47,3 @@ def describe_client():
             pipeline_client = PipelineClient(namespace="")
             pipeline_client.hosts = d
             expect(pipeline_client.hosts["test_instance"]["url"]) == "test_url"
-            connector_client = ConnectorClient(namespace="")
-            connector_client.hosts = d
-            expect(connector_client.hosts["test_instance"]["url"]) == "test_url"

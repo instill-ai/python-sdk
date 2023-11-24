@@ -16,11 +16,10 @@ github_model = {
 
 def test_integration():
     pass
-    # mgmt_client, model_client, connector_client, pipeline_client = clients
+    # mgmt_client, model_client, pipeline_client = clients
 
     # assert mgmt_client.is_serving()
     # assert model_client.is_serving()
-    # assert connector_client.is_serving()
     # assert pipeline_client.is_serving()
 
     # g_model = GithubModel(

@@ -143,12 +143,6 @@ try:
     Logger.i("inference done, assert output 0 category == golden retriever: True")
 
     Logger.i(
-        "==================== connector ====================================================================="
-    )
-    assert client.connector_service.is_serving()
-    Logger.i("connector client created, assert status == serving: True")
-
-    Logger.i(
         "==================== instill model connector ======================================================="
     )
 
@@ -159,13 +153,13 @@ try:
     )
     assert (
         instill_connector.get_state()
-        == connector_pb.ConnectorResource.STATE_DISCONNECTED
+        == connector_pb.Connector.STATE_DISCONNECTED
     )
     Logger.i(
         "instill model connector created, assert state == STATE_DISCONNECTED: True"
     )
 
-    assert instill_connector.test() == connector_pb.ConnectorResource.STATE_CONNECTED
+    assert instill_connector.test() == connector_pb.Connector.STATE_CONNECTED
     Logger.i("test instill model connector, assert state == STATE_CONNECTED: True")
 
     Logger.i(
@@ -179,11 +173,11 @@ try:
     )
     assert (
         openai_connector.get_state()
-        == connector_pb.ConnectorResource.STATE_DISCONNECTED
+        == connector_pb.Connector.STATE_DISCONNECTED
     )
     Logger.i("openai connector created, assert state == STATE_DISCONNECTED: True")
 
-    assert openai_connector.test() == connector_pb.ConnectorResource.STATE_CONNECTED
+    assert openai_connector.test() == connector_pb.Connector.STATE_CONNECTED
     Logger.i("test openai connector, assert state == STATE_CONNECTED: True")
 
     Logger.i(
@@ -197,11 +191,11 @@ try:
     )
     assert (
         stability_connector.get_state()
-        == connector_pb.ConnectorResource.STATE_DISCONNECTED
+        == connector_pb.Connector.STATE_DISCONNECTED
     )
     Logger.i("stability ai connector created, assert state == STATE_DISCONNECTED: True")
 
-    assert stability_connector.test() == connector_pb.ConnectorResource.STATE_CONNECTED
+    assert stability_connector.test() == connector_pb.Connector.STATE_CONNECTED
     Logger.i("test stability ai connector, assert state == STATE_CONNECTED: True")
 
     Logger.i(
@@ -216,11 +210,11 @@ try:
         configuration=config,
     )
     assert (
-        csv_connector.get_state() == connector_pb.ConnectorResource.STATE_DISCONNECTED
+        csv_connector.get_state() == connector_pb.Connector.STATE_DISCONNECTED
     )
     Logger.i("csv connector created, assert state == STATE_DISCONNECTED: True")
 
-    assert csv_connector.test() == connector_pb.ConnectorResource.STATE_CONNECTED
+    assert csv_connector.test() == connector_pb.Connector.STATE_CONNECTED
     Logger.i("tested csv connector, assert state == STATE_CONNECTED: True")
 
     Logger.i(

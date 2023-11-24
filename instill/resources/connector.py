@@ -1,6 +1,6 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module
-import instill.protogen.vdp.connector.v1alpha.connector_definition_pb2 as connector_definition_interface
-import instill.protogen.vdp.connector.v1alpha.connector_pb2 as connector_interface
+import instill.protogen.vdp.pipeline.v1alpha.connector_definition_pb2 as connector_definition_interface
+import instill.protogen.vdp.pipeline.v1alpha.connector_pb2 as connector_interface
 import instill.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
 from instill.clients import InstillClient
 from instill.resources.resource import Resource
@@ -16,9 +16,9 @@ class Connector(Resource):
     ) -> None:
         super().__init__()
         self.client = client
-        connector = client.connector_service.get_connector(name=name, silent=True)
+        connector = client.pipeline_service.get_connector(name=name, silent=True)
         if connector is None:
-            connector = client.connector_service.create_connector(
+            connector = client.pipeline_service.create_connector(
                 name=name,
                 definition=definition,
                 configuration=configuration,
@@ -30,10 +30,10 @@ class Connector(Resource):
 
     def __call__(self, task_inputs: list, mode="execute") -> list:
         if mode == "execute":
-            return self.client.connector_service.execute_connector(
+            return self.client.pipeline_service.execute_connector(
                 self.resource.id, task_inputs
             )
-        return self.client.connector_service.test_connector(
+        return self.client.pipeline_service.test_connector(
             self.resource.id, task_inputs
         )
 
@@ -50,7 +50,7 @@ class Connector(Resource):
         return self._resource
 
     @resource.setter
-    def resource(self, resource: connector_interface.ConnectorResource):
+    def resource(self, resource: connector_interface.Connector):
         self._resource = resource
 
     def create_component(self, name: str, config: dict) -> pipeline_interface.Component:
@@ -64,12 +64,12 @@ class Connector(Resource):
     def get_definition(self) -> connector_definition_interface.ConnectorDefinition:
         return self.resource.connector_definition
 
-    def get_state(self) -> connector_interface.ConnectorResource.State:
-        return self.client.connector_service.watch_connector(self.resource.id)
+    def get_state(self) -> connector_interface.Connector.State:
+        return self.client.pipeline_service.watch_connector(self.resource.id)
 
-    def test(self) -> connector_interface.ConnectorResource.State:
-        return self.client.connector_service.test_connector(self.resource.id)
+    def test(self) -> connector_interface.Connector.State:
+        return self.client.pipeline_service.test_connector(self.resource.id)
 
     def delete(self):
         if self.resource is not None:
-            self.client.connector_service.delete_connector(self.resource.id)
+            self.client.pipeline_service.delete_connector(self.resource.id)

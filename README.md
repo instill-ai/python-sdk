@@ -142,8 +142,6 @@ You can check the readiness of each service:
 ```python
 client.mgmt_service.is_serving()
 # True
-client.connector_service.is_serving()
-# True
 client.pipeline_service.is_serving()
 # True
 client.model_service.is_serving()
@@ -344,14 +342,14 @@ instill_model = InstillModelConnector(
 After the connector is created, the state should be `STATE_DISCONNECTED`
 
 ```python
-instill_model.get_state() == connector_pb.ConnectorResource.STATE_DISCONNECTED
+instill_model.get_state() == connector_pb.Connector.STATE_DISCONNECTED
 # True
 ```
 
 Now we can test the connection for the newly configured connector, to make sure the connection with the host can be established
 
 ```python
-instill_model.test() == connector_pb.ConnectorResource.STATE_CONNECTED
+instill_model.test() == connector_pb.Connector.STATE_CONNECTED
 # True
 ```
 
