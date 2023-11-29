@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.2](https://github.com/instill-ai/python-sdk/compare/v0.3.1...v0.3.2) (2023-11-29)
+
+
+### Bug Fixes
+
+* **client:** fix async pipeline trigger and get user ([#53](https://github.com/instill-ai/python-sdk/issues/53)) ([c86274b](https://github.com/instill-ai/python-sdk/commit/c86274bb1a0332b12f2f94f4644cadbe339118a6))
+* **ray:** fix mismatched grpcio version ([024471a](https://github.com/instill-ai/python-sdk/commit/024471aafb96e8ad48cfbe4c10033d584ee5b35e))
+* **ray:** fix model weight file extension ([4f3a40c](https://github.com/instill-ai/python-sdk/commit/4f3a40c005b3ca0b8ab96f28b6613474d932622a))
+
 ## [0.3.1](https://github.com/instill-ai/python-sdk/compare/v0.3.0...v0.3.1) (2023-11-08)
 
 
