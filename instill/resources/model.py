@@ -1,4 +1,6 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module
+import time
+
 import instill.protogen.model.model.v1alpha.model_definition_pb2 as model_definition_interface
 import instill.protogen.model.model.v1alpha.model_pb2 as model_interface
 from instill.clients import InstillClient
@@ -17,18 +19,36 @@ class Model(Resource):
         self.client = client
         model = client.model_service.get_model(model_name=name, silent=True)
         if model is None:
-            model = client.model_service.create_model(
+            operation = client.model_service.create_model(
                 name=name,
                 definition=definition,
                 configuration=configuration,
-            )
-            if model is None:
+            ).operation
+            while (
+                client.model_service.get_operation(name=operation.name).operation.done
+                is not True
+            ):
+                time.sleep(1)
+            # TODO: due to state update delay of controller
+            # TODO: should optimize this in model-backend
+            time.sleep(3)
+
+            state = client.model_service.watch_model(model_name=name).state
+            while state == 0:
+                time.sleep(1)
+                state = client.model_service.watch_model(model_name=name).state
+
+            if state == 1:
+                model = client.model_service.get_model(model_name=name).model
+            else:
                 raise BaseException("model creation failed")
 
         self.resource = model
 
     def __call__(self, task_inputs: list) -> list:
-        return self.client.model_service.trigger_model(self.resource.id, task_inputs)
+        return self.client.model_service.trigger_model(
+            self.resource.id, task_inputs
+        ).task_outputs
 
     @property
     def client(self):
@@ -47,24 +67,38 @@ class Model(Resource):
         self._resource = resource
 
     def _update(self):
-        self.resource = self.client.model_service.get_model(model_name=self.resource.id)
+        self.resource = self.client.model_service.get_model(
+            model_name=self.resource.id
+        ).model
 
     def get_definition(self) -> model_definition_interface.ModelDefinition:
         return self.resource.model_definition
 
     def get_readme(self) -> str:
-        return self.client.model_service.get_model_card(self.resource.id)
+        return self.client.model_service.get_model_card(self.resource.id).readme
 
     def get_state(self) -> model_interface.Model.State:
-        return self.client.model_service.watch_model(self.resource.id)
+        return self.client.model_service.watch_model(self.resource.id).state
 
     def deploy(self) -> model_interface.Model:
         self.client.model_service.deploy_model(self.resource.id)
+        state = self.client.model_service.watch_model(model_name=self.resource.id).state
+        while state not in (2, 3):
+            time.sleep(1)
+            state = self.client.model_service.watch_model(
+                model_name=self.resource.id
+            ).state
         self._update()
         return self._resource
 
     def undeploy(self) -> model_interface.Model:
         self.client.model_service.undeploy_model(self.resource.id)
+        state = self.client.model_service.watch_model(model_name=self.resource.id).state
+        while state not in (1, 3):
+            time.sleep(1)
+            state = self.client.model_service.watch_model(
+                model_name=self.resource.id
+            ).state
         self._update()
         return self._resource
 

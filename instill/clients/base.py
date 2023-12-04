@@ -1,4 +1,8 @@
 from abc import ABC, abstractmethod
+from typing import Union
+
+import google.protobuf.message
+import grpc
 
 
 class Client(ABC):
@@ -49,3 +53,27 @@ class Client(ABC):
     @abstractmethod
     def is_serving(self):
         raise NotImplementedError
+
+
+class RequestFactory:
+    def __init__(
+        self,
+        method: Union[grpc.UnaryUnaryMultiCallable, grpc.StreamUnaryMultiCallable],
+        request: google.protobuf.message.Message,
+        metadata,
+    ) -> None:
+        self.method = method
+        self.request = request
+        self.metadata = metadata
+
+    def send_sync(self):
+        return self.method(request=self.request, metadata=self.metadata)
+
+    def send_stream(self):
+        return self.method(
+            request_iterator=iter([self.request]),
+            metadata=self.metadata,
+        )
+
+    async def send_async(self):
+        return await self.method(request=self.request, metadata=self.metadata)

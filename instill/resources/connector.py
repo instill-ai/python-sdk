@@ -16,26 +16,29 @@ class Connector(Resource):
     ) -> None:
         super().__init__()
         self.client = client
-        connector = client.pipeline_service.get_connector(name=name, silent=True)
+        connector = client.pipeline_service.get_connector(
+            name=name, silent=True
+        ).connector
         if connector is None:
             connector = client.pipeline_service.create_connector(
                 name=name,
                 definition=definition,
                 configuration=configuration,
-            )
+            ).connector
             if connector is None:
                 raise BaseException("connector creation failed")
 
         self.resource = connector
 
-    def __call__(self, task_inputs: list, mode="execute") -> list:
+    def __call__(self, task_inputs: list, mode="execute"):
         if mode == "execute":
-            return self.client.pipeline_service.execute_connector(
+            resp = self.client.pipeline_service.execute_connector(
                 self.resource.id, task_inputs
             )
+            return resp.outputs
         return self.client.pipeline_service.test_connector(
             self.resource.id, task_inputs
-        )
+        ).state
 
     @property
     def client(self):
@@ -65,10 +68,10 @@ class Connector(Resource):
         return self.resource.connector_definition
 
     def get_state(self) -> connector_interface.Connector.State:
-        return self.client.pipeline_service.watch_connector(self.resource.id)
+        return self.client.pipeline_service.watch_connector(self.resource.id).state
 
     def test(self) -> connector_interface.Connector.State:
-        return self.client.pipeline_service.test_connector(self.resource.id)
+        return self.client.pipeline_service.test_connector(self.resource.id).state
 
     def delete(self):
         if self.resource is not None:

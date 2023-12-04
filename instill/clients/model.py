@@ -1,32 +1,28 @@
 # pylint: disable=no-member,wrong-import-position
-import time
-from collections import defaultdict
-from typing import Iterable, Tuple, Union
+from typing import Dict
 
-import grpc
-from google.longrunning import operations_pb2
 from google.protobuf import field_mask_pb2
 
+# common
 import instill.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
 import instill.protogen.model.model.v1alpha.model_definition_pb2 as model_definition_interface
 
 # model
 import instill.protogen.model.model.v1alpha.model_pb2 as model_interface
 import instill.protogen.model.model.v1alpha.model_public_service_pb2_grpc as model_service
-from instill.clients import constant
-from instill.clients.base import Client
-
-# common
+from instill.clients.base import Client, RequestFactory
+from instill.clients.constant import DEFAULT_INSTANCE
+from instill.clients.instance import InstillInstance
 from instill.configuration import global_config
 from instill.utils.error_handler import grpc_handler
 
 
 class ModelClient(Client):
-    def __init__(self, namespace: str) -> None:
-        self.hosts: defaultdict = defaultdict(dict)
+    def __init__(self, namespace: str, async_enabled: bool) -> None:
+        self.hosts: Dict[str, InstillInstance] = {}
         self.namespace: str = namespace
-        if constant.DEFAULT_INSTANCE in global_config.hosts:
-            self.instance = constant.DEFAULT_INSTANCE
+        if DEFAULT_INSTANCE in global_config.hosts:
+            self.instance = DEFAULT_INSTANCE
         elif len(global_config.hosts) == 0:
             self.instance = ""
         else:
@@ -34,27 +30,12 @@ class ModelClient(Client):
 
         if global_config.hosts is not None:
             for instance, config in global_config.hosts.items():
-                if not config.secure:
-                    channel = grpc.insecure_channel(config.url)
-                    self.hosts[instance]["metadata"] = (
-                        (
-                            "authorization",
-                            f"Bearer {config.token}",
-                        ),
-                    )
-                else:
-                    ssl_creds = grpc.ssl_channel_credentials()
-                    call_creds = grpc.access_token_call_credentials(config.token)
-                    creds = grpc.composite_channel_credentials(ssl_creds, call_creds)
-                    channel = grpc.secure_channel(
-                        target=config.url,
-                        credentials=creds,
-                    )
-                    self.hosts[instance]["metadata"] = ""
-                self.hosts[instance]["token"] = config.token
-                self.hosts[instance]["channel"] = channel
-                self.hosts[instance]["client"] = model_service.ModelPublicServiceStub(
-                    channel
+                self.hosts[instance] = InstillInstance(
+                    model_service.ModelPublicServiceStub,
+                    url=config.url,
+                    token=config.token,
+                    secure=config.secure,
+                    async_enabled=async_enabled,
                 )
 
     @property
@@ -81,38 +62,67 @@ class ModelClient(Client):
     def metadata(self, metadata: str):
         self._metadata = metadata
 
-    def liveness(self) -> healthcheck.HealthCheckResponse.ServingStatus:
-        resp: model_interface.LivenessResponse = self.hosts[self.instance][
-            "client"
-        ].Liveness(request=model_interface.LivenessRequest())
-        return resp.health_check_response.status
+    def liveness(self, async_enabled: bool = False) -> model_interface.LivenessResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.Liveness,
+                request=model_interface.LivenessRequest(),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
 
-    def readiness(self) -> healthcheck.HealthCheckResponse.ServingStatus:
-        resp: model_interface.ReadinessResponse = self.hosts[self.instance][
-            "client"
-        ].Readiness(request=model_interface.ReadinessRequest())
-        return resp.health_check_response.status
+        return RequestFactory(
+            method=self.hosts[self.instance].client.Liveness,
+            request=model_interface.LivenessRequest(),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    def readiness(
+        self, async_enabled: bool = False
+    ) -> model_interface.ReadinessResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.Readiness,
+                request=model_interface.ReadinessRequest(),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.Readiness,
+            request=model_interface.ReadinessRequest(),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
 
     def is_serving(self) -> bool:
         try:
             return (
-                self.readiness()
+                self.readiness().health_check_response.status
                 == healthcheck.HealthCheckResponse.SERVING_STATUS_SERVING
             )
         except Exception:
             return False
 
     @grpc_handler
-    def watch_model(self, model_name: str) -> model_interface.Model.State.ValueType:
-        resp: model_interface.WatchUserModelResponse = self.hosts[self.instance][
-            "client"
-        ].WatchUserModel(
+    def watch_model(
+        self,
+        model_name: str,
+        async_enabled: bool = False,
+    ) -> model_interface.WatchUserModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.WatchUserModel,
+                request=model_interface.WatchUserModelRequest(
+                    name=f"{self.namespace}/models/{model_name}"
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.WatchUserModel,
             request=model_interface.WatchUserModelRequest(
                 name=f"{self.namespace}/models/{model_name}"
             ),
-            metadata=self.hosts[self.instance]["metadata"],
-        )
-        return resp.state
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
 
     @grpc_handler
     def create_model_local(
@@ -120,7 +130,7 @@ class ModelClient(Client):
         model_name: str,
         model_description: str,
         model_path: str,
-    ) -> model_interface.Model:
+    ) -> model_interface.CreateUserModelBinaryFileUploadResponse:
         model = model_interface.Model()
         model.id = model_name
         model.description = model_description
@@ -131,25 +141,11 @@ class ModelClient(Client):
             req = model_interface.CreateUserModelBinaryFileUploadRequest(
                 parent=self.namespace, model=model, content=data
             )
-        create_resp: model_interface.CreateUserModelBinaryFileUploadResponse = (
-            self.hosts[self.instance]["client"].CreateUserModelBinaryFileUpload(
-                request_iterator=iter([req]),
-                metadata=self.hosts[self.instance]["metadata"],
-            )
-        )
-
-        while self.get_operation(name=create_resp.operation.name).done is not True:
-            time.sleep(1)
-
-        state = self.watch_model(model_name=model_name)
-        while state == 0:
-            time.sleep(1)
-            state = self.watch_model(model_name=model_name)
-
-        if state == 1:
-            return self.get_model(model_name=model_name)
-
-        raise SystemError("model creation failed")
+        return RequestFactory(
+            method=self.hosts[self.instance].client.CreateUserModelBinaryFileUpload,
+            request=req,
+            metadata=self.hosts[self.instance].metadata,
+        ).send_stream()
 
     @grpc_handler
     def create_model(
@@ -157,166 +153,296 @@ class ModelClient(Client):
         name: str,
         definition: str,
         configuration: dict,
-    ) -> model_interface.Model:
+        async_enabled: bool = False,
+    ) -> model_interface.CreateUserModelResponse:
         model = model_interface.Model()
         model.id = name
         model.model_definition = definition
         model.configuration.update(configuration)
-        create_resp: model_interface.CreateUserModelResponse = self.hosts[
-            self.instance
-        ]["client"].CreateUserModel(
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.CreateUserModel,
+                request=model_interface.CreateUserModelRequest(
+                    model=model, parent=self.namespace
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.CreateUserModel,
             request=model_interface.CreateUserModelRequest(
                 model=model, parent=self.namespace
             ),
-            metadata=self.hosts[self.instance]["metadata"],
-        )
-
-        while self.get_operation(name=create_resp.operation.name).done is not True:
-            time.sleep(1)
-
-        # TODO: due to state update delay of controller
-        # TODO: should optimize this in model-backend
-        time.sleep(3)
-
-        state = self.watch_model(model_name=name)
-        while state == 0:
-            time.sleep(1)
-            state = self.watch_model(model_name=name)
-
-        if state == 1:
-            return self.get_model(model_name=name)
-
-        raise SystemError("model creation failed")
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
 
     @grpc_handler
-    def deploy_model(self, model_name: str) -> model_interface.Model.State:
-        self.hosts[self.instance]["client"].DeployUserModel(
+    def deploy_model(
+        self,
+        model_name: str,
+        async_enabled: bool = False,
+    ) -> model_interface.DeployUserModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.DeployUserModel,
+                request=model_interface.DeployUserModelRequest(
+                    name=f"{self.namespace}/models/{model_name}"
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.DeployUserModel,
             request=model_interface.DeployUserModelRequest(
                 name=f"{self.namespace}/models/{model_name}"
             ),
-            metadata=self.hosts[self.instance]["metadata"],
-        )
-
-        state = self.watch_model(model_name=model_name)
-        while state not in (2, 3):
-            time.sleep(1)
-            state = self.watch_model(model_name=model_name)
-
-        return state
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
 
     @grpc_handler
-    def undeploy_model(self, model_name: str) -> model_interface.Model.State:
-        self.hosts[self.instance]["client"].UndeployUserModel(
+    def undeploy_model(
+        self,
+        model_name: str,
+        async_enabled: bool = False,
+    ) -> model_interface.UndeployUserModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.UndeployUserModel,
+                request=model_interface.UndeployUserModelRequest(
+                    name=f"{self.namespace}/models/{model_name}"
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.UndeployUserModel,
             request=model_interface.UndeployUserModelRequest(
                 name=f"{self.namespace}/models/{model_name}"
             ),
-            metadata=self.hosts[self.instance]["metadata"],
-        )
-
-        state = self.watch_model(model_name=model_name)
-        while state not in (1, 3):
-            time.sleep(1)
-            state = self.watch_model(model_name=model_name)
-
-        return state
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
 
     @grpc_handler
-    def trigger_model(self, model_name: str, task_inputs: list) -> Iterable:
-        resp: model_interface.TriggerUserModelResponse = self.hosts[self.instance][
-            "client"
-        ].TriggerUserModel(
+    def trigger_model(
+        self,
+        model_name: str,
+        task_inputs: list,
+        async_enabled: bool = False,
+    ) -> model_interface.TriggerUserModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.TriggerUserModel,
+                request=model_interface.TriggerUserModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    task_inputs=task_inputs,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TriggerUserModel,
             request=model_interface.TriggerUserModelRequest(
                 name=f"{self.namespace}/models/{model_name}", task_inputs=task_inputs
             ),
-            metadata=self.hosts[self.instance]["metadata"],
-        )
-        return resp.task_outputs
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
 
     @grpc_handler
-    def delete_model(self, model_name: str):
-        self.hosts[self.instance]["client"].DeleteUserModel(
+    def delete_model(
+        self,
+        model_name: str,
+        async_enabled: bool = False,
+    ) -> model_interface.DeleteUserModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.DeleteUserModel,
+                request=model_interface.DeleteUserModelRequest(
+                    name=f"{self.namespace}/models/{model_name}"
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.DeleteUserModel,
             request=model_interface.DeleteUserModelRequest(
                 name=f"{self.namespace}/models/{model_name}"
             ),
-            metadata=self.hosts[self.instance]["metadata"],
-        )
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
 
     @grpc_handler
-    def get_model(self, model_name: str) -> model_interface.Model:
-        resp: model_interface.GetUserModelResponse = self.hosts[self.instance][
-            "client"
-        ].GetUserModel(
+    def get_model(
+        self,
+        model_name: str,
+        async_enabled: bool = False,
+    ) -> model_interface.GetUserModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.GetUserModel,
+                request=model_interface.GetUserModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    view=model_definition_interface.VIEW_FULL,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetUserModel,
             request=model_interface.GetUserModelRequest(
                 name=f"{self.namespace}/models/{model_name}",
                 view=model_definition_interface.VIEW_FULL,
             ),
-            metadata=self.hosts[self.instance]["metadata"],
-        )
-        return resp.model
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
 
     @grpc_handler
     def update_model(
-        self, model: model_interface.Model, mask: field_mask_pb2.FieldMask
-    ) -> model_interface.Model:
-        resp: model_interface.UpdateUserModelResponse = self.hosts[self.instance][
-            "client"
-        ].UpdateUserModel(
+        self,
+        model: model_interface.Model,
+        mask: field_mask_pb2.FieldMask,
+        async_enabled: bool = False,
+    ) -> model_interface.UpdateUserModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.UpdateUserModel,
+                request=model_interface.UpdateUserModelRequest(
+                    model=model,
+                    update_mask=mask,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.UpdateUserModel,
             request=model_interface.UpdateUserModelRequest(
                 model=model,
                 update_mask=mask,
             ),
-            metadata=self.hosts[self.instance]["metadata"],
-        )
-        return resp.model
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
 
     @grpc_handler
-    def lookup_model(self, model_uid: str) -> model_interface.Model:
-        resp: model_interface.LookUpModelResponse = self.hosts[self.instance][
-            "client"
-        ].LookUpModel(
+    def lookup_model(
+        self,
+        model_uid: str,
+        async_enabled: bool = False,
+    ) -> model_interface.LookUpModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.LookUpModel,
+                request=model_interface.LookUpModelRequest(
+                    permalink=f"models/{model_uid}"
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.LookUpModel,
             request=model_interface.LookUpModelRequest(permalink=f"models/{model_uid}"),
-            metadata=self.hosts[self.instance]["metadata"],
-        )
-        return resp.model
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
 
     @grpc_handler
-    def get_model_card(self, model_name: str) -> model_interface.ModelCard:
-        resp: model_interface.GetUserModelCardResponse = self.hosts[self.instance][
-            "client"
-        ].GetUserModel(
+    def get_model_card(
+        self,
+        model_name: str,
+        async_enabled: bool = False,
+    ) -> model_interface.GetUserModelCardResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.GetUserModelCard,
+                request=model_interface.GetUserModelCardRequest(
+                    name=f"{self.namespace}/models/{model_name}"
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetUserModelCard,
             request=model_interface.GetUserModelCardRequest(
                 name=f"{self.namespace}/models/{model_name}"
             ),
-            metadata=self.hosts[self.instance]["metadata"],
-        )
-        return resp.readme
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
 
     @grpc_handler
-    def list_models(self, public=False) -> Tuple[Iterable, str, int]:
-        resp: Union[
-            model_interface.ListModelsResponse, model_interface.ListUserModelsResponse
-        ]
-        if not public:
-            resp = self.hosts[self.instance]["client"].ListUserModels(
-                request=model_interface.ListUserModelsRequest(parent=self.namespace),
-                metadata=self.hosts[self.instance]["metadata"],
-            )
-        else:
-            resp = self.hosts[self.instance]["client"].ListModels(
-                request=model_interface.ListModelsRequest(),
-                metadata=self.hosts[self.instance]["metadata"],
-            )
-
-        return resp.models, resp.next_page_token, resp.total_size
+    def list_models(
+        self,
+        next_page_token: str = "",
+        total_size: int = 100,
+        show_deleted: bool = False,
+        public=False,
+        async_enabled: bool = False,
+    ) -> model_interface.ListUserModelsResponse:
+        if async_enabled:
+            if public:
+                method = self.hosts[self.instance].async_client.ListModels
+                return RequestFactory(
+                    method=method,
+                    request=model_interface.ListModelsRequest(
+                        page_size=total_size,
+                        page_token=next_page_token,
+                        show_deleted=show_deleted,
+                        view=model_definition_interface.VIEW_FULL,
+                    ),
+                    metadata=self.hosts[self.instance].metadata,
+                ).send_async()
+            method = self.hosts[self.instance].async_client.ListUserModels
+            return RequestFactory(
+                method=method,
+                request=model_interface.ListUserModelsRequest(
+                    parent=self.namespace,
+                    page_size=total_size,
+                    page_token=next_page_token,
+                    show_deleted=show_deleted,
+                    view=model_definition_interface.VIEW_FULL,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+        if public:
+            method = self.hosts[self.instance].client.ListModels
+            return RequestFactory(
+                method=method,
+                request=model_interface.ListModelsRequest(
+                    page_size=total_size,
+                    page_token=next_page_token,
+                    show_deleted=show_deleted,
+                    view=model_definition_interface.VIEW_FULL,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_sync()
+        method = self.hosts[self.instance].client.ListUserModels
+        return RequestFactory(
+            method=method,
+            request=model_interface.ListUserModelsRequest(
+                parent=self.namespace,
+                page_size=total_size,
+                page_token=next_page_token,
+                show_deleted=show_deleted,
+                view=model_definition_interface.VIEW_FULL,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
 
     @grpc_handler
-    def get_operation(self, name: str) -> operations_pb2.Operation:
-        resp: model_interface.GetModelOperationResponse = self.hosts[self.instance][
-            "client"
-        ].GetModelOperation(
+    def get_operation(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> model_interface.GetModelOperationResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.GetModelOperation,
+                request=model_interface.GetModelOperationRequest(
+                    name=name,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetModelOperation,
             request=model_interface.GetModelOperationRequest(
                 name=name,
             ),
-            metadata=self.hosts[self.instance]["metadata"],
-        )
-        return resp.operation
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
