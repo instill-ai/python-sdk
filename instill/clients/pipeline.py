@@ -398,8 +398,18 @@ class PipelineClient(Client):
         if async_enabled:
             if public:
                 method = self.hosts[self.instance].async_client.ListPipelines
-            else:
-                method = self.hosts[self.instance].async_client.ListUserPipelines
+                return RequestFactory(
+                    method=method,
+                    request=pipeline_interface.ListPipelinesRequest(
+                        filter=filer_str,
+                        page_size=total_size,
+                        page_token=next_page_token,
+                        show_deleted=show_deleted,
+                        view=pipeline_interface.ListPipelinesRequest.VIEW_FULL,
+                    ),
+                    metadata=self.hosts[self.instance].metadata,
+                ).send_async()
+            method = self.hosts[self.instance].async_client.ListUserPipelines
             return RequestFactory(
                 method=method,
                 request=pipeline_interface.ListUserPipelinesRequest(
@@ -414,8 +424,18 @@ class PipelineClient(Client):
             ).send_async()
         if public:
             method = self.hosts[self.instance].client.ListPipelines
-        else:
-            method = self.hosts[self.instance].client.ListUserPipelines
+            return RequestFactory(
+                method=method,
+                request=pipeline_interface.ListPipelinesRequest(
+                    filter=filer_str,
+                    page_size=total_size,
+                    page_token=next_page_token,
+                    show_deleted=show_deleted,
+                    view=pipeline_interface.ListPipelinesRequest.VIEW_FULL,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_sync()
+        method = self.hosts[self.instance].client.ListUserPipelines
         return RequestFactory(
             method=method,
             request=pipeline_interface.ListUserPipelinesRequest(
@@ -922,8 +942,18 @@ class PipelineClient(Client):
         if async_enabled:
             if public:
                 method = self.hosts[self.instance].async_client.ListConnectors
-            else:
-                method = self.hosts[self.instance].async_client.ListUserConnectors
+                return RequestFactory(
+                    method=method,
+                    request=connector_interface.ListConnectorsRequest(
+                        filter=filer_str,
+                        page_size=total_size,
+                        page_token=next_page_token,
+                        show_deleted=show_deleted,
+                        view=connector_interface.ListConnectorsRequest.VIEW_FULL,
+                    ),
+                    metadata=self.hosts[self.instance].metadata,
+                ).send_async()
+            method = self.hosts[self.instance].async_client.ListUserConnectors
             return RequestFactory(
                 method=method,
                 request=connector_interface.ListUserConnectorsRequest(
@@ -938,8 +968,18 @@ class PipelineClient(Client):
             ).send_async()
         if public:
             method = self.hosts[self.instance].client.ListConnectors
-        else:
-            method = self.hosts[self.instance].client.ListUserConnectors
+            return RequestFactory(
+                method=method,
+                request=connector_interface.ListConnectorsRequest(
+                    filter=filer_str,
+                    page_size=total_size,
+                    page_token=next_page_token,
+                    show_deleted=show_deleted,
+                    view=connector_interface.ListConnectorsRequest.VIEW_FULL,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_sync()
+        method = self.hosts[self.instance].client.ListUserConnectors
         return RequestFactory(
             method=method,
             request=connector_interface.ListUserConnectorsRequest(

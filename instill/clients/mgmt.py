@@ -76,7 +76,9 @@ class MgmtClient(Client):
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
-    def readiness(self, async_enabled: bool = False) -> mgmt_interface.ReadinessResponse:
+    def readiness(
+        self, async_enabled: bool = False
+    ) -> mgmt_interface.ReadinessResponse:
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.Readiness,

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Union
 
 import google.protobuf.message
 import grpc
@@ -57,7 +58,7 @@ class Client(ABC):
 class RequestFactory:
     def __init__(
         self,
-        method: grpc.UnaryUnaryMultiCallable,
+        method: Union[grpc.UnaryUnaryMultiCallable, grpc.StreamUnaryMultiCallable],
         request: google.protobuf.message.Message,
         metadata,
     ) -> None:
@@ -67,6 +68,12 @@ class RequestFactory:
 
     def send_sync(self):
         return self.method(request=self.request, metadata=self.metadata)
+
+    def send_stream(self):
+        return self.method(
+            request_iterator=iter([self.request]),
+            metadata=self.metadata,
+        )
 
     async def send_async(self):
         return await self.method(request=self.request, metadata=self.metadata)
