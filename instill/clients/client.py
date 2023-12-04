@@ -7,17 +7,21 @@ from instill.utils.logger import Logger
 
 
 class InstillClient:
-    def __init__(self) -> None:
-        self.mgmt_service = MgmtClient()
+    def __init__(self, asyncio: bool = False) -> None:
+        self.mgmt_service = MgmtClient(asyncio=asyncio)
         if not self.mgmt_service.is_serving():
             Logger.w("Instill Core is required")
             raise NotServingException
         self.pipeline_service = PipelineClient(
-            namespace=self.mgmt_service.get_user().name
+            namespace=self.mgmt_service.get_user().name,
+            asyncio=asyncio,
         )
         if not self.pipeline_service.is_serving():
             Logger.w("Instill VDP is not serving, VDP functionalities will not work")
-        self.model_service = ModelClient(namespace=self.mgmt_service.get_user().name)
+        self.model_service = ModelClient(
+            namespace=self.mgmt_service.get_user().name,
+            asyncio=asyncio,
+        )
         if not self.model_service.is_serving():
             Logger.w(
                 "Instill Model is not serving, Model functionalities will not work"
@@ -32,16 +36,24 @@ class InstillClient:
         if self.mgmt_service.is_serving():
             for host in self.mgmt_service.hosts.values():
                 host.channel.close()
-                host.async_channel.close()
         if self.pipeline_service.is_serving():
             for host in self.pipeline_service.hosts.values():
                 host.channel.close()
-                host.async_channel.close()
         if self.model_service.is_serving():
             for host in self.model_service.hosts.values():
                 host.channel.close()
-                host.async_channel.close()
+
+    async def async_close(self):
+        if self.mgmt_service.is_serving():
+            for host in self.mgmt_service.hosts.values():
+                await host.async_channel.close()
+        if self.pipeline_service.is_serving():
+            for host in self.pipeline_service.hosts.values():
+                await host.async_channel.close()
+        if self.model_service.is_serving():
+            for host in self.model_service.hosts.values():
+                await host.async_channel.close()
 
 
-def get_client() -> InstillClient:
-    return InstillClient()
+def get_client(asyncio: bool = False) -> InstillClient:
+    return InstillClient(asyncio=asyncio)

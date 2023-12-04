@@ -21,7 +21,7 @@ from instill.utils.error_handler import grpc_handler
 
 
 class ModelClient(Client):
-    def __init__(self, namespace: str) -> None:
+    def __init__(self, namespace: str, asyncio: bool) -> None:
         self.hosts: Dict[str, InstillInstance] = {}
         self.namespace: str = namespace
         if DEFAULT_INSTANCE in global_config.hosts:
@@ -34,10 +34,11 @@ class ModelClient(Client):
         if global_config.hosts is not None:
             for instance, config in global_config.hosts.items():
                 self.hosts[instance] = InstillInstance(
-                    config.url,
-                    config.token,
-                    config.secure,
                     model_service.ModelPublicServiceStub,
+                    url=config.url,
+                    token=config.token,
+                    secure=config.secure,
+                    asyncio=asyncio,
                 )
 
     @property
