@@ -19,7 +19,7 @@ from instill.utils.error_handler import grpc_handler
 
 
 class MgmtClient(Client):
-    def __init__(self, asyncio: bool) -> None:
+    def __init__(self, async_enabled: bool) -> None:
         self.hosts: Dict[str, InstillInstance] = {}
         if DEFAULT_INSTANCE in global_config.hosts:
             self.instance = DEFAULT_INSTANCE
@@ -35,7 +35,7 @@ class MgmtClient(Client):
                     url=config.url,
                     token=config.token,
                     secure=config.secure,
-                    asyncio=asyncio,
+                    async_enabled=async_enabled,
                 )
 
     @property

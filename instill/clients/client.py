@@ -7,20 +7,20 @@ from instill.utils.logger import Logger
 
 
 class InstillClient:
-    def __init__(self, asyncio: bool = False) -> None:
-        self.mgmt_service = MgmtClient(asyncio=asyncio)
+    def __init__(self, async_enabled: bool = False) -> None:
+        self.mgmt_service = MgmtClient(async_enabled=async_enabled)
         if not self.mgmt_service.is_serving():
             Logger.w("Instill Core is required")
             raise NotServingException
         self.pipeline_service = PipelineClient(
             namespace=self.mgmt_service.get_user().name,
-            asyncio=asyncio,
+            async_enabled=async_enabled,
         )
         if not self.pipeline_service.is_serving():
             Logger.w("Instill VDP is not serving, VDP functionalities will not work")
         self.model_service = ModelClient(
             namespace=self.mgmt_service.get_user().name,
-            asyncio=asyncio,
+            async_enabled=async_enabled,
         )
         if not self.model_service.is_serving():
             Logger.w(
@@ -55,5 +55,5 @@ class InstillClient:
                 await host.async_channel.close()
 
 
-def get_client(asyncio: bool = False) -> InstillClient:
-    return InstillClient(asyncio=asyncio)
+def get_client(async_enabled: bool = False) -> InstillClient:
+    return InstillClient(async_enabled=async_enabled)

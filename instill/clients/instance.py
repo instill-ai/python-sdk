@@ -8,10 +8,11 @@ import instill.protogen.vdp.pipeline.v1alpha.pipeline_public_service_pb2_grpc as
 
 
 class InstillInstance:
-    def __init__(self, stub, url: str, token: str, secure: bool, asyncio: bool):
+    def __init__(self, stub, url: str, token: str, secure: bool, async_enabled: bool):
         self.url: str = url
         self.token: str = token
-        self.asyncio: bool = asyncio
+        self.async_enabled: bool = async_enabled
+        self.metadata: Union[str, tuple] = ""
         if not secure:
             channel = grpc.insecure_channel(url)
             self.metadata = (
@@ -20,15 +21,14 @@ class InstillInstance:
                     f"Bearer {token}",
                 ),
             )
-            if asyncio:
+            if async_enabled:
                 async_channel = grpc.aio.insecure_channel(url)
         else:
             ssl_creds = grpc.ssl_channel_credentials()
             call_creds = grpc.access_token_call_credentials(token)
             creds = grpc.composite_channel_credentials(ssl_creds, call_creds)
             channel = grpc.secure_channel(target=url, credentials=creds)
-            self.metadata = (("", ""),)
-            if asyncio:
+            if async_enabled:
                 async_channel = grpc.aio.secure_channel(target=url, credentials=creds)
         self.channel: grpc.Channel = channel
         self.client: Union[
@@ -36,7 +36,7 @@ class InstillInstance:
             pipeline_service.PipelinePublicServiceStub,
             mgmt_service.MgmtPublicServiceStub,
         ] = stub(channel)
-        if asyncio:
+        if async_enabled:
             self.async_channel: grpc.Channel = async_channel
             self.async_client: Union[
                 model_service.ModelPublicServiceStub,
