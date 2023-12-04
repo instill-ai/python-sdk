@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-import grpc
 import google.protobuf.message
+import grpc
 
 
 class Client(ABC):

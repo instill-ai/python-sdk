@@ -65,7 +65,9 @@ class PipelineClient(Client):
     def metadata(self, metadata: str):
         self._metadata = metadata
 
-    def liveness(self, async_enabled: bool = False) -> healthcheck.HealthCheckResponse:
+    def liveness(
+        self, async_enabled: bool = False
+    ) -> pipeline_interface.LivenessResponse:
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.Liveness,
@@ -79,7 +81,9 @@ class PipelineClient(Client):
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
-    def readiness(self, async_enabled: bool = False) -> healthcheck.HealthCheckResponse:
+    def readiness(
+        self, async_enabled: bool = False
+    ) -> pipeline_interface.ReadinessResponse:
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.Readiness,
@@ -96,7 +100,7 @@ class PipelineClient(Client):
     def is_serving(self) -> bool:
         try:
             return (
-                self.readiness().status
+                self.readiness().health_check_response.status
                 == healthcheck.HealthCheckResponse.SERVING_STATUS_SERVING
             )
         except Exception:

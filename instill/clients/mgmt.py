@@ -62,7 +62,7 @@ class MgmtClient(Client):
     def metadata(self, metadata: str):
         self._metadata = metadata
 
-    def liveness(self, async_enabled: bool = False) -> healthcheck.HealthCheckResponse:
+    def liveness(self, async_enabled: bool = False) -> mgmt_interface.LivenessResponse:
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.Liveness,
@@ -76,16 +76,16 @@ class MgmtClient(Client):
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
-    def readiness(self, async_enabled: bool = False) -> healthcheck.HealthCheckResponse:
+    def readiness(self, async_enabled: bool = False) -> mgmt_interface.ReadinessResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.Liveness,
+                method=self.hosts[self.instance].async_client.Readiness,
                 request=mgmt_interface.ReadinessRequest(),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.Liveness,
+            method=self.hosts[self.instance].client.Readiness,
             request=mgmt_interface.ReadinessRequest(),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -93,7 +93,7 @@ class MgmtClient(Client):
     def is_serving(self) -> bool:
         try:
             return (
-                self.readiness().status
+                self.readiness().health_check_response.status
                 == healthcheck.HealthCheckResponse.SERVING_STATUS_SERVING
             )
         except Exception:

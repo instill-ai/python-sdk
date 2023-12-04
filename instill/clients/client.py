@@ -13,13 +13,13 @@ class InstillClient:
             Logger.w("Instill Core is required")
             raise NotServingException
         self.pipeline_service = PipelineClient(
-            namespace=self.mgmt_service.get_user().name,
+            namespace=self.mgmt_service.get_user().user.name,
             async_enabled=async_enabled,
         )
         if not self.pipeline_service.is_serving():
             Logger.w("Instill VDP is not serving, VDP functionalities will not work")
         self.model_service = ModelClient(
-            namespace=self.mgmt_service.get_user().name,
+            namespace=self.mgmt_service.get_user().user.name,
             async_enabled=async_enabled,
         )
         if not self.model_service.is_serving():
