@@ -1,20 +1,20 @@
 # pylint: disable=no-member,wrong-import-position
-from typing import Iterable, Tuple, Union, Dict
+from typing import Dict, Iterable, Tuple, Union
 
 from google.longrunning import operations_pb2
 from google.protobuf import field_mask_pb2
+
+# common
+import instill.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
 
 # pipeline
 import instill.protogen.vdp.pipeline.v1alpha.connector_pb2 as connector_interface
 import instill.protogen.vdp.pipeline.v1alpha.operator_definition_pb2 as operator_interface
 import instill.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
 import instill.protogen.vdp.pipeline.v1alpha.pipeline_public_service_pb2_grpc as pipeline_service
-
-# common
-import instill.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
+from instill.clients.base import Client
 from instill.clients.constant import DEFAULT_INSTANCE
 from instill.clients.instance import InstillInstance
-from instill.clients.base import Client
 from instill.configuration import global_config
 from instill.utils.error_handler import grpc_handler
 

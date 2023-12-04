@@ -1,21 +1,20 @@
 # pylint: disable=no-member,wrong-import-position
 import time
-from typing import Iterable, Tuple, Union, Dict
+from typing import Dict, Iterable, Tuple, Union
 
 from google.longrunning import operations_pb2
 from google.protobuf import field_mask_pb2
 
+# common
+import instill.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
+import instill.protogen.model.model.v1alpha.model_definition_pb2 as model_definition_interface
 
 # model
 import instill.protogen.model.model.v1alpha.model_pb2 as model_interface
 import instill.protogen.model.model.v1alpha.model_public_service_pb2_grpc as model_service
-import instill.protogen.model.model.v1alpha.model_definition_pb2 as model_definition_interface
-
-# common
-import instill.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
+from instill.clients.base import Client
 from instill.clients.constant import DEFAULT_INSTANCE
 from instill.clients.instance import InstillInstance
-from instill.clients.base import Client
 from instill.configuration import global_config
 from instill.utils.error_handler import grpc_handler
 

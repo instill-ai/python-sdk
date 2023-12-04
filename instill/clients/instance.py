@@ -1,14 +1,15 @@
 from typing import Union
+
 import grpc
 
-
+import instill.protogen.core.mgmt.v1alpha.mgmt_public_service_pb2_grpc as mgmt_service
 import instill.protogen.model.model.v1alpha.model_public_service_pb2_grpc as model_service
 import instill.protogen.vdp.pipeline.v1alpha.pipeline_public_service_pb2_grpc as pipeline_service
-import instill.protogen.core.mgmt.v1alpha.mgmt_public_service_pb2_grpc as mgmt_service
 
 
 class InstillInstance:
     def __init__(self, stub, url: str, token: str, secure: bool, asyncio: bool):
+        self.url: str = url
         self.token: str = token
         self.asyncio: bool = asyncio
         if not secure:
@@ -26,7 +27,7 @@ class InstillInstance:
             call_creds = grpc.access_token_call_credentials(token)
             creds = grpc.composite_channel_credentials(ssl_creds, call_creds)
             channel = grpc.secure_channel(target=url, credentials=creds)
-            self.metadata = ""
+            self.metadata = (("", ""),)
             if asyncio:
                 async_channel = grpc.aio.secure_channel(target=url, credentials=creds)
         self.channel: grpc.Channel = channel
