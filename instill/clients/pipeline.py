@@ -1,7 +1,6 @@
 # pylint: disable=no-member,wrong-import-position
-from typing import Dict, Iterable, Tuple, Union
+from typing import Dict, Union
 
-from google.longrunning import operations_pb2
 from google.protobuf import field_mask_pb2
 
 # common
@@ -12,7 +11,7 @@ import instill.protogen.vdp.pipeline.v1alpha.connector_pb2 as connector_interfac
 import instill.protogen.vdp.pipeline.v1alpha.operator_definition_pb2 as operator_interface
 import instill.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
 import instill.protogen.vdp.pipeline.v1alpha.pipeline_public_service_pb2_grpc as pipeline_service
-from instill.clients.base import Client
+from instill.clients.base import Client, RequestFactory
 from instill.clients.constant import DEFAULT_INSTANCE
 from instill.clients.instance import InstillInstance
 from instill.configuration import global_config
@@ -66,22 +65,38 @@ class PipelineClient(Client):
     def metadata(self, metadata: str):
         self._metadata = metadata
 
-    def liveness(self) -> healthcheck.HealthCheckResponse.ServingStatus:
-        resp: pipeline_interface.LivenessResponse = self.hosts[
-            self.instance
-        ].client.Liveness(request=pipeline_interface.LivenessRequest())
-        return resp.health_check_response.status
+    def liveness(self, async_enabled: bool = False) -> healthcheck.HealthCheckResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.Liveness,
+                request=pipeline_interface.LivenessRequest(),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
 
-    def readiness(self) -> healthcheck.HealthCheckResponse.ServingStatus:
-        resp: pipeline_interface.ReadinessResponse = self.hosts[
-            self.instance
-        ].client.Readiness(request=pipeline_interface.ReadinessRequest())
-        return resp.health_check_response.status
+        return RequestFactory(
+            method=self.hosts[self.instance].client.Liveness,
+            request=pipeline_interface.LivenessRequest(),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    def readiness(self, async_enabled: bool = False) -> healthcheck.HealthCheckResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.Readiness,
+                request=pipeline_interface.ReadinessRequest(),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.Readiness,
+            request=pipeline_interface.ReadinessRequest(),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
 
     def is_serving(self) -> bool:
         try:
             return (
-                self.readiness()
+                self.readiness().status
                 == healthcheck.HealthCheckResponse.SERVING_STATUS_SERVING
             )
         except Exception:
@@ -90,174 +105,278 @@ class PipelineClient(Client):
     @grpc_handler
     def list_operator_definitions(
         self,
-        filer_str: str = "",
+        filter_str: str = "",
         next_page_token: str = "",
         total_size: int = 100,
-    ) -> Tuple[Iterable, str, int]:
-        resp: operator_interface.ListOperatorDefinitionsResponse = self.hosts[
-            self.instance
-        ].client.ListUserPipelines(
+        async_enabled: bool = False,
+    ) -> operator_interface.ListOperatorDefinitionsResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.ListOperatorDefinitions,
+                request=operator_interface.ListOperatorDefinitionsRequest(
+                    filter=filter_str,
+                    page_size=total_size,
+                    page_token=next_page_token,
+                    view=operator_interface.ListOperatorDefinitionsRequest.VIEW_FULL,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.ListOperatorDefinitions,
             request=operator_interface.ListOperatorDefinitionsRequest(
-                filter=filer_str,
+                filter=filter_str,
                 page_size=total_size,
                 page_token=next_page_token,
                 view=operator_interface.ListOperatorDefinitionsRequest.VIEW_FULL,
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-
-        return resp.operator_definitions, resp.next_page_token, resp.total_size
+        ).send_sync()
 
     @grpc_handler
     def get_operator_definition(
-        self, name: str
-    ) -> operator_interface.OperatorDefinition:
-        resp: operator_interface.GetOperatorDefinitionResponse = self.hosts[
-            self.instance
-        ].client.GetOperatorDefinition(
+        self, name: str, async_enabled: bool = False
+    ) -> operator_interface.GetOperatorDefinitionResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.GetOperatorDefinition,
+                request=operator_interface.GetOperatorDefinitionRequest(
+                    name=f"operator-definitions//{name}",
+                    view=operator_interface.GetOperatorDefinitionRequest.VIEW_FULL,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetOperatorDefinition,
             request=operator_interface.GetOperatorDefinitionRequest(
                 name=f"operator-definitions//{name}",
                 view=operator_interface.GetOperatorDefinitionRequest.VIEW_FULL,
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.operator_definition
+        ).send_sync()
 
     @grpc_handler
     def create_pipeline(
         self,
         name: str,
         recipe: pipeline_interface.Recipe,
-    ) -> pipeline_interface.Pipeline:
+        async_enabled: bool = False,
+    ) -> pipeline_interface.CreateUserPipelineResponse:
         pipeline = pipeline_interface.Pipeline(
             id=name,
             recipe=recipe,
         )
-        resp: pipeline_interface.CreateUserPipelineResponse = self.hosts[
-            self.instance
-        ].client.CreateUserPipeline(
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.CreateuserPipeline,
+                request=pipeline_interface.CreateUserPipelineRequest(
+                    pipeline=pipeline, parent=self.namespace
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.CreateUserPipeline,
             request=pipeline_interface.CreateUserPipelineRequest(
                 pipeline=pipeline, parent=self.namespace
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.pipeline
+        ).send_sync()
 
     @grpc_handler
-    def get_pipeline(self, name: str) -> pipeline_interface.Pipeline:
-        resp: pipeline_interface.GetUserPipelineResponse = self.hosts[
-            self.instance
-        ].client.GetUserPipeline(
+    def get_pipeline(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.GetUserPipelineResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.GetUserPipeline,
+                request=pipeline_interface.GetUserPipelineRequest(
+                    name=f"{self.namespace}/pipelines/{name}"
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.CreateUserPipeline,
             request=pipeline_interface.GetUserPipelineRequest(
                 name=f"{self.namespace}/pipelines/{name}"
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.pipeline
+        ).send_sync()
 
     @grpc_handler
-    def lookup_pipeline(self, pipeline_uid: str) -> pipeline_interface.Pipeline:
-        resp: pipeline_interface.LookUpPipelineResponse = self.hosts[
-            self.instance
-        ].client.LookUpPipeline(
+    def lookup_pipeline(
+        self,
+        pipeline_uid: str,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.LookUpPipelineResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.LookUpPipeline,
+                request=pipeline_interface.LookUpPipelineRequest(
+                    permalink=f"pipelines/{pipeline_uid}",
+                    view=pipeline_interface.LookUpPipelineRequest.VIEW_FULL,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.LookUpPipeline,
             request=pipeline_interface.LookUpPipelineRequest(
                 permalink=f"pipelines/{pipeline_uid}",
                 view=pipeline_interface.LookUpPipelineRequest.VIEW_FULL,
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.pipeline
+        ).send_sync()
 
     @grpc_handler
-    def rename_pipeline(self, name: str, new_name: str) -> pipeline_interface.Pipeline:
-        resp: pipeline_interface.RenameUserPipelineResponse = self.hosts[
-            self.instance
-        ].client.RenameUserPipeline(
+    def rename_pipeline(
+        self,
+        name: str,
+        new_name: str,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.RenameUserPipelineResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.RenameUserPipeline,
+                request=pipeline_interface.RenameUserPipelineRequest(
+                    name=f"{self.namespace}/pipelines/{name}",
+                    new_pipeline_id=new_name,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.RenameUserPipeline,
             request=pipeline_interface.RenameUserPipelineRequest(
                 name=f"{self.namespace}/pipelines/{name}",
                 new_pipeline_id=new_name,
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.pipeline
+        ).send_sync()
 
     @grpc_handler
     def update_pipeline(
-        self, pipeline: pipeline_interface.Pipeline, mask: field_mask_pb2.FieldMask
-    ) -> pipeline_interface.Pipeline:
-        resp: pipeline_interface.UpdateUserPipelineResponse = self.hosts[
-            self.instance
-        ].client.UpdateUserPipeline(
+        self,
+        pipeline: pipeline_interface.Pipeline,
+        mask: field_mask_pb2.FieldMask,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.UpdateUserPipelineResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.UpdateUserPipeline,
+                request=pipeline_interface.UpdateUserPipelineRequest(
+                    pipeline=pipeline,
+                    update_mask=mask,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.UpdateUserPipeline,
             request=pipeline_interface.UpdateUserPipelineRequest(
                 pipeline=pipeline,
                 update_mask=mask,
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.pipeline
+        ).send_sync()
 
     @grpc_handler
-    def validate_pipeline(self, name: str) -> pipeline_interface.Pipeline:
-        resp: pipeline_interface.ValidateUserPipelineResponse = self.hosts[
-            self.instance
-        ].client.ValidateUserPipeline(
+    def validate_pipeline(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.ValidateUserPipelineResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.ValidateUserPipeline,
+                request=pipeline_interface.ValidateUserPipelineRequest(
+                    name=f"{self.namespace}/pipelines/{name}"
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.ValidateUserPipeline,
             request=pipeline_interface.ValidateUserPipelineRequest(
                 name=f"{self.namespace}/pipelines/{name}"
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.pipeline
+        ).send_sync()
 
     @grpc_handler
     def trigger_pipeline(
-        self, name: str, inputs: list
-    ) -> Tuple[Iterable, pipeline_interface.TriggerMetadata]:
-        resp: pipeline_interface.TriggerUserPipelineResponse = self.hosts[
-            self.instance
-        ].client.TriggerUserPipeline(
-            request=pipeline_interface.TriggerUserPipelineRequest(
-                name=f"{self.namespace}/pipelines/{name}", inputs=inputs
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.outputs, resp.metadata
+        self,
+        name: str,
+        inputs: list,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.TriggerUserPipelineResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.TriggerUserPipeline,
+                request=pipeline_interface.TriggerUserPipelineRequest(
+                    name=f"{self.namespace}/pipelines/{name}", inputs=inputs
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
 
-    @grpc_handler
-    async def trigger_asyncio_pipeline(
-        self, name: str, inputs: list
-    ) -> Tuple[Iterable, pipeline_interface.TriggerMetadata]:
-        resp: pipeline_interface.TriggerUserPipelineResponse = await self.hosts[
-            self.instance
-        ].async_client.TriggerUserPipeline(
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TriggerUserPipeline,
             request=pipeline_interface.TriggerUserPipelineRequest(
                 name=f"{self.namespace}/pipelines/{name}", inputs=inputs
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.outputs, resp.metadata
+        ).send_sync()
 
     @grpc_handler
     def trigger_async_pipeline(
-        self, name: str, inputs: list
-    ) -> operations_pb2.Operation:
-        resp: pipeline_interface.TriggerAsyncUserPipelineResponse = self.hosts[
-            self.instance
-        ].client.TriggerAsyncUserPipeline(
+        self,
+        name: str,
+        inputs: list,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.TriggerAsyncUserPipelineResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.TriggerAsyncUserPipeline,
+                request=pipeline_interface.TriggerAsyncUserPipelineRequest(
+                    name=f"{self.namespace}/pipelines/{name}", inputs=inputs
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TriggerAsyncUserPipeline,
             request=pipeline_interface.TriggerAsyncUserPipelineRequest(
                 name=f"{self.namespace}/pipelines/{name}", inputs=inputs
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.operation
+        ).send_sync()
 
     @grpc_handler
-    def delete_pipeline(self, name: str):
-        self.hosts[self.instance].client.DeleteUserPipeline(
+    def delete_pipeline(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.DeleteUserPipelineReleaseResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.DeleteUserPipeline,
+                request=pipeline_interface.DeleteUserPipelineRequest(
+                    name=f"{self.namespace}/pipelines/{name}"
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.DeleteUserPipeline,
             request=pipeline_interface.DeleteUserPipelineRequest(
                 name=f"{self.namespace}/pipelines/{name}"
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
+        ).send_sync()
 
     @grpc_handler
     def list_pipelines(
@@ -267,13 +386,18 @@ class PipelineClient(Client):
         total_size: int = 100,
         show_deleted: bool = False,
         public=False,
-    ) -> Tuple[Iterable, str, int]:
-        resp: Union[
-            pipeline_interface.ListPipelinesResponse,
-            pipeline_interface.ListUserPipelinesResponse,
-        ]
-        if not public:
-            resp = self.hosts[self.instance].client.ListUserPipelines(
+        async_enabled: bool = False,
+    ) -> Union[
+        pipeline_interface.ListPipelinesResponse,
+        pipeline_interface.ListUserPipelinesResponse,
+    ]:
+        if async_enabled:
+            if public:
+                method = self.hosts[self.instance].async_client.ListPipelines
+            else:
+                method = self.hosts[self.instance].async_client.ListUserPipelines
+            return RequestFactory(
+                method=method,
                 request=pipeline_interface.ListUserPipelinesRequest(
                     parent=self.namespace,
                     filter=filer_str,
@@ -283,38 +407,53 @@ class PipelineClient(Client):
                     view=pipeline_interface.ListUserPipelinesRequest.VIEW_FULL,
                 ),
                 metadata=self.hosts[self.instance].metadata,
-            )
+            ).send_async()
+        if public:
+            method = self.hosts[self.instance].client.ListPipelines
         else:
-            resp = self.hosts[self.instance].client.ListPipelines(
-                request=pipeline_interface.ListPipelinesRequest(
-                    filter=filer_str,
-                    page_size=total_size,
-                    page_token=next_page_token,
-                    show_deleted=show_deleted,
-                    view=pipeline_interface.ListPipelinesRequest.VIEW_FULL,
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            )
-
-        return resp.pipelines, resp.next_page_token, resp.total_size
+            method = self.hosts[self.instance].client.ListUserPipelines
+        return RequestFactory(
+            method=method,
+            request=pipeline_interface.ListUserPipelinesRequest(
+                parent=self.namespace,
+                filter=filer_str,
+                page_size=total_size,
+                page_token=next_page_token,
+                show_deleted=show_deleted,
+                view=pipeline_interface.ListUserPipelinesRequest.VIEW_FULL,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
 
     @grpc_handler
-    def get_operation(self, name: str) -> operations_pb2.Operation:
-        resp: pipeline_interface.GetOperationResponse = self.hosts[
-            self.instance
-        ].client.GetOperation(
+    def get_operation(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.GetOperationResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.GetOperation,
+                request=pipeline_interface.GetOperationRequest(
+                    name=name,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetOperation,
             request=pipeline_interface.GetOperationRequest(
                 name=name,
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.operation
+        ).send_sync()
 
     @grpc_handler
     def create_pipeline_release(
         self,
         version: str,
-    ) -> pipeline_interface.PipelineRelease:
+        async_enabled: bool = False,
+    ) -> pipeline_interface.CreateUserPipelineReleaseResponse:
         """Create a release version of a pipeline
 
         Args:
@@ -326,18 +465,29 @@ class PipelineClient(Client):
         pipeline_release = pipeline_interface.PipelineRelease(
             id=version,
         )
-        resp: pipeline_interface.CreateUserPipelineReleaseResponse = self.hosts[
-            self.instance
-        ].client.CreateUserPipelineRelease(
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.CreateUserPipelineRelease,
+                request=pipeline_interface.CreateUserPipelineReleaseRequest(
+                    release=pipeline_release, parent=self.namespace
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.CreateUserPipelineRelease,
             request=pipeline_interface.CreateUserPipelineReleaseRequest(
                 release=pipeline_release, parent=self.namespace
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.release
+        ).send_sync()
 
     @grpc_handler
-    def get_pipeline_release(self, name: str) -> pipeline_interface.PipelineRelease:
+    def get_pipeline_release(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.GetUserPipelineReleaseResponse:
         """Get a released pipeline
 
         Args:
@@ -346,21 +496,32 @@ class PipelineClient(Client):
         Returns:
             pipeline_interface.Pipeline: Released pipeline
         """
-        resp: pipeline_interface.GetUserPipelineReleaseResponse = self.hosts[
-            self.instance
-        ].client.GetUserPipelineRelease(
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.GetUserPipelineRelease,
+                request=pipeline_interface.GetUserPipelineReleaseRequest(
+                    name=f"{self.namespace}/pipelines/{name}",
+                    view=pipeline_interface.GetUserPipelineReleaseRequest.VIEW_FULL,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetUserPipelineRelease,
             request=pipeline_interface.GetUserPipelineReleaseRequest(
                 name=f"{self.namespace}/pipelines/{name}",
                 view=pipeline_interface.GetUserPipelineReleaseRequest.VIEW_FULL,
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.release
+        ).send_sync()
 
     @grpc_handler
     def rename_pipeline_release(
-        self, name: str, new_version: str
-    ) -> pipeline_interface.PipelineRelease:
+        self,
+        name: str,
+        new_version: str,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.RenameUserPipelineReleaseResponse:
         """Rename a released pipeline
 
         Args:
@@ -370,33 +531,50 @@ class PipelineClient(Client):
         Returns:
             pipeline_interface.PipelineRelease: released pipeline
         """
-        resp: pipeline_interface.RenameUserPipelineReleaseResponse = self.hosts[
-            self.instance
-        ].client.RenameUserPipelineRelease(
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.RenameUserPipelineRelease,
+                request=pipeline_interface.RenameUserPipelineReleaseRequest(
+                    name=f"{self.namespace}/pipelines/{name}",
+                    new_pipeline_release_id=new_version,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.RenameUserPipelineRelease,
             request=pipeline_interface.RenameUserPipelineReleaseRequest(
                 name=f"{self.namespace}/pipelines/{name}",
                 new_pipeline_release_id=new_version,
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.release
+        ).send_sync()
 
     @grpc_handler
     def update_pipeline_release(
         self,
         pipeline_release: pipeline_interface.PipelineRelease,
         mask: field_mask_pb2.FieldMask,
-    ) -> pipeline_interface.PipelineRelease:
-        resp: pipeline_interface.UpdateUserPipelineReleaseResponse = self.hosts[
-            self.instance
-        ].client.UpdateUserPipelineRelease(
+        async_enabled: bool = False,
+    ) -> pipeline_interface.UpdateUserPipelineReleaseResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.UpdateUserPipelineRelease,
+                request=pipeline_interface.UpdateUserPipelineReleaseRequest(
+                    release=pipeline_release,
+                    update_mask=mask,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.UpdateUserPipelineRelease,
             request=pipeline_interface.UpdateUserPipelineReleaseRequest(
                 release=pipeline_release,
                 update_mask=mask,
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.release
+        ).send_sync()
 
     @grpc_handler
     def list_pipeline_releases(
@@ -405,10 +583,24 @@ class PipelineClient(Client):
         next_page_token: str = "",
         total_size: int = 100,
         show_deleted: bool = False,
-    ) -> Tuple[Iterable, str, int]:
-        resp: pipeline_interface.ListUserPipelineReleasesResponse = self.hosts[
-            self.instance
-        ].client.ListUserPipelineReleases(
+        async_enabled: bool = False,
+    ) -> pipeline_interface.ListUserPipelineReleasesResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.ListUserPipelineReleases,
+                request=pipeline_interface.ListUserPipelineReleasesRequest(
+                    parent=self.namespace,
+                    filter=filer_str,
+                    page_size=total_size,
+                    page_token=next_page_token,
+                    show_deleted=show_deleted,
+                    view=pipeline_interface.ListUserPipelineReleasesRequest.VIEW_FULL,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.ListUserPipelineReleases,
             request=pipeline_interface.ListUserPipelineReleasesRequest(
                 parent=self.namespace,
                 filter=filer_str,
@@ -418,84 +610,153 @@ class PipelineClient(Client):
                 view=pipeline_interface.ListUserPipelineReleasesRequest.VIEW_FULL,
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-
-        return resp.releases, resp.next_page_token, resp.total_size
+        ).send_sync()
 
     @grpc_handler
-    def delete_pipeline_release(self, name: str):
-        self.hosts[self.instance].client.DeleteUserPipelineRelease(
+    def delete_pipeline_release(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.DeleteUserPipelineReleaseResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.DeleteUserPipelineRelease,
+                request=pipeline_interface.DeleteUserPipelineReleaseRequest(
+                    name=f"{self.namespace}/pipelines/{name}"
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.DeleteUserPipelineRelease,
             request=pipeline_interface.DeleteUserPipelineReleaseRequest(
                 name=f"{self.namespace}/pipelines/{name}"
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
+        ).send_sync()
 
     @grpc_handler
     def set_default_pipeline_release(
-        self, name: str
-    ) -> pipeline_interface.PipelineRelease:
-        resp: pipeline_interface.SetDefaultUserPipelineReleaseResponse = self.hosts[
-            self.instance
-        ].client.SetDefaultUserPipelineRelease(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.SetDefaultUserPipelineReleaseResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.SetDefaultUserPipelineRelease,
+                request=pipeline_interface.SetDefaultUserPipelineReleaseRequest(
+                    name=f"{self.namespace}/pipelines/{name}",
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.SetDefaultUserPipelineRelease,
             request=pipeline_interface.SetDefaultUserPipelineReleaseRequest(
                 name=f"{self.namespace}/pipelines/{name}",
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.release
+        ).send_sync()
 
     @grpc_handler
-    def restore_pipeline_release(self, name: str) -> pipeline_interface.PipelineRelease:
-        resp: pipeline_interface.RestoreUserPipelineReleaseResponse = self.hosts[
-            self.instance
-        ].client.RestoreUserPipelineRelease(
+    def restore_pipeline_release(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.RestoreUserPipelineReleaseResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.RestoreUserPipelineRelease,
+                request=pipeline_interface.RestoreUserPipelineReleaseRequest(
+                    name=f"{self.namespace}/pipelines/{name}",
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.RestoreUserPipelineRelease,
             request=pipeline_interface.RestoreUserPipelineReleaseRequest(
                 name=f"{self.namespace}/pipelines/{name}",
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.release
+        ).send_sync()
 
     @grpc_handler
-    def watch_pipeline_release(self, name: str) -> pipeline_interface.State.ValueType:
-        resp: pipeline_interface.WatchUserPipelineReleaseResponse = self.hosts[
-            self.instance
-        ].client.WatchUserPipelineRelease(
+    def watch_pipeline_release(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.WatchUserPipelineReleaseResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.WatchUserPipelineRelease,
+                request=pipeline_interface.WatchUserPipelineReleaseRequest(
+                    name=f"{self.namespace}/pipelines/{name}",
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.WatchUserPipelineRelease,
             request=pipeline_interface.WatchUserPipelineReleaseRequest(
                 name=f"{self.namespace}/pipelines/{name}",
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.state
+        ).send_sync()
 
     @grpc_handler
     def trigger_pipeline_release(
-        self, name: str, inputs: list
-    ) -> Tuple[Iterable, pipeline_interface.TriggerMetadata]:
-        resp: pipeline_interface.TriggerUserPipelineReleaseResponse = self.hosts[
-            self.instance
-        ].client.TriggerUserPipelineReleas(
+        self,
+        name: str,
+        inputs: list,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.TriggerUserPipelineReleaseResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.TriggerUserPipelineReleas,
+                request=pipeline_interface.TriggerUserPipelineReleaseRequest(
+                    name=f"{self.namespace}/pipelines/{name}", inputs=inputs
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TriggerUserPipelineReleas,
             request=pipeline_interface.TriggerUserPipelineReleaseRequest(
                 name=f"{self.namespace}/pipelines/{name}", inputs=inputs
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.outputs, resp.metadata
+        ).send_sync()
 
     @grpc_handler
     def trigger_async_pipeline_release(
-        self, name: str, inputs: list
-    ) -> operations_pb2.Operation:
-        resp: pipeline_interface.TriggerAsyncUserPipelineReleaseResponse = self.hosts[
-            self.instance
-        ].client.TriggerAsyncUserPipelineRelease(
+        self,
+        name: str,
+        inputs: list,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.TriggerAsyncUserPipelineReleaseResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.TriggerAsyncUserPipelineRelease,
+                request=pipeline_interface.TriggerAsyncUserPipelineReleaseRequest(
+                    name=f"{self.namespace}/pipelines/{name}", inputs=inputs
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TriggerAsyncUserPipelineRelease,
             request=pipeline_interface.TriggerAsyncUserPipelineReleaseRequest(
                 name=f"{self.namespace}/pipelines/{name}", inputs=inputs
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-        return resp.operation
+        ).send_sync()
 
     @grpc_handler
     def create_connector(
@@ -503,95 +764,187 @@ class PipelineClient(Client):
         name: str,
         definition: str,
         configuration: dict,
-    ) -> connector_interface.Connector:
+        async_enabled: bool = False,
+    ) -> connector_interface.CreateUserConnectorResponse:
         connector = connector_interface.Connector()
         connector.id = name
         connector.connector_definition_name = definition
         connector.configuration.update(configuration)
-        resp = self.hosts[self.instance].client.CreateUserConnector(
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.CreateUserConnector,
+                request=connector_interface.CreateUserConnectorRequest(
+                    connector=connector, parent=self.namespace
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.CreateUserConnector,
             request=connector_interface.CreateUserConnectorRequest(
                 connector=connector, parent=self.namespace
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
-
-        return resp.connector
+        ).send_sync()
 
     @grpc_handler
-    def get_connector(self, name: str) -> connector_interface.Connector:
-        return (
-            self.hosts[self.instance]
-            .client.GetUserConnector(
+    def get_connector(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> connector_interface.GetUserConnectorResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.GetUserConnector,
                 request=connector_interface.GetUserConnectorRequest(
                     name=f"{self.namespace}/connectors/{name}",
                     view=connector_interface.GetUserConnectorRequest.VIEW_FULL,
                 ),
                 metadata=self.hosts[self.instance].metadata,
-            )
-            .connector
-        )
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetUserConnector,
+            request=connector_interface.GetUserConnectorRequest(
+                name=f"{self.namespace}/connectors/{name}",
+                view=connector_interface.GetUserConnectorRequest.VIEW_FULL,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
 
     @grpc_handler
-    def test_connector(self, name: str) -> connector_interface.Connector.State:
-        return (
-            self.hosts[self.instance]
-            .client.TestUserConnector(
+    def test_connector(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> connector_interface.TestUserConnectorResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.TestUserConnector,
                 request=connector_interface.TestUserConnectorRequest(
                     name=f"{self.namespace}/connectors/{name}"
                 ),
                 metadata=self.hosts[self.instance].metadata,
-            )
-            .state
-        )
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TestUserConnector,
+            request=connector_interface.TestUserConnectorRequest(
+                name=f"{self.namespace}/connectors/{name}"
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
 
     @grpc_handler
-    def execute_connector(self, name: str, inputs: list) -> list:
-        return (
-            self.hosts[self.instance]
-            .client.ExecuteUserConnector(
+    def execute_connector(
+        self,
+        name: str,
+        inputs: list,
+        async_enabled: bool = False,
+    ) -> connector_interface.ExecuteUserConnectorResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.ExecuteUserConnector,
                 request=connector_interface.ExecuteUserConnectorRequest(
                     name=f"{self.namespace}/connectors/{name}", inputs=inputs
                 ),
                 metadata=self.hosts[self.instance].metadata,
-            )
-            .outputs
-        )
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.ExecuteUserConnector,
+            request=connector_interface.ExecuteUserConnectorRequest(
+                name=f"{self.namespace}/connectors/{name}", inputs=inputs
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
 
     @grpc_handler
-    def watch_connector(self, name: str) -> connector_interface.Connector.State:
-        return (
-            self.hosts[self.instance]
-            .client.WatchUserConnector(
+    def watch_connector(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> connector_interface.WatchUserConnectorResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.WatchUserConnector,
                 request=connector_interface.WatchUserConnectorRequest(
                     name=f"{self.namespace}/connectors/{name}"
                 ),
                 metadata=self.hosts[self.instance].metadata,
-            )
-            .state
-        )
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.WatchUserConnector,
+            request=connector_interface.WatchUserConnectorRequest(
+                name=f"{self.namespace}/connectors/{name}"
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
 
     @grpc_handler
-    def delete_connector(self, name: str):
-        self.hosts[self.instance].client.DeleteUserConnector(
+    def delete_connector(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> connector_interface.DeleteUserConnectorResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.DeleteUserConnector,
+                request=connector_interface.DeleteUserConnectorRequest(
+                    name=f"{self.namespace}/connectors/{name}"
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.DeleteUserConnector,
             request=connector_interface.DeleteUserConnectorRequest(
                 name=f"{self.namespace}/connectors/{name}"
             ),
             metadata=self.hosts[self.instance].metadata,
-        )
+        ).send_sync()
 
     @grpc_handler
-    def list_connectors(self, public=False) -> Tuple[list, str, int]:
-        if not public:
-            resp = self.hosts[self.instance].client.ListUserConnectors(
+    def list_connectors(
+        self,
+        filer_str: str = "",
+        next_page_token: str = "",
+        total_size: int = 100,
+        show_deleted: bool = False,
+        public=False,
+        async_enabled: bool = False,
+    ) -> connector_interface.ListUserConnectorsResponse:
+        if async_enabled:
+            if public:
+                method = self.hosts[self.instance].async_client.ListConnectors
+            else:
+                method = self.hosts[self.instance].async_client.ListUserConnectors
+            return RequestFactory(
+                method=method,
                 request=connector_interface.ListUserConnectorsRequest(
-                    parent=self.namespace
+                    parent=self.namespace,
+                    filter=filer_str,
+                    page_size=total_size,
+                    page_token=next_page_token,
+                    show_deleted=show_deleted,
+                    view=connector_interface.ListUserConnectorsRequest.VIEW_FULL,
                 ),
                 metadata=self.hosts[self.instance].metadata,
-            )
+            ).send_async()
+        if public:
+            method = self.hosts[self.instance].client.ListConnectors
         else:
-            resp = self.hosts[self.instance].client.ListConnectors(
-                request=connector_interface.ListConnectorsRequest(),
-                metadata=(self.hosts[self.instance].metadata,),
-            )
-
-        return resp.connectors, resp.next_page_token, resp.total_size
+            method = self.hosts[self.instance].client.ListUserConnectors
+        return RequestFactory(
+            method=method,
+            request=connector_interface.ListUserConnectorsRequest(
+                parent=self.namespace,
+                filter=filer_str,
+                page_size=total_size,
+                page_token=next_page_token,
+                show_deleted=show_deleted,
+                view=connector_interface.ListUserConnectorsRequest.VIEW_FULL,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()

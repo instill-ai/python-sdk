@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 
+import grpc
+import google.protobuf.message
+
 
 class Client(ABC):
     """Base interface class for creating mgmt/pipeline/connector/model clients.
@@ -49,3 +52,21 @@ class Client(ABC):
     @abstractmethod
     def is_serving(self):
         raise NotImplementedError
+
+
+class RequestFactory:
+    def __init__(
+        self,
+        method: grpc.UnaryUnaryMultiCallable,
+        request: google.protobuf.message.Message,
+        metadata,
+    ) -> None:
+        self.method = method
+        self.request = request
+        self.metadata = metadata
+
+    def send_sync(self):
+        return self.method(request=self.request, metadata=self.metadata)
+
+    async def send_async(self):
+        return await self.method(request=self.request, metadata=self.metadata)

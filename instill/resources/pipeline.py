@@ -17,9 +17,11 @@ class Pipeline(Resource):
     ) -> None:
         super().__init__()
         self.client = client
-        pipeline = client.pipeline_service.get_pipeline(name=name, silent=True)
+        pipeline = client.pipeline_service.get_pipeline(name=name, silent=True).pipeline
         if pipeline is None:
-            pipeline = client.pipeline_service.create_pipeline(name=name, recipe=recipe)
+            pipeline = client.pipeline_service.create_pipeline(
+                name=name, recipe=recipe
+            ).pipeline
             if pipeline is None:
                 raise BaseException("pipeline creation failed")
 
@@ -28,9 +30,10 @@ class Pipeline(Resource):
     def __call__(
         self, task_inputs: list
     ) -> Tuple[list, pipeline_interface.TriggerMetadata]:
-        return self.client.pipeline_service.trigger_pipeline(
+        resp = self.client.pipeline_service.trigger_pipeline(
             self.resource.id, task_inputs
         )
+        return resp.outputs, resp.metadata
 
     @property
     def client(self):
@@ -52,18 +55,20 @@ class Pipeline(Resource):
         self.resource = self.client.pipeline_service.get_pipeline(name=self.resource.id)
 
     def get_operation(self, operation: operations_pb2.Operation):
-        return self.client.pipeline_service.get_operation(operation.name)
+        return self.client.pipeline_service.get_operation(operation.name).operation
 
     def trigger_async(self, task_inputs: list) -> operations_pb2.Operation:
         return self.client.pipeline_service.trigger_async_pipeline(
             self.resource.id, task_inputs
-        )
+        ).operation
 
     def get_recipe(self) -> str:
         return self.resource.recipe
 
     def validate_pipeline(self) -> pipeline_interface.Pipeline:
-        return self.client.pipeline_service.validate_pipeline(name=self.resource.id)
+        return self.client.pipeline_service.validate_pipeline(
+            name=self.resource.id
+        ).pipeline
 
     def delete(self):
         if self.resource is not None:
