@@ -16,10 +16,8 @@ class Connector(Resource):
     ) -> None:
         super().__init__()
         self.client = client
-        connector = client.pipeline_service.get_connector(
-            name=name, silent=True
-        ).connector
-        if connector is None:
+        get_resp = client.pipeline_service.get_connector(name=name, silent=True)
+        if get_resp is None:
             connector = client.pipeline_service.create_connector(
                 name=name,
                 definition=definition,
@@ -27,6 +25,8 @@ class Connector(Resource):
             ).connector
             if connector is None:
                 raise BaseException("connector creation failed")
+        else:
+            connector = get_resp.connector
 
         self.resource = connector
 

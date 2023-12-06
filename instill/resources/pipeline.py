@@ -17,13 +17,15 @@ class Pipeline(Resource):
     ) -> None:
         super().__init__()
         self.client = client
-        pipeline = client.pipeline_service.get_pipeline(name=name, silent=True).pipeline
-        if pipeline is None:
+        get_resp = client.pipeline_service.get_pipeline(name=name, silent=True)
+        if get_resp is None:
             pipeline = client.pipeline_service.create_pipeline(
                 name=name, recipe=recipe
             ).pipeline
             if pipeline is None:
                 raise BaseException("pipeline creation failed")
+        else:
+            pipeline = get_resp.pipeline
 
         self.resource = pipeline
 

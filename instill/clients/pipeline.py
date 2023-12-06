@@ -145,7 +145,7 @@ class PipelineClient(Client):
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.GetOperatorDefinition,
                 request=operator_interface.GetOperatorDefinitionRequest(
-                    name=f"operator-definitions//{name}",
+                    name=f"operator-definitions/{name}",
                     view=operator_interface.GetOperatorDefinitionRequest.VIEW_FULL,
                 ),
                 metadata=self.hosts[self.instance].metadata,
@@ -154,7 +154,7 @@ class PipelineClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.GetOperatorDefinition,
             request=operator_interface.GetOperatorDefinitionRequest(
-                name=f"operator-definitions//{name}",
+                name=f"operator-definitions/{name}",
                 view=operator_interface.GetOperatorDefinitionRequest.VIEW_FULL,
             ),
             metadata=self.hosts[self.instance].metadata,
@@ -173,7 +173,7 @@ class PipelineClient(Client):
         )
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.CreateuserPipeline,
+                method=self.hosts[self.instance].async_client.CreateUserPipeline,
                 request=pipeline_interface.CreateUserPipelineRequest(
                     pipeline=pipeline, parent=self.namespace
                 ),
@@ -204,7 +204,7 @@ class PipelineClient(Client):
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.CreateUserPipeline,
+            method=self.hosts[self.instance].client.GetUserPipeline,
             request=pipeline_interface.GetUserPipelineRequest(
                 name=f"{self.namespace}/pipelines/{name}"
             ),
@@ -364,7 +364,7 @@ class PipelineClient(Client):
         self,
         name: str,
         async_enabled: bool = False,
-    ) -> pipeline_interface.DeleteUserPipelineReleaseResponse:
+    ) -> pipeline_interface.DeleteUserPipelineResponse:
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.DeleteUserPipeline,

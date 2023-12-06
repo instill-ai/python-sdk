@@ -14,7 +14,7 @@ class NumbersConnector(Connector):
         metadata_structured_data: bool,
         metadata_metadata: bool,
     ) -> None:
-        definition = "connector-definitions/blockchain-numbers"
+        definition = "connector-definitions/numbers"
         configuration = {
             "capture_token": capture_token,
             "asset_type": asset_type,
