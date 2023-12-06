@@ -10,11 +10,11 @@ class InstillModelConnector(Connector):
         name: str,
         server_url: str,
     ) -> None:
-        definition = "connector-definitions/ai-instill-model"
+        definition = "connector-definitions/instill-model"
         configuration = {
             "api_token": client.pipeline_service.hosts[
                 client.pipeline_service.instance
-            ]["token"],
+            ].token,
             "server_url": server_url,
         }
         super().__init__(client, name, definition, configuration)
@@ -27,7 +27,7 @@ class StabilityAIConnector(Connector):
         name: str,
         api_key: str,
     ) -> None:
-        definition = "connector-definitions/ai-stability-ai"
+        definition = "connector-definitions/stability-ai"
         configuration = {"api_key": api_key}
         super().__init__(client, name, definition, configuration)
 
@@ -39,7 +39,7 @@ class OpenAIConnector(Connector):
         name: str,
         api_key: str,
     ) -> None:
-        definition = "connector-definitions/ai-openai"
+        definition = "connector-definitions/openai"
         configuration = {
             "api_key": api_key,
         }

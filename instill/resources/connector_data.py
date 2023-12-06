@@ -11,6 +11,6 @@ class PineconeConnector(Connector):
         api_key: str,
         server_url: str,
     ) -> None:
-        definition = "connector-definitions/data-pinecone"
+        definition = "connector-definitions/pinecone"
         configuration = {"url": server_url, "api_key": api_key}
         super().__init__(client, name, definition, configuration)

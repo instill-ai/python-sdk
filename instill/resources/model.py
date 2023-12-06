@@ -17,8 +17,8 @@ class Model(Resource):
     ) -> None:
         super().__init__()
         self.client = client
-        model = client.model_service.get_model(model_name=name, silent=True)
-        if model is None:
+        get_resp = client.model_service.get_model(model_name=name, silent=True)
+        if get_resp is None:
             operation = client.model_service.create_model(
                 name=name,
                 definition=definition,
@@ -42,6 +42,8 @@ class Model(Resource):
                 model = client.model_service.get_model(model_name=name).model
             else:
                 raise BaseException("model creation failed")
+        else:
+            model = get_resp.model
 
         self.resource = model
 
