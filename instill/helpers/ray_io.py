@@ -4,7 +4,7 @@ from typing import List
 
 import numpy as np
 
-from instill.helpers.const import TextGenerationInput
+from instill.helpers.const import TextGenerationInput, TextToImageInput
 
 
 def serialize_byte_tensor(input_tensor):
@@ -181,6 +181,84 @@ class StandardTaskIO:
         text_outputs = [seq["generated_text"].encode("utf-8") for seq in sequences]
 
         return serialize_byte_tensor(np.asarray(text_outputs))
+
+    @staticmethod
+    def parse_task_text_to_image_input(request) -> TextToImageInput:
+        text_to_image_input = TextToImageInput()
+
+        for i, b_input_tensor in zip(request.inputs, request.raw_input_contents):
+            input_name = i.name
+
+            if input_name == "prompt":
+                input_tensor = deserialize_bytes_tensor(b_input_tensor)
+                text_to_image_input.prompt = str(input_tensor[0].decode("utf-8"))
+                print(
+                    f"[DEBUG] input `prompt` type\
+                        ({type(text_to_image_input.prompt)}): {text_to_image_input.prompt}"
+                )
+
+            if input_name == "negative_prompt":
+                input_tensor = deserialize_bytes_tensor(b_input_tensor)
+                text_to_image_input.negative_prompt = str(
+                    input_tensor[0].decode("utf-8")
+                )
+                print(
+                    f"[DEBUG] input `negative_prompt` type\
+                        ({type(text_to_image_input.negative_prompt)}): {text_to_image_input.negative_prompt}"
+                )
+
+            if input_name == "steps":
+                text_to_image_input.steps = int.from_bytes(b_input_tensor, "little")
+                print(
+                    f"[DEBUG] input `steps` type\
+                        ({type(text_to_image_input.steps)}): {text_to_image_input.steps}"
+                )
+
+            if input_name == "seed":
+                text_to_image_input.seed = int.from_bytes(b_input_tensor, "little")
+                print(
+                    f"[DEBUG] input `seed` type\
+                        ({type(text_to_image_input.seed)}): {text_to_image_input.seed}"
+                )
+
+            if input_name == "guidance_scale":
+                text_to_image_input.guidance_scale = struct.unpack("f", b_input_tensor)[
+                    0
+                ]
+                print(
+                    f"[DEBUG] input `guidance_scale` type\
+                        ({type(text_to_image_input.guidance_scale)}): {text_to_image_input.guidance_scale}"
+                )
+                text_to_image_input.guidance_scale = round(
+                    text_to_image_input.guidance_scale, 2
+                )
+
+            if input_name == "samples":
+                text_to_image_input.samples = int.from_bytes(b_input_tensor, "little")
+                print(
+                    f"[DEBUG] input `samples` type\
+                        ({type(text_to_image_input.samples)}): {text_to_image_input.samples}"
+                )
+
+            if input_name == "extra_params":
+                input_tensor = deserialize_bytes_tensor(b_input_tensor)
+                extra_params_str = str(input_tensor[0].decode("utf-8"))
+                print(
+                    f"[DEBUG] input `extra_params` type\
+                        ({type(extra_params_str)}): {extra_params_str}"
+                )
+
+                try:
+                    text_to_image_input.extra_params = json.loads(extra_params_str)
+                except json.decoder.JSONDecodeError:
+                    print("[DEBUG] WARNING `extra_params` parsing faield!")
+                    continue
+
+        return text_to_image_input
+
+    @staticmethod
+    def parse_task_text_to_image_output(image):
+        return np.asarray(image).tobytes()
 
 
 class RawIO:
