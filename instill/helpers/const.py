@@ -1,5 +1,7 @@
 from enum import Enum
-from typing import Any, Dict
+from typing import Any, Dict, Union
+
+import numpy as np
 
 
 class DataType(Enum):
@@ -29,10 +31,40 @@ class TextGenerationInput:
 
 
 class TextToImageInput:
+    prompt_image: Union[np.ndarray, None] = None
     prompt = ""
     negative_prompt = ""
     steps = 5
     guidance_scale = 7.5
     seed = 0
     samples = 1
+    extra_params: Dict[str, str] = {}
+
+
+class ImageToImageInput:
+    prompt_image: Union[np.ndarray, None] = None
+    prompt = ""
+    steps = 5
+    guidance_scale = 7.5
+    seed = 0
+    samples = 1
+    extra_params: Dict[str, str] = {}
+
+
+class TextGenerationChatInput:
+    conversation = ""
+    max_new_tokens = 100
+    top_k = 1
+    temperature = 0.8
+    random_seed = 0
+    extra_params: Dict[str, str] = {}
+
+
+class VisualQuestionAnsweringInput:
+    prompt_image: Union[np.ndarray, None] = None
+    prompt = ""
+    max_new_tokens = 100
+    top_k = 1
+    temperature = 0.8
+    random_seed = 0
     extra_params: Dict[str, str] = {}
