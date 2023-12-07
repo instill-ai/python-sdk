@@ -1,5 +1,5 @@
 # pylint: disable=no-member,wrong-import-position
-import instill.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_pb
+import instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 as pipeline_pb
 
 
 def create_start_operator(config: dict) -> pipeline_pb.Component:
