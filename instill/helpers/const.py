@@ -26,3 +26,13 @@ class TextGenerationInput:
     random_seed = 0
     stop_words: Any = ""
     extra_params: Dict[str, str] = {}
+
+
+class TextToImageInput:
+    prompt = ""
+    negative_prompt = ""
+    steps = 5
+    guidance_scale = 7.5
+    seed = 0
+    samples = 1
+    extra_params: Dict[str, str] = {}
