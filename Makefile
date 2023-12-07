@@ -41,9 +41,12 @@ endif
 .cache:
 	@ mkdir -p .cache
 
-.PHONY: proto
-proto:
+.PHONY: get-proto
+get-proto:
 	@ git submodule update --init --recursive
+
+.PHONY: update-proto
+update-proto:
 	@ git submodule update --remote --merge
 
 # TEST ########################################################################
@@ -153,7 +156,7 @@ DIST_FILES := dist/*.tar.gz dist/*.whl
 EXE_FILES := dist/$(PACKAGE).*
 
 .PHONY: dist
-dist: install $(DIST_FILES)
+dist: install get-proto $(DIST_FILES)
 $(DIST_FILES): $(MODULES) pyproject.toml
 	rm -f $(DIST_FILES)
 	poetry build
