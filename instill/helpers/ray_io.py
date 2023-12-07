@@ -1,6 +1,7 @@
 import io
 import json
 import struct
+from json.decoder import JSONDecodeError
 from typing import List
 
 import numpy as np
@@ -363,9 +364,14 @@ class StandardTaskIO:
 
             if input_name == "conversation":
                 input_tensor = deserialize_bytes_tensor(b_input_tensor)
-                text_generation_chat_input.conversation = str(
-                    input_tensor[0].decode("utf-8")
-                )
+                try:
+                    text_generation_chat_input.conversation = json.loads(
+                        str(input_tensor[0].decode("utf-8"))
+                    )
+                except Exception as e:
+                    raise JSONDecodeError(
+                        "can't parse conversation json string", "", 0
+                    ) from e
                 print(
                     f"[DEBUG] input `conversation` type\
                         ({type(text_generation_chat_input.conversation)}): {text_generation_chat_input.conversation}"
