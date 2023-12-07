@@ -4,7 +4,7 @@ from typing import Dict
 from google.protobuf import field_mask_pb2
 
 # common
-import instill.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
+import instill.protogen.common.healthcheck.v1beta.healthcheck_pb2 as healthcheck
 import instill.protogen.model.model.v1alpha.model_definition_pb2 as model_definition_interface
 
 # model

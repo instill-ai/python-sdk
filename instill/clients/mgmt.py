@@ -1,12 +1,12 @@
 # pylint: disable=no-member,wrong-import-position
 from typing import Dict
 
-import instill.protogen.common.healthcheck.v1alpha.healthcheck_pb2 as healthcheck
+import instill.protogen.common.healthcheck.v1beta.healthcheck_pb2 as healthcheck
 
 # mgmt
-import instill.protogen.core.mgmt.v1alpha.metric_pb2 as metric_interface
-import instill.protogen.core.mgmt.v1alpha.mgmt_pb2 as mgmt_interface
-import instill.protogen.core.mgmt.v1alpha.mgmt_public_service_pb2_grpc as mgmt_service
+import instill.protogen.core.mgmt.v1beta.metric_pb2 as metric_interface
+import instill.protogen.core.mgmt.v1beta.mgmt_pb2 as mgmt_interface
+import instill.protogen.core.mgmt.v1beta.mgmt_public_service_pb2_grpc as mgmt_service
 
 # common
 from instill.clients.base import Client, RequestFactory

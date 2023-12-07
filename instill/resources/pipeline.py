@@ -3,7 +3,7 @@ from typing import Tuple, Union
 
 from google.longrunning import operations_pb2
 
-import instill.protogen.vdp.pipeline.v1alpha.pipeline_pb2 as pipeline_interface
+import instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 as pipeline_interface
 from instill.clients import InstillClient
 from instill.resources.resource import Resource
 
