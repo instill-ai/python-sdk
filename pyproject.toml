@@ -36,6 +36,7 @@ google-api-core = "^2.11.1"
 googleapis-common-protos = "^1.60.0"
 protoc-gen-openapiv2 = "^0.0.1"
 pydantic = "*"
+pillow = "^10.1.0"
 
 [tool.poetry.dev-dependencies]
 
