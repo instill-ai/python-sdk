@@ -1,4 +1,4 @@
-# pylint: disable=no-member,wrong-import-position
+# pylint: disable=no-member,wrong-import-position,too-many-lines
 from typing import Dict, Union
 
 from google.protobuf import field_mask_pb2
@@ -1160,7 +1160,7 @@ class PipelineClient(Client):
                 method=self.hosts[
                     self.instance
                 ].async_client.ListOrganizationPipelineReleases,
-                request=pipeline_interface.c(
+                request=pipeline_interface.ListOrganizationPipelineReleasesRequest(
                     parent=self.target_namespace,
                     filter=filer_str,
                     page_size=total_size,
