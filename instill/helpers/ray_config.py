@@ -1,6 +1,7 @@
 import argparse
 from typing import Callable, Optional
 
+import ray
 from ray import serve
 from ray.serve import Deployment
 from ray.serve import deployment as ray_deployment
@@ -104,7 +105,9 @@ class InstillDeployable:
         if self._deployment.ray_actor_options is not None:
             self._deployment.ray_actor_options.update({"num_gpus": num_gpus})
 
-    def deploy(self, model_folder_path: str):
+    def deploy(self, model_folder_path: str, ray_addr: str):
+        ray_addr = "ray://" + ray_addr.replace("9000", "10001")
+        ray.init(ray_addr)
         model_path = "/".join([model_folder_path, self.model_weight_or_folder_name])
         model_path_string_parts = model_path.split("/")
         application_name = model_path_string_parts[5]
@@ -116,7 +119,9 @@ class InstillDeployable:
             route_prefix=route_prefix,
         )
 
-    def undeploy(self):
+    def undeploy(self, ray_addr: str):
+        ray_addr = "ray://" + ray_addr.replace("9000", "10001")
+        ray.init(ray_addr)
         serve.delete(self.model_name)
 
 
