@@ -39,6 +39,10 @@ Install project dependencies into a virtual environment:
 $ make install
 ```
 
+> [!IMPORTANT]  
+> **reinstsall poetry-plugin-export after each install**  
+> ray serve has dependencies that are really outdated and can cause problems in the dev environment, `pip --force-reinstall poetry-plugin-export` after poetry installation.
+
 ### Development Tasks
 
 #### Manual
@@ -77,20 +81,6 @@ The CI server will report overall build status:
 
 ```text
 $ make all
-```
-
-### Demo Tasks
-
-Run the program:
-
-```text
-$ make run
-```
-
-Launch an IPython session:
-
-```text
-$ make shell
 ```
 
 ### Release Tasks
