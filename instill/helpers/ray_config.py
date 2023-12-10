@@ -1,4 +1,15 @@
 import argparse
+from typing import Callable, Optional
+
+from ray import serve
+from ray.serve import Deployment
+from ray.serve import deployment as ray_deployment
+
+from instill.helpers.const import (
+    DEFAULT_AUTOSCALING_CONFIG,
+    DEFAULT_MAX_CONCURRENT_QUERIES,
+    DEFAULT_RAY_ACTOR_OPRTIONS,
+)
 
 
 class InstillRayModelConfig:
@@ -74,3 +85,76 @@ def entry(model_weight_name_or_folder: str):
     )
 
     return args.func, model_config
+
+
+class InstillDeployable:
+    def __init__(
+        self, deployable: Deployment, model_weight_or_folder_name: str
+    ) -> None:
+        self._deployment: Deployment = deployable
+        # params
+        self.model_weight_or_folder_name: str = model_weight_or_folder_name
+        self.model_name: str = ""
+
+    def update_num_cpus(self, num_cpus: float):
+        if self._deployment.ray_actor_options is not None:
+            self._deployment.ray_actor_options.update({"num_cpus": num_cpus})
+
+    def update_num_gpus(self, num_gpus: float):
+        if self._deployment.ray_actor_options is not None:
+            self._deployment.ray_actor_options.update({"num_gpus": num_gpus})
+
+    def deploy(self, model_folder_path: str):
+        model_path = "/".join([model_folder_path, self.model_weight_or_folder_name])
+        model_path_string_parts = model_path.split("/")
+        application_name = model_path_string_parts[5]
+        self.model_name = "_".join(model_path_string_parts[3].split("#")[:2])
+        route_prefix = f'/{self.model_name}/{model_path_string_parts[3].split("#")[3]}'
+        serve.run(
+            self._deployment.options(name=application_name).bind(model_path),
+            name=self.model_name,
+            route_prefix=route_prefix,
+        )
+
+    def undeploy(self):
+        serve.delete(self.model_name)
+
+
+def deployment(
+    _func_or_class: Optional[Callable] = None,
+    model_weight_or_folder_name: str = "model.pt",
+):
+    @instill_deployment(
+        _func_or_class=_func_or_class,
+        model_weight_or_folder_name=model_weight_or_folder_name,
+    )
+    @ray_deployment()
+    def _decorated():
+        return _func_or_class
+
+    return _decorated
+
+
+def instill_deployment(
+    _func_or_class, model_weight_or_folder_name
+) -> Callable[[Callable], InstillDeployable]:
+    ray_actor_options = DEFAULT_RAY_ACTOR_OPRTIONS
+    autoscaling_config = DEFAULT_AUTOSCALING_CONFIG
+    max_concurrent_queries = DEFAULT_MAX_CONCURRENT_QUERIES
+
+    def compose_deployment(_func_or_class):
+        ray_deployable = _func_or_class(
+            ray_actor_options=ray_actor_options,
+            max_concurrent_queries=max_concurrent_queries,
+            autoscaling_config=autoscaling_config,
+        )
+        return InstillDeployable(
+            deployable=ray_deployable,
+            model_weight_or_folder_name=model_weight_or_folder_name,
+        )
+
+    return (
+        compose_deployment(_func_or_class)
+        if callable(_func_or_class)
+        else compose_deployment
+    )
