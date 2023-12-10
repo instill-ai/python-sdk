@@ -68,3 +68,15 @@ class VisualQuestionAnsweringInput:
     temperature = 0.8
     random_seed = 0
     extra_params: Dict[str, str] = {}
+
+
+DEFAULT_RAY_ACTOR_OPRTIONS = {
+    "num_cpus": 1,
+}
+DEFAULT_AUTOSCALING_CONFIG = {
+    "target_num_ongoing_requests_per_replica": 7,
+    "initial_replicas": 1,
+    "min_replicas": 0,
+    "max_replicas": 5,
+}
+DEFAULT_MAX_CONCURRENT_QUERIES = 10
