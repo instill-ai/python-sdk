@@ -1,3 +1,4 @@
+# pylint: disable=no-name-in-module
 import json
 import os
 import typing as t
@@ -41,9 +42,7 @@ class Configuration:
             return
         try:
             with open(path, "r", encoding="utf-8") as c:
-                self._config = _Config.model_validate(
-                    yaml.load(c, Loader=yaml.FullLoader)
-                )
+                self._config = _Config.validate(yaml.load(c, Loader=yaml.FullLoader))
         except Exception as e:
             raise BaseException(f"Invalid configuration file at '{path}'") from e
 
@@ -55,7 +54,7 @@ class Configuration:
         with open(path, "w", encoding="utf-8") as c:
             yaml.dump(
                 json.loads(
-                    self._config.model_dump_json(
+                    self._config.json(
                         exclude_none=True,
                     )
                 ),

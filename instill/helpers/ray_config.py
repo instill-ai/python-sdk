@@ -1,15 +1,14 @@
 import argparse
-
-from typing import Optional, Callable
+from typing import Callable, Optional
 
 from ray import serve
-from ray.serve import deployment as ray_deployment
 from ray.serve import Deployment
+from ray.serve import deployment as ray_deployment
 
 from instill.helpers.const import (
-    DEFAULT_RAY_ACTOR_OPRTIONS,
     DEFAULT_AUTOSCALING_CONFIG,
     DEFAULT_MAX_CONCURRENT_QUERIES,
+    DEFAULT_RAY_ACTOR_OPRTIONS,
 )
 
 
@@ -89,21 +88,21 @@ def entry(model_weight_name_or_folder: str):
 
 
 class InstillDeployable:
-    def __init__(self, deployable: Deployment, model_weight_or_folder_name) -> None:
+    def __init__(
+        self, deployable: Deployment, model_weight_or_folder_name: str
+    ) -> None:
         self._deployment: Deployment = deployable
         # params
         self.model_weight_or_folder_name: str = model_weight_or_folder_name
         self.model_name: str = ""
 
     def update_num_cpus(self, num_cpus: float):
-        ray_actor_options = self._deployment.ray_actor_options
-        ray_actor_options["num_cpus"] = num_cpus
-        self._deployment = self._deployment.options(ray_actor_options=ray_actor_options)
+        if self._deployment.ray_actor_options is not None:
+            self._deployment.ray_actor_options.update({"num_cpus": num_cpus})
 
     def update_num_gpus(self, num_gpus: float):
-        ray_actor_options = self._deployment.ray_actor_options
-        ray_actor_options["num_gpus"] = num_gpus
-        self._deployment = self._deployment.options(ray_actor_options=ray_actor_options)
+        if self._deployment.ray_actor_options is not None:
+            self._deployment.ray_actor_options.update({"num_gpus": num_gpus})
 
     def deploy(self, model_folder_path: str):
         model_path = "/".join([model_folder_path, self.model_weight_or_folder_name])
