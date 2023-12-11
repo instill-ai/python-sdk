@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.4.0](https://github.com/instill-ai/python-sdk/compare/v0.3.2...v0.4.0) (2023-12-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* **client:** support asyncio and add better client type hint ([#55](https://github.com/instill-ai/python-sdk/issues/55))
+
+### Features
+
+* **client:** support asyncio and add better client type hint ([#55](https://github.com/instill-ai/python-sdk/issues/55)) ([aa41246](https://github.com/instill-ai/python-sdk/commit/aa41246b6ae3c27d62438436b2023316d2e1d664))
+* **org:** adopt organization endpoints for VDP ([#60](https://github.com/instill-ai/python-sdk/issues/60)) ([0c313d6](https://github.com/instill-ai/python-sdk/commit/0c313d605ceb016a7bb534a20c545d3187d1be83))
+* **ray:** add io helpers for llm tasks ([#59](https://github.com/instill-ai/python-sdk/issues/59)) ([1876a20](https://github.com/instill-ai/python-sdk/commit/1876a20256f3bb82ad37ca88fd83e849a3dd14cc))
+* **ray:** add nested decorators ([#63](https://github.com/instill-ai/python-sdk/issues/63)) ([900dda8](https://github.com/instill-ai/python-sdk/commit/900dda8ac952e933aa9cbb35274c19b8ecbab252))
+* **ray:** add text to image io helper ([#58](https://github.com/instill-ai/python-sdk/issues/58)) ([0430977](https://github.com/instill-ai/python-sdk/commit/04309779454ef6a0078efc6636735f4e4e2d7af5))
+
+
+### Bug Fixes
+
+* **clients,resources:** fix resource creating will get None type ([#57](https://github.com/instill-ai/python-sdk/issues/57)) ([4516d46](https://github.com/instill-ai/python-sdk/commit/4516d466b6e7ce0891f06d6616123e35e3b2291e))
+* **makefile:** fix wheel build missing submodule ([9aa73eb](https://github.com/instill-ai/python-sdk/commit/9aa73ebd157d08fc1ab7975eeb2fa9e407c2e330))
+* **ray:** fix missing ray init ([#64](https://github.com/instill-ai/python-sdk/issues/64)) ([db0b5c4](https://github.com/instill-ai/python-sdk/commit/db0b5c49a154b73f6607fc02c8b6d157d01e619e))
+
+
+### Documentation
+
+* **notebooks:** update notebooks to adopt latest ray decorators ([52b90c6](https://github.com/instill-ai/python-sdk/commit/52b90c6283984158670773629017289f76e508d5))
+
 ## [0.3.2](https://github.com/instill-ai/python-sdk/compare/v0.3.1...v0.3.2) (2023-11-29)
 
 
