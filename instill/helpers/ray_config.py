@@ -10,6 +10,7 @@ from instill.helpers.const import (
     DEFAULT_AUTOSCALING_CONFIG,
     DEFAULT_MAX_CONCURRENT_QUERIES,
     DEFAULT_RAY_ACTOR_OPRTIONS,
+    DEFAULT_RUNTIME_ENV,
 )
 
 
@@ -107,7 +108,7 @@ class InstillDeployable:
     def deploy(self, model_folder_path: str, ray_addr: str):
         if not ray.is_initialized():
             ray_addr = "ray://" + ray_addr.replace("9000", "10001")
-            ray.init(ray_addr)
+            ray.init(address=ray_addr, runtime_env=DEFAULT_RUNTIME_ENV)
         model_path = "/".join([model_folder_path, self.model_weight_or_folder_name])
         model_path_string_parts = model_path.split("/")
         application_name = model_path_string_parts[5]
@@ -122,7 +123,7 @@ class InstillDeployable:
     def undeploy(self, model_folder_path: str, ray_addr: str):
         if not ray.is_initialized():
             ray_addr = "ray://" + ray_addr.replace("9000", "10001")
-            ray.init(ray_addr)
+            ray.init(address=ray_addr, runtime_env=DEFAULT_RUNTIME_ENV)
         model_path = "/".join([model_folder_path, self.model_weight_or_folder_name])
         model_path_string_parts = model_path.split("/")
         model_name = "_".join(model_path_string_parts[3].split("#")[:2])

@@ -1,3 +1,5 @@
+import os
+
 from enum import Enum
 from typing import Any, Dict, Union
 
@@ -78,5 +80,10 @@ DEFAULT_AUTOSCALING_CONFIG = {
     "initial_replicas": 1,
     "min_replicas": 0,
     "max_replicas": 5,
+}
+DEFAULT_RUNTIME_ENV = {
+    "env_vars": {
+        "PYTHONPATH": os.getcwd(),
+    },
 }
 DEFAULT_MAX_CONCURRENT_QUERIES = 10
