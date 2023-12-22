@@ -1,4 +1,3 @@
-import argparse
 from typing import Callable, Optional
 
 import ray
@@ -14,96 +13,43 @@ from instill.helpers.const import (
 )
 
 
-class InstillRayModelConfig:
-    def __init__(
-        self,
-        ray_actor_options: dict,
-        ray_autoscaling_options: dict,
-        max_concurrent_queries: int,
-        og_model_path: str,
-        ray_addr: str,
-    ) -> None:
-        self.ray_addr = ray_addr
-
-        og_model_string_parts = og_model_path.split("/")
-
-        self.ray_actor_options = ray_actor_options
-        self.ray_autoscaling_options = ray_autoscaling_options
-        self.max_concurrent_queries = max_concurrent_queries
-
-        self.model_path = og_model_path
-        self.application_name = og_model_string_parts[5]
-        self.model_name = "_".join(og_model_string_parts[3].split("#")[:2])
-        self.route_prefix = (
-            f'/{self.model_name}/{og_model_string_parts[3].split("#")[3]}'
-        )
-
-
-def get_compose_ray_address(port: int):
-    return f"ray://ray_server:{port}"
-
-
-def entry(model_weight_name_or_folder: str):
-    parser = argparse.ArgumentParser()
-
-    ray_actor_options = {
-        "num_cpus": 1,
-    }
-    max_concurrent_queries = 10
-    ray_autoscaling_options = {
-        "target_num_ongoing_requests_per_replica": 7,
-        "initial_replicas": 1,
-        "min_replicas": 0,
-        "max_replicas": 5,
-    }
-
-    parser.add_argument(
-        "--func", required=True, choices=["deploy", "undeploy"], help="deploy/undeploy"
-    )
-    parser.add_argument("--model", required=True, help="model path for the deployment")
-    parser.add_argument(
-        "--ray-addr", default=get_compose_ray_address(10001), help="ray head address"
-    )
-    parser.add_argument(
-        "--ray-actor-options",
-        default=ray_actor_options,
-        help="custom actor options for the deployment",
-    )
-    parser.add_argument(
-        "--ray-autoscaling-options",
-        default=ray_autoscaling_options,
-        help="custom autoscaling options for the deployment",
-    )
-    args = parser.parse_args()
-
-    ray_addr = "ray://" + args.ray_addr.replace("9000", "10001")
-
-    model_config = InstillRayModelConfig(
-        ray_addr=ray_addr,
-        ray_actor_options=args.ray_actor_options,
-        ray_autoscaling_options=args.ray_autoscaling_options,
-        max_concurrent_queries=max_concurrent_queries,
-        og_model_path="/".join([args.model, model_weight_name_or_folder]),
-    )
-
-    return args.func, model_config
-
-
 class InstillDeployable:
     def __init__(
-        self, deployable: Deployment, model_weight_or_folder_name: str
+        self,
+        deployable: Deployment,
+        model_weight_or_folder_name: str,
+        use_gpu: bool,
     ) -> None:
         self._deployment: Deployment = deployable
         # params
         self.model_weight_or_folder_name: str = model_weight_or_folder_name
+        if use_gpu:
+            self._update_num_cpus(1)
+            self._update_num_gpus(0.25)
+        else:
+            self._update_num_cpus(2)
 
-    def update_num_cpus(self, num_cpus: float):
+    def _update_num_cpus(self, num_cpus: float):
         if self._deployment.ray_actor_options is not None:
             self._deployment.ray_actor_options.update({"num_cpus": num_cpus})
 
-    def update_num_gpus(self, num_gpus: float):
+    def _update_num_gpus(self, num_gpus: float):
         if self._deployment.ray_actor_options is not None:
             self._deployment.ray_actor_options.update({"num_gpus": num_gpus})
+
+    def update_min_replicas(self, num_replicas: int):
+        new_autoscaling_config = DEFAULT_AUTOSCALING_CONFIG
+        new_autoscaling_config["min_replicas"] = num_replicas
+        self._deployment = self._deployment.options(
+            autoscaling_config=new_autoscaling_config
+        )
+
+    def update_max_replicas(self, num_replicas: int):
+        new_autoscaling_config = DEFAULT_AUTOSCALING_CONFIG
+        new_autoscaling_config["max_replicas"] = num_replicas
+        self._deployment = self._deployment.options(
+            autoscaling_config=new_autoscaling_config
+        )
 
     def deploy(self, model_folder_path: str, ray_addr: str):
         if not ray.is_initialized():
@@ -138,13 +84,9 @@ class InstillDeployable:
 def instill_deployment(
     _func_or_class: Optional[Callable] = None,
 ) -> Callable[[Callable], InstillDeployable]:
-    ray_actor_options = DEFAULT_RAY_ACTOR_OPRTIONS
-    autoscaling_config = DEFAULT_AUTOSCALING_CONFIG
-    max_concurrent_queries = DEFAULT_MAX_CONCURRENT_QUERIES
-
     return ray_deployment(
         _func_or_class=_func_or_class,
-        ray_actor_options=ray_actor_options,
-        autoscaling_config=autoscaling_config,
-        max_concurrent_queries=max_concurrent_queries,
+        ray_actor_options=DEFAULT_RAY_ACTOR_OPRTIONS,
+        autoscaling_config=DEFAULT_AUTOSCALING_CONFIG,
+        max_concurrent_queries=DEFAULT_MAX_CONCURRENT_QUERIES,
     )
