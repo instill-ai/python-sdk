@@ -35,7 +35,7 @@ types-pyyaml = "^6.0.12.11"
 google-api-core = "^2.11.1"
 googleapis-common-protos = "^1.60.0"
 protoc-gen-openapiv2 = "^0.0.1"
-pydantic = "^2.5.0"
+pydantic = ">=1.10.13"
 pillow = "^10.1.0"
 ray = {version = "2.9.0", extras = ["serve"]}
 
