@@ -38,13 +38,13 @@ local_model = {
 yolov7_config = {
     "model_name": "yolov7",
     "model_repo": "instill-ai/model-yolov7-dvc",
-    "model_tag": "v1.0-cpu",
+    "model_tag": "v1.2-ray-cpu",
 }
 
 mobilenetv2_config = {
     "model_name": "mobilenetv2",
     "model_repo": "instill-ai/model-mobilenetv2-dvc",
-    "model_tag": "v1.0-cpu",
+    "model_tag": "v1.2-ray-cpu",
 }
 
 try:
@@ -56,7 +56,7 @@ try:
     assert client.mgmt_service.is_serving()
     Logger.i("mgmt client created, assert status == serving: True")
 
-    user = client.mgmt_service.get_user()
+    user = client.mgmt_service.get_user().user
     assert user.id == "admin"
     Logger.i("mgmt get user, assert default user id == admin: True")
 
@@ -151,10 +151,7 @@ try:
         name="instill",
         server_url="http://api-gateway:8080",
     )
-    assert (
-        instill_connector.get_state()
-        == connector_pb.Connector.STATE_DISCONNECTED
-    )
+    assert instill_connector.get_state() == connector_pb.Connector.STATE_DISCONNECTED
     Logger.i(
         "instill model connector created, assert state == STATE_DISCONNECTED: True"
     )
@@ -171,10 +168,7 @@ try:
         name="openai",
         api_key="",
     )
-    assert (
-        openai_connector.get_state()
-        == connector_pb.Connector.STATE_DISCONNECTED
-    )
+    assert openai_connector.get_state() == connector_pb.Connector.STATE_DISCONNECTED
     Logger.i("openai connector created, assert state == STATE_DISCONNECTED: True")
 
     assert openai_connector.test() == connector_pb.Connector.STATE_CONNECTED
@@ -189,10 +183,7 @@ try:
         name="stabilityai",
         api_key="",
     )
-    assert (
-        stability_connector.get_state()
-        == connector_pb.Connector.STATE_DISCONNECTED
-    )
+    assert stability_connector.get_state() == connector_pb.Connector.STATE_DISCONNECTED
     Logger.i("stability ai connector created, assert state == STATE_DISCONNECTED: True")
 
     assert stability_connector.test() == connector_pb.Connector.STATE_CONNECTED
@@ -209,9 +200,7 @@ try:
         definition="connector-definitions/airbyte-destination-csv",
         configuration=config,
     )
-    assert (
-        csv_connector.get_state() == connector_pb.Connector.STATE_DISCONNECTED
-    )
+    assert csv_connector.get_state() == connector_pb.Connector.STATE_DISCONNECTED
     Logger.i("csv connector created, assert state == STATE_DISCONNECTED: True")
 
     assert csv_connector.test() == connector_pb.Connector.STATE_CONNECTED
@@ -434,10 +423,11 @@ try:
         }
     )
 
-    output = cute_pipeline([i])[0][0]["output"]
+    outputs, metadata = cute_pipeline([i])
+    base64_string = outputs[0]["output"].split(",")[1]
     with open("./test.jpg", "wb") as f:
-        f.write(base64.b64decode(output))
-    assert len(output[0]) != 0
+        f.write(base64.b64decode(base64_string))
+    assert len(base64_string) != 0
     Logger.i("cute-pipeline triggered, output length not 0: True")
 except AssertionError:
     Logger.w("TEST FAILED, ASSERTION MISMATCHED")
