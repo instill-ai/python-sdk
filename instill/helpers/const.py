@@ -1,6 +1,6 @@
 import os
 from enum import Enum
-from typing import Any, Dict, Union
+from typing import Any, Dict, List, Union
 
 import numpy as np
 
@@ -23,11 +23,14 @@ class DataType(Enum):
 
 class TextGenerationInput:
     prompt = ""
+    prompt_images: Union[List[np.ndarray], None] = None
+    chat_history: Union[List[str], None] = None
+    system_message: Union[str, None] = None
     max_new_tokens = 100
-    top_k = 1
     temperature = 0.8
+    top_k = 1
     random_seed = 0
-    stop_words: Any = ""
+    stop_words: Any = ""  # Optional
     extra_params: Dict[str, str] = {}
 
 
@@ -53,21 +56,28 @@ class ImageToImageInput:
 
 
 class TextGenerationChatInput:
-    conversation = ""
+    prompt = ""
+    prompt_images: Union[List[np.ndarray], None] = None
+    chat_history: Union[List[str], None] = None
+    system_message: Union[str, None] = None
     max_new_tokens = 100
-    top_k = 1
     temperature = 0.8
+    top_k = 1
     random_seed = 0
+    stop_words: Any = ""  # Optional
     extra_params: Dict[str, str] = {}
 
 
 class VisualQuestionAnsweringInput:
-    prompt_image: Union[np.ndarray, None] = None
     prompt = ""
+    prompt_images: Union[List[np.ndarray], None] = None
+    chat_history: Union[List[str], None] = None
+    system_message: Union[str, None] = None
     max_new_tokens = 100
-    top_k = 1
     temperature = 0.8
+    top_k = 1
     random_seed = 0
+    stop_words: Any = ""  # Optional
     extra_params: Dict[str, str] = {}
 
 

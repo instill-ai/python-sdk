@@ -109,20 +109,67 @@ class StandardTaskIO:
                         ({type(text_generation_input.prompt)}): {text_generation_input.prompt}"
                 )
 
+            if input_name == "prompt_images":
+                input_tensors = deserialize_bytes_tensor(b_input_tensor)
+                images = []
+                for enc in input_tensors:
+                    pil_img = Image.open(io.BytesIO(enc.astype(bytes)))  # RGB
+                    image = np.array(pil_img)
+                    if len(image.shape) == 2:  # gray image
+                        raise ValueError(
+                            f"The image shape with {image.shape} is "
+                            f"not in acceptable"
+                        )
+                    images.append(image)
+                # TODO: check wethere there are issues in batch size dimention
+                text_generation_input.prompt_images = images
+                print(
+                    "[DEBUG] input `prompt_images` type"
+                    f"({type(text_generation_input.prompt_images)}): "
+                    f"{text_generation_input.prompt_images}"
+                )
+
+            if input_name == "chat_history":
+                input_tensor = deserialize_bytes_tensor(b_input_tensor)
+                chat_history_str = str(input_tensor[0].decode("utf-8"))
+                print(
+                    "[DEBUG] input `chat_history_str` type"
+                    f"({type(chat_history_str)}): "
+                    f"{chat_history_str}"
+                )
+                try:
+                    text_generation_input.chat_history = json.loads(chat_history_str)
+                except JSONDecodeError:
+                    print("[DEBUG] WARNING `extra_params` parsing faield!")
+                    continue
+
+            if input_name == "system_message":
+                input_tensor = deserialize_bytes_tensor(b_input_tensor)
+                text_generation_input.system_message = str(
+                    input_tensor[0].decode("utf-8")
+                )
+                print(
+                    "[DEBUG] input `system_message` type"
+                    f"({type(text_generation_input.system_message)}): "
+                    f"{text_generation_input.system_message}"
+                )
+
             if input_name == "max_new_tokens":
                 text_generation_input.max_new_tokens = int.from_bytes(
                     b_input_tensor, "little"
                 )
                 print(
-                    f"[DEBUG] input `max_new_tokens` type\
-                        ({type(text_generation_input.max_new_tokens)}): {text_generation_input.max_new_tokens}"
+                    "[DEBUG] input `max_new_tokens` type"
+                    f"({type(text_generation_input.max_new_tokens)}): "
+                    f"{text_generation_input.max_new_tokens}"
                 )
 
             if input_name == "top_k":
                 text_generation_input.top_k = int.from_bytes(b_input_tensor, "little")
                 print(
-                    f"[DEBUG] input `top_k` type\
-                        ({type(text_generation_input.top_k)}): {text_generation_input.top_k}"
+                    "[DEBUG] input `top_k` type"
+                    f"({type(text_generation_input.top_k)}): "
+                    f"{text_generation_input.top_k}"
                 )
 
             if input_name == "temperature":
@@ -130,8 +177,9 @@ class StandardTaskIO:
                     0
                 ]
                 print(
-                    f"[DEBUG] input `temperature` type\
-                        ({type(text_generation_input.temperature)}): {text_generation_input.temperature}"
+                    "[DEBUG] input `temperature` type"
+                    f"({type(text_generation_input.temperature)}): "
+                    f"{text_generation_input.temperature}"
                 )
                 text_generation_input.temperature = round(
                     text_generation_input.temperature, 2
@@ -142,44 +190,23 @@ class StandardTaskIO:
                     b_input_tensor, "little"
                 )
                 print(
-                    f"[DEBUG] input `random_seed` type\
-                        ({type(text_generation_input.random_seed)}): {text_generation_input.random_seed}"
-                )
-
-            if input_name == "stop_words":
-                input_tensor = deserialize_bytes_tensor(b_input_tensor)
-                text_generation_input.stop_words = input_tensor[0]
-                print(
-                    f"[DEBUG] input `stop_words` type\
-                        ({type(text_generation_input.stop_words)}): {text_generation_input.stop_words}"
-                )
-                if len(text_generation_input.stop_words) == 0:
-                    text_generation_input.stop_words = None
-                elif text_generation_input.stop_words.shape[0] > 1:
-                    # TODO: Check wether shoule we decode this words
-                    text_generation_input.stop_words = list(
-                        text_generation_input.stop_words
-                    )
-                else:
-                    text_generation_input.stop_words = [
-                        str(text_generation_input.stop_words[0])
-                    ]
-                print(
-                    f"[DEBUG] parsed input `stop_words` type\
-                        ({type(text_generation_input.stop_words)}): {text_generation_input.stop_words}"
+                    "[DEBUG] input `random_seed` type"
+                    f"({type(text_generation_input.random_seed)}): "
+                    f"{text_generation_input.random_seed}"
                 )
 
             if input_name == "extra_params":
                 input_tensor = deserialize_bytes_tensor(b_input_tensor)
                 extra_params_str = str(input_tensor[0].decode("utf-8"))
                 print(
-                    f"[DEBUG] input `extra_params` type\
-                        ({type(extra_params_str)}): {extra_params_str}"
+                    "[DEBUG] input `extra_params` type"
+                    f"({type(extra_params_str)}): "
+                    f"{extra_params_str}"
                 )
 
                 try:
                     text_generation_input.extra_params = json.loads(extra_params_str)
-                except json.decoder.JSONDecodeError:
+                except JSONDecodeError:
                     print("[DEBUG] WARNING `extra_params` parsing faield!")
                     continue
 
@@ -259,7 +286,7 @@ class StandardTaskIO:
 
                 try:
                     text_to_image_input.extra_params = json.loads(extra_params_str)
-                except json.decoder.JSONDecodeError:
+                except JSONDecodeError:
                     print("[DEBUG] WARNING `extra_params` parsing faield!")
                     continue
 
@@ -345,7 +372,7 @@ class StandardTaskIO:
 
                 try:
                     image_to_image_input.extra_params = json.loads(extra_params_str)
-                except json.decoder.JSONDecodeError:
+                except JSONDecodeError:
                     print("[DEBUG] WARNING `extra_params` parsing faield!")
                     continue
 
@@ -362,19 +389,59 @@ class StandardTaskIO:
         for i, b_input_tensor in zip(request.inputs, request.raw_input_contents):
             input_name = i.name
 
-            if input_name == "conversation":
+            if input_name == "prompt":
                 input_tensor = deserialize_bytes_tensor(b_input_tensor)
-                try:
-                    text_generation_chat_input.conversation = json.loads(
-                        str(input_tensor[0].decode("utf-8"))
-                    )
-                except Exception as e:
-                    raise JSONDecodeError(
-                        "can't parse conversation json string", "", 0
-                    ) from e
+                text_generation_chat_input.prompt = str(input_tensor[0].decode("utf-8"))
                 print(
-                    f"[DEBUG] input `conversation` type\
-                        ({type(text_generation_chat_input.conversation)}): {text_generation_chat_input.conversation}"
+                    f"[DEBUG] input `prompt` type\
+                        ({type(text_generation_chat_input.prompt)}): {text_generation_chat_input.prompt}"
+                )
+
+            if input_name == "prompt_images":
+                input_tensors = deserialize_bytes_tensor(b_input_tensor)
+                images = []
+                for enc in input_tensors:
+                    pil_img = Image.open(io.BytesIO(enc.astype(bytes)))  # RGB
+                    image = np.array(pil_img)
+                    if len(image.shape) == 2:  # gray image
+                        raise ValueError(
+                            f"The image shape with {image.shape} is "
+                            f"not in acceptable"
+                        )
+                    images.append(image)
+                # TODO: check wethere there are issues in batch size dimention
+                text_generation_chat_input.prompt_images = images
+                print(
+                    "[DEBUG] input `prompt_images` type"
+                    f"({type(text_generation_chat_input.prompt_images)}): "
+                    f"{text_generation_chat_input.prompt_images}"
+                )
+
+            if input_name == "chat_history":
+                input_tensor = deserialize_bytes_tensor(b_input_tensor)
+                chat_history_str = str(input_tensor[0].decode("utf-8"))
+                print(
+                    "[DEBUG] input `chat_history_str` type"
+                    f"({type(chat_history_str)}): "
+                    f"{chat_history_str}"
+                )
+                try:
+                    text_generation_chat_input.chat_history = json.loads(
+                        chat_history_str
+                    )
+                except JSONDecodeError:
+                    print("[DEBUG] WARNING `extra_params` parsing faield!")
+                    continue
+
+            if input_name == "system_message":
+                input_tensor = deserialize_bytes_tensor(b_input_tensor)
+                text_generation_chat_input.system_message = str(
+                    input_tensor[0].decode("utf-8")
+                )
+                print(
+                    "[DEBUG] input `system_message` type"
+                    f"({type(text_generation_chat_input.system_message)}): "
+                    f"{text_generation_chat_input.system_message}"
                 )
 
             if input_name == "max_new_tokens":
@@ -382,9 +449,9 @@ class StandardTaskIO:
                     b_input_tensor, "little"
                 )
                 print(
-                    f"[DEBUG] input `max_new_tokens` type\
-                        ({type(text_generation_chat_input.max_new_tokens)}):\
-                            {text_generation_chat_input.max_new_tokens}"
+                    "[DEBUG] input `max_new_tokens` type"
+                    f"({type(text_generation_chat_input.max_new_tokens)}): "
+                    f"{text_generation_chat_input.max_new_tokens}"
                 )
 
             if input_name == "top_k":
@@ -392,9 +459,9 @@ class StandardTaskIO:
                     b_input_tensor, "little"
                 )
                 print(
-                    f"[DEBUG] input `top_k` type\
-                        ({type(text_generation_chat_input.top_k)}):\
-                            {text_generation_chat_input.top_k}"
+                    "[DEBUG] input `top_k` type"
+                    f"({type(text_generation_chat_input.top_k)}): "
+                    f"{text_generation_chat_input.top_k}"
                 )
 
             if input_name == "temperature":
@@ -402,9 +469,9 @@ class StandardTaskIO:
                     "f", b_input_tensor
                 )[0]
                 print(
-                    f"[DEBUG] input `temperature` type\
-                        ({type(text_generation_chat_input.temperature)}):\
-                            {text_generation_chat_input.temperature}"
+                    "[DEBUG] input `temperature` type"
+                    f"({type(text_generation_chat_input.temperature)}): "
+                    f"{text_generation_chat_input.temperature}"
                 )
                 text_generation_chat_input.temperature = round(
                     text_generation_chat_input.temperature, 2
@@ -415,24 +482,25 @@ class StandardTaskIO:
                     b_input_tensor, "little"
                 )
                 print(
-                    f"[DEBUG] input `random_seed` type\
-                        ({type(text_generation_chat_input.random_seed)}):\
-                            {text_generation_chat_input.random_seed}"
+                    "[DEBUG] input `random_seed` type"
+                    f"({type(text_generation_chat_input.random_seed)}): "
+                    f"{text_generation_chat_input.random_seed}"
                 )
 
             if input_name == "extra_params":
                 input_tensor = deserialize_bytes_tensor(b_input_tensor)
                 extra_params_str = str(input_tensor[0].decode("utf-8"))
                 print(
-                    f"[DEBUG] input `extra_params` type\
-                        ({type(extra_params_str)}): {extra_params_str}"
+                    "[DEBUG] input `extra_params` type"
+                    f"({type(extra_params_str)}): "
+                    f"{extra_params_str}"
                 )
 
                 try:
                     text_generation_chat_input.extra_params = json.loads(
                         extra_params_str
                     )
-                except json.decoder.JSONDecodeError:
+                except JSONDecodeError:
                     print("[DEBUG] WARNING `extra_params` parsing faield!")
                     continue
 
@@ -453,7 +521,18 @@ class StandardTaskIO:
         for i, b_input_tensor in zip(request.inputs, request.raw_input_contents):
             input_name = i.name
 
-            if input_name == "prompt_image":
+            if input_name == "prompt":
+                input_tensor = deserialize_bytes_tensor(b_input_tensor)
+                text_visual_question_answering_input.prompt = str(
+                    input_tensor[0].decode("utf-8")
+                )
+                print(
+                    "[DEBUG] input `prompt` type"
+                    f"({type(text_visual_question_answering_input.prompt)}): "
+                    f"{text_visual_question_answering_input.prompt}"
+                )
+
+            if input_name == "prompt_images":
                 input_tensors = deserialize_bytes_tensor(b_input_tensor)
                 images = []
                 for enc in input_tensors:
@@ -465,22 +544,39 @@ class StandardTaskIO:
                             f"not in acceptable"
                         )
                     images.append(image)
-                text_visual_question_answering_input.prompt_image = images[0]
+                # TODO: check wethere there are issues in batch size dimention
+                text_visual_question_answering_input.prompt_images = images
                 print(
-                    f"[DEBUG] input `prompt_image` type\
-                        ({type(text_visual_question_answering_input.prompt_image)}): \
-                            {text_visual_question_answering_input.prompt_image}"
+                    "[DEBUG] input `prompt_images` type"
+                    f"({type(text_visual_question_answering_input.prompt_images)}): "
+                    f"{text_visual_question_answering_input.prompt_images}"
                 )
 
-            if input_name == "prompt":
+            if input_name == "chat_history":
                 input_tensor = deserialize_bytes_tensor(b_input_tensor)
-                text_visual_question_answering_input.prompt = str(
+                chat_history_str = str(input_tensor[0].decode("utf-8"))
+                print(
+                    "[DEBUG] input `chat_history_str` type"
+                    f"({type(chat_history_str)}): "
+                    f"{chat_history_str}"
+                )
+                try:
+                    text_visual_question_answering_input.chat_history = json.loads(
+                        chat_history_str
+                    )
+                except JSONDecodeError:
+                    print("[DEBUG] WARNING `extra_params` parsing faield!")
+                    continue
+
+            if input_name == "system_message":
+                input_tensor = deserialize_bytes_tensor(b_input_tensor)
+                text_visual_question_answering_input.system_message = str(
                     input_tensor[0].decode("utf-8")
                 )
                 print(
-                    f"[DEBUG] input `prompt` type\
-                        ({type(text_visual_question_answering_input.prompt)}):\
-                            {text_visual_question_answering_input.prompt}"
+                    "[DEBUG] input `system_message` type"
+                    f"({type(text_visual_question_answering_input.system_message)}): "
+                    f"{text_visual_question_answering_input.system_message}"
                 )
 
             if input_name == "max_new_tokens":
@@ -488,9 +584,9 @@ class StandardTaskIO:
                     b_input_tensor, "little"
                 )
                 print(
-                    f"[DEBUG] input `max_new_tokens` type\
-                        ({type(text_visual_question_answering_input.max_new_tokens)}):\
-                            {text_visual_question_answering_input.max_new_tokens}"
+                    "[DEBUG] input `max_new_tokens` type"
+                    f"({type(text_visual_question_answering_input.max_new_tokens)}): "
+                    f"{text_visual_question_answering_input.max_new_tokens}"
                 )
 
             if input_name == "top_k":
@@ -498,9 +594,9 @@ class StandardTaskIO:
                     b_input_tensor, "little"
                 )
                 print(
-                    f"[DEBUG] input `top_k` type\
-                        ({type(text_visual_question_answering_input.top_k)}):\
-                            {text_visual_question_answering_input.top_k}"
+                    "[DEBUG] input `top_k` type"
+                    f"({type(text_visual_question_answering_input.top_k)}): "
+                    f"{text_visual_question_answering_input.top_k}"
                 )
 
             if input_name == "temperature":
@@ -508,9 +604,9 @@ class StandardTaskIO:
                     "f", b_input_tensor
                 )[0]
                 print(
-                    f"[DEBUG] input `temperature` type\
-                        ({type(text_visual_question_answering_input.temperature)}):\
-                            {text_visual_question_answering_input.temperature}"
+                    "[DEBUG] input `temperature` type"
+                    f"({type(text_visual_question_answering_input.temperature)}): "
+                    f"{text_visual_question_answering_input.temperature}"
                 )
                 text_visual_question_answering_input.temperature = round(
                     text_visual_question_answering_input.temperature, 2
@@ -521,24 +617,25 @@ class StandardTaskIO:
                     b_input_tensor, "little"
                 )
                 print(
-                    f"[DEBUG] input `random_seed` type\
-                        ({type(text_visual_question_answering_input.random_seed)}):\
-                            {text_visual_question_answering_input.random_seed}"
+                    "[DEBUG] input `random_seed` type"
+                    f"({type(text_visual_question_answering_input.random_seed)}): "
+                    f"{text_visual_question_answering_input.random_seed}"
                 )
 
             if input_name == "extra_params":
                 input_tensor = deserialize_bytes_tensor(b_input_tensor)
                 extra_params_str = str(input_tensor[0].decode("utf-8"))
                 print(
-                    f"[DEBUG] input `extra_params` type\
-                        ({type(extra_params_str)}): {extra_params_str}"
+                    "[DEBUG] input `extra_params` type"
+                    f"({type(extra_params_str)}): "
+                    f"{extra_params_str}"
                 )
 
                 try:
                     text_visual_question_answering_input.extra_params = json.loads(
                         extra_params_str
                     )
-                except json.decoder.JSONDecodeError:
+                except JSONDecodeError:
                     print("[DEBUG] WARNING `extra_params` parsing faield!")
                     continue
 
