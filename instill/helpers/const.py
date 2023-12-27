@@ -85,18 +85,20 @@ DEFAULT_RAY_ACTOR_OPRTIONS = {
     "num_cpus": 2,
 }
 DEFAULT_AUTOSCALING_CONFIG = {
-    "target_num_ongoing_requests_per_replica": 10,
+    "target_num_ongoing_requests_per_replica": 2,
     "initial_replicas": 1,
     "min_replicas": 0,
     "max_replicas": 5,
     "upscale_delay_s": 4,
     "downscale_delay_s": 60,
+    "upscale_smoothing_factor": 0.8,
+    "downscale_smoothing_factor": 0.3,
     "metrics_interval_s": 2,
-    "look_pack_period_s": 10,
+    "look_back_period_s": 4,
 }
 DEFAULT_RUNTIME_ENV = {
     "env_vars": {
         "PYTHONPATH": os.getcwd(),
     },
 }
-DEFAULT_MAX_CONCURRENT_QUERIES = 15
+DEFAULT_MAX_CONCURRENT_QUERIES = 3

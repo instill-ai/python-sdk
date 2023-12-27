@@ -33,15 +33,22 @@ $ make doctor
 
 #### Installation
 
+Fetch git submodules:
+
+```text
+$ make get-proto
+```
+
+> [!IMPORTANT]  
+> **Create a `.venv` folder if you are rusing `conda`**  
+> This will be fixed soon, but currently if you are installing the development dependencies inside a conda env,
+> you will need to create a `.venv` folder in your proejct root to prevent errors
+
 Install project dependencies into a virtual environment:
 
 ```text
 $ make install
 ```
-
-> [!IMPORTANT]  
-> **reinstsall poetry-plugin-export after each install**  
-> ray serve has dependencies that are really outdated and can cause problems in the dev environment, `pip --force-reinstall poetry-plugin-export` after poetry installation.
 
 ### Development Tasks
 
