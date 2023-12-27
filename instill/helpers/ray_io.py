@@ -1,3 +1,4 @@
+import base64
 import io
 import json
 import struct
@@ -113,7 +114,18 @@ class StandardTaskIO:
                 input_tensors = deserialize_bytes_tensor(b_input_tensor)
                 images = []
                 for enc in input_tensors:
-                    pil_img = Image.open(io.BytesIO(enc.astype(bytes)))  # RGB
+                    if len(enc) == 0:
+                        continue
+                    try:
+                        enc_json = json.loads(str(enc.decode("utf-8")))
+                        if len(enc_json) == 0:
+                            continue
+                        decoded_enc = enc_json[0]
+                    except JSONDecodeError:
+                        print("[DEBUG] WARNING `enc_json` parsing faield!")
+                    # pil_img = Image.open(io.BytesIO(enc.astype(bytes)))  # RGB
+                    pil_img = Image.open(io.BytesIO(base64.b64decode(decoded_enc)))
+
                     image = np.array(pil_img)
                     if len(image.shape) == 2:  # gray image
                         raise ValueError(
@@ -401,7 +413,18 @@ class StandardTaskIO:
                 input_tensors = deserialize_bytes_tensor(b_input_tensor)
                 images = []
                 for enc in input_tensors:
-                    pil_img = Image.open(io.BytesIO(enc.astype(bytes)))  # RGB
+                    if len(enc) == 0:
+                        continue
+                    try:
+                        enc_json = json.loads(str(enc.decode("utf-8")))
+                        if len(enc_json) == 0:
+                            continue
+                        decoded_enc = enc_json[0]
+                    except JSONDecodeError:
+                        print("[DEBUG] WARNING `enc_json` parsing faield!")
+                    # pil_img = Image.open(io.BytesIO(enc.astype(bytes)))  # RGB
+                    pil_img = Image.open(io.BytesIO(base64.b64decode(decoded_enc)))
+
                     image = np.array(pil_img)
                     if len(image.shape) == 2:  # gray image
                         raise ValueError(
@@ -409,7 +432,6 @@ class StandardTaskIO:
                             f"not in acceptable"
                         )
                     images.append(image)
-                # TODO: check wethere there are issues in batch size dimention
                 text_generation_chat_input.prompt_images = images
                 print(
                     "[DEBUG] input `prompt_images` type"
@@ -536,7 +558,18 @@ class StandardTaskIO:
                 input_tensors = deserialize_bytes_tensor(b_input_tensor)
                 images = []
                 for enc in input_tensors:
-                    pil_img = Image.open(io.BytesIO(enc.astype(bytes)))  # RGB
+                    if len(enc) == 0:
+                        continue
+                    try:
+                        enc_json = json.loads(str(enc.decode("utf-8")))
+                        if len(enc_json) == 0:
+                            continue
+                        decoded_enc = enc_json[0]
+                    except JSONDecodeError:
+                        print("[DEBUG] WARNING `enc_json` parsing faield!")
+                    # pil_img = Image.open(io.BytesIO(enc.astype(bytes)))  # RGB
+                    pil_img = Image.open(io.BytesIO(base64.b64decode(decoded_enc)))
+
                     image = np.array(pil_img)
                     if len(image.shape) == 2:  # gray image
                         raise ValueError(
