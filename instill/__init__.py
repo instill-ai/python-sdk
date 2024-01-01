@@ -5,12 +5,10 @@ from importlib.metadata import PackageNotFoundError, version
 
 from instill.helpers.protobufs.ray_pb2 import (
     InferTensor,
-    ModelInferRequest,
-    ModelInferResponse,
     ModelMetadataRequest,
     ModelMetadataResponse,
-    ModelReadyRequest,
-    ModelReadyResponse,
+    RayServiceCallRequest,
+    RayServiceCallResponse,
 )
 from instill.utils.logger import Logger
 
