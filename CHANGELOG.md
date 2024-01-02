@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.5.0](https://github.com/instill-ai/python-sdk/compare/v0.4.0...v0.5.0) (2024-01-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* **ray:** retire non-decorator deploy and update scaling config ([#67](https://github.com/instill-ai/python-sdk/issues/67))
+
+### Features
+
+* **model:** Update Text-Generation Task Schema to Align with OpenAI Standards  ([#69](https://github.com/instill-ai/python-sdk/issues/69)) ([703789a](https://github.com/instill-ai/python-sdk/commit/703789a6d09cfa857b13f296834f87a6daffb18d))
+
+
+### Bug Fixes
+
+* **model:** fix image decoding issue ([#71](https://github.com/instill-ai/python-sdk/issues/71)) ([5c571b2](https://github.com/instill-ai/python-sdk/commit/5c571b2aec543fcf2208ad83219b1b94dfca3078))
+* **ray:** allow cwd as runtime env ([#66](https://github.com/instill-ai/python-sdk/issues/66)) ([00c0497](https://github.com/instill-ai/python-sdk/commit/00c0497ac6bf7232b6ac2d0d18549a7edd3cc03e))
+* **ray:** avoid agressive downscale and non upscale ([#70](https://github.com/instill-ai/python-sdk/issues/70)) ([f159314](https://github.com/instill-ai/python-sdk/commit/f1593141d2d5f60faeb51e83a091cd3755c9d9f5))
+
+
+### Documentation
+
+* **notebooks:** add async example ([49ca895](https://github.com/instill-ai/python-sdk/commit/49ca8956691810590799b494120eb5b95e8b6e5c))
+
+
+### Code Refactoring
+
+* **ray:** retire non-decorator deploy and update scaling config ([#67](https://github.com/instill-ai/python-sdk/issues/67)) ([89ef078](https://github.com/instill-ai/python-sdk/commit/89ef0787d436ba45933b92e405ce5c2e3f2a6aa9))
+
 ## [0.4.0](https://github.com/instill-ai/python-sdk/compare/v0.3.2...v0.4.0) (2023-12-11)
 
 
