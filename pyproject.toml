@@ -38,6 +38,7 @@ protoc-gen-openapiv2 = "^0.0.1"
 pydantic = ">=1.10.13"
 pillow = "^10.1.0"
 ray = {version = "2.9.0", extras = ["serve"]}
+jsonschema = "^4.20.0"
 
 [tool.poetry.dev-dependencies]
 
@@ -75,6 +76,7 @@ pync = { version = "*", platform = "darwin" }
 ipython = "^8.10.0"
 mypy-protobuf = "^3.5.0"
 grpcio-tools = "^1.54.2"
+datamodel-code-generator = "^0.25.2"
 
 # Publish
 twine = "^4.0.2"
@@ -98,6 +100,7 @@ exclude = '''
     | _build
     | buck-out
     | protogen
+    | schema
     | protobufs
     | build
     | dist
@@ -113,7 +116,9 @@ profile = "black"
 skip_glob = ["**/protogen/*", "**/protobufs/*"]
 
 [tool.mypy]
-
+exclude = [
+    'instill/resources/schema',
+]
 ignore_missing_imports = true
 no_implicit_optional = true
 check_untyped_defs = true
