@@ -49,6 +49,10 @@ get-proto:
 update-proto:
 	@ git submodule update --remote --merge
 
+.PHONY: update-specs
+update-specs:
+	@ bash bin/specs
+
 # TEST ########################################################################
 
 RANDOM_SEED ?= $(shell date +%s)

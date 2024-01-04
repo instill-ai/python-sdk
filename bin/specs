@@ -1,0 +1,74 @@
+#!/bin bash
+
+connector_schemas=("airbyte" "bigquery" "googlecloudstorage" "stabilityai" "googlesearch" "airbyte" "huggingface" "instill" "numbers" "openai" "pinecone" "redis" "restapi" "website")
+
+for connector in ${connector_schemas[@]}; do
+    echo "=====================@@@ Fetching and processing $connector @@@====================="
+    if [[ "$connector" == 'stabilityai' ]] || [[ "$connector" == 'openai' ]]; then
+        echo "Downloading ${connector}.json..."
+        curl https://raw.githubusercontent.com/instill-ai/connector/main/pkg/${connector}/config/${connector}.json -L -s -o ./instill/resources/schema/jsons/${connector}.json
+    fi
+    curl https://raw.githubusercontent.com/instill-ai/connector/main/pkg/${connector}/config/definitions.json -L -s -o ./instill/resources/schema/jsons/${connector}_definitions.json
+    echo "Downloading ${connector}_definitions.json..."
+    cat <<<$(jq '.[0].spec.resource_specification' ./instill/resources/schema/jsons/${connector}_definitions.json) >./instill/resources/schema/jsons/${connector}_definitions.json
+    o_path=./instill/resources/schema/${connector}.py
+    if [ "$connector" == "airbyte" ]; then
+        o_path=./instill/resources/schema/${connector}/
+    fi
+    echo "Generating ${o_path}..."
+    datamodel-codegen --use-schema-description --use-title-as-name --input ./instill/resources/schema/jsons/${connector}_definitions.json --input-file-type jsonschema --output ${o_path} --output-model-type dataclasses.dataclass
+    # tasks
+    echo "Downloading ${connector}_tasks.json..."
+    curl https://raw.githubusercontent.com/instill-ai/connector/main/pkg/${connector}/config/tasks.json -L -s -o ./instill/resources/schema/jsons/${connector}_tasks.json
+
+    common=$(cat ./instill/resources/schema/jsons/${connector}_tasks.json | jq -rc '."$defs" // empty')
+    cat ./instill/resources/schema/jsons/${connector}_tasks.json | jq -rc 'to_entries | .[]' | while read line; do
+        task=$(echo $line | jq -rc '.key')
+        if [[ "$task" == '$defs' ]]; then
+            continue
+        fi
+        echo $line | jq -rc '.value | to_entries | .[]' | while read inner_line; do
+            schema=$(echo $inner_line | jq -rc '.value')
+            io=$(echo $inner_line | jq -rc '.key')
+            filename=$(echo "${connector}_${task}_${io}" | tr "[:upper:]" "[:lower:]")
+            if [ ! -z "$common" ]; then
+                schema=${schema::${#schema}-1}
+                schema="${schema},\"\$defs\":${common}}"
+            fi
+            echo $schema >./instill/resources/schema/jsons/$filename.json
+            echo "Generating $filename.py..."
+            datamodel-codegen --input ./instill/resources/schema/jsons/$filename.json --input-file-type jsonschema --output ./instill/resources/schema/$filename.py --output-model-type dataclasses.dataclass
+        done
+    done
+done
+
+operator_schemas=("base64" "end" "image" "json" "start" "text")
+
+for operator in ${operator_schemas[@]}; do
+    echo "=====================@@@ Fetching and processing $operator @@@====================="
+    echo "Downloading ${operator}_definitions.json..."
+    curl https://raw.githubusercontent.com/instill-ai/operator/main/pkg/${operator}/config/definitions.json -L -s -o ./instill/resources/schema/jsons/${operator}_definitions.json
+    # tasks
+    echo "Downloading ${operator}_tasks.json..."
+    curl https://raw.githubusercontent.com/instill-ai/operator/main/pkg/${operator}/config/tasks.json -L -s -o ./instill/resources/schema/jsons/${operator}_tasks.json
+
+    common=$(cat ./instill/resources/schema/jsons/${operator}_tasks.json | jq -rc '."$defs" // empty')
+    cat ./instill/resources/schema/jsons/${operator}_tasks.json | jq -rc 'to_entries | .[]' | while read line; do
+        task=$(echo $line | jq -rc '.key')
+        if [[ "$task" == '$defs' ]]; then
+            continue
+        fi
+        echo $line | jq -rc '.value | to_entries | .[]' | while read inner_line; do
+            schema=$(echo $inner_line | jq -rc '.value')
+            io=$(echo $inner_line | jq -rc '.key')
+            filename=$(echo "${operator}_${task}_${io}" | tr "[:upper:]" "[:lower:]")
+            if [ ! -z "$common" ]; then
+                schema=${schema::${#schema}-1}
+                schema="${schema},\"\$defs\":${common}}"
+            fi
+            echo $schema >./instill/resources/schema/jsons/$filename.json
+            echo "Generating $filename.py..."
+            datamodel-codegen --input ./instill/resources/schema/jsons/$filename.json --input-file-type jsonschema --output ./instill/resources/schema/$filename.py --output-model-type dataclasses.dataclass
+        done
+    done
+done
