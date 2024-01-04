@@ -1,0 +1,1 @@
+{"description":"Output","instillEditOnNodeFields":["data"],"instillUIOrder":0,"properties":{"data":{"description":"Data","instillFormat":"string","instillUIMultiline":true,"instillUIOrder":0,"title":"Data","type":"string"}},"required":["data"],"title":"Output","type":"object"}

@@ -36,9 +36,7 @@ class Connector(Resource):
                 self.resource.id, task_inputs
             )
             return resp.outputs
-        return self.client.pipeline_service.test_connector(
-            self.resource.id, task_inputs
-        ).state
+        return self.test()
 
     @property
     def client(self):

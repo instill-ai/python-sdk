@@ -1,0 +1,18 @@
+[
+  {
+    "available_tasks": [
+      "TASK_ENCODE",
+      "TASK_DECODE"
+    ],
+    "custom": false,
+    "documentation_url": "https://www.instill.tech/docs/latest/vdp/operators/base64",
+    "icon": "base64.svg",
+    "icon_url": "",
+    "id": "base64",
+    "public": true,
+    "spec": {},
+    "title": "Base64",
+    "tombstone": false,
+    "uid": "3a836447-c211-4134-9cc5-ad45e1cc467e"
+  }
+]

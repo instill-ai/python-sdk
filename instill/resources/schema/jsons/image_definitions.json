@@ -1,0 +1,21 @@
+[
+  {
+    "available_tasks": [
+      "TASK_DRAW_CLASSIFICATION",
+      "TASK_DRAW_DETECTION",
+      "TASK_DRAW_KEYPOINT",
+      "TASK_DRAW_OCR",
+      "TASK_DRAW_INSTANCE_SEGMENTATION",
+      "TASK_DRAW_SEMANTIC_SEGMENTATION"
+    ],
+    "custom": false,
+    "documentation_url": "https://www.instill.tech/docs/latest/vdp/operators/image",
+    "icon": "image.svg",
+    "icon_url": "",
+    "id": "image",
+    "public": true,
+    "spec": {},
+    "title": "Image",
+    "uid": "e9eb8fc8-f249-4e11-ad50-5035d79ffc18"
+  }
+]

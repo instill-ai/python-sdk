@@ -1,0 +1,1 @@
+{"description":"Output","instillEditOnNodeFields":["object"],"instillUIOrder":0,"properties":{"object":{"description":"Object","instillEditOnNodeFields":[],"instillFormat":"semi-structured/object","instillUIOrder":0,"required":[],"title":"Object","type":"object"}},"required":["object"],"title":"Output","type":"object"}

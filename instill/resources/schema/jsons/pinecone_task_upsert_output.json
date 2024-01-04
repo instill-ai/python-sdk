@@ -1,0 +1,1 @@
+{"instillUIOrder":0,"properties":{"upserted_count":{"description":"Number of records modified or added","instillFormat":"integer","instillUIOrder":0,"title":"Upserted Count","type":"integer"}},"required":["upserted_count"],"title":"Output","type":"object"}

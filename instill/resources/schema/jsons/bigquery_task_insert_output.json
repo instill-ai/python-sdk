@@ -1,0 +1,1 @@
+{"instillUIOrder":0,"properties":{"status":{"description":"Status of the upload operation","instillFormat":"string","instillUIOrder":0,"title":"Status","type":"string"}},"required":["status"],"title":"Output","type":"object"}

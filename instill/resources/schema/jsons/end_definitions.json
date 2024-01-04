@@ -1,0 +1,17 @@
+[
+  {
+    "available_tasks": [
+      "TASK_END"
+    ],
+    "custom": false,
+    "documentation_url": "https://www.instill.tech/docs/latest/vdp/operators/op-end",
+    "icon": "end.svg",
+    "icon_url": "",
+    "id": "end",
+    "public": true,
+    "spec": {},
+    "title": "End",
+    "tombstone": false,
+    "uid": "4f39c8bc-8617-495d-80de-80d0f5397516"
+  }
+]

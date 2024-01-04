@@ -1,0 +1,1 @@
+{"description":"Input","instillEditOnNodeFields":["string"],"instillUIOrder":0,"properties":{"string":{"description":"Json string to be unmarshaled","instillAcceptFormats":["string"],"instillUIMultiline":true,"instillUIOrder":0,"instillUpstreamTypes":["value","reference"],"title":"String","type":"string"}},"required":["string"],"title":"Input","type":"object"}

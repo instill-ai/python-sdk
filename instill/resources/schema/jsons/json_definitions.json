@@ -1,0 +1,17 @@
+[
+  {
+    "available_tasks": [
+      "TASK_MARSHAL",
+      "TASK_UNMARSHAL"
+    ],
+    "custom": false,
+    "documentation_url": "https://www.instill.tech/docs/latest/vdp/operators/json",
+    "icon": "json.svg",
+    "icon_url": "",
+    "id": "json",
+    "public": true,
+    "spec": {},
+    "title": "JSON",
+    "uid": "28f53d15-6150-46e6-99aa-f76b70a926c0"
+  }
+]
