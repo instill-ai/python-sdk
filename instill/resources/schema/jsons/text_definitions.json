@@ -1,0 +1,17 @@
+[
+  {
+    "available_tasks": [
+      "TASK_CONVERT_TO_TEXT",
+      "TASK_SPLIT_BY_TOKEN"
+    ],
+    "custom": false,
+    "documentation_url": "https://www.instill.tech/docs/latest/vdp/operators/text",
+    "icon": "text.svg",
+    "icon_url": "",
+    "id": "text",
+    "public": true,
+    "spec": {},
+    "title": "Text",
+    "uid": "5b7aca5b-1ae3-477f-bf60-d34e1c993c87"
+  }
+]

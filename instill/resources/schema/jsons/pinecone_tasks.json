@@ -1,0 +1,262 @@
+{
+  "TASK_QUERY": {
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "id": {
+          "description": "The unique ID of the vector to be used as a query vector. If present, the vector parameter will be ignored.",
+          "instillShortDescription": "Query by vector ID instead of by vector",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template"
+          ],
+          "title": "ID",
+          "type": "string"
+        },
+        "namespace": {
+          "description": "The namespace to query",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Namespace",
+          "type": "string"
+        },
+        "vector": {
+          "description": "An array of dimensions for the query vector.",
+          "instillAcceptFormats": [
+            "array:number",
+            "array:integer"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "items": {
+            "description": "A dimension of the vector",
+            "example": 0.8167237,
+            "type": "number"
+          },
+          "minItems": 1,
+          "title": "Vector",
+          "type": "array"
+        },
+        "filter": {
+          "description": "The filter to apply. You can use vector metadata to limit your search. See https://www.pinecone.io/docs/metadata-filtering/.",
+          "instillAcceptFormats": [
+            "semi-structured/object"
+          ],
+          "instillShortDescription": "The filter to apply on vector metadata",
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "order": 1,
+          "required": [],
+          "title": "Filter",
+          "type": "object"
+        },
+        "include_values": {
+          "default": false,
+          "description": "Indicates whether vector values are included in the response",
+          "instillAcceptFormats": [
+            "boolean"
+          ],
+          "instillUIOrder": 4,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Include Values",
+          "type": "boolean"
+        },
+        "include_metadata": {
+          "default": false,
+          "description": "Indicates whether metadata is included in the response as well as the IDs",
+          "instillAcceptFormats": [
+            "boolean"
+          ],
+          "instillUIOrder": 5,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Include Metadata",
+          "type": "boolean"
+        },
+        "top_k": {
+          "description": "The number of results to return for each query",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 6,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Top K",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "top_k",
+        "vector"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "matches": {
+          "description": "The matches returned for the query",
+          "instillUIOrder": 1,
+          "items": {
+            "properties": {
+              "id": {
+                "description": "The ID of the matched vector",
+                "instillFormat": "string",
+                "instillUIOrder": 0,
+                "title": "ID",
+                "type": "string"
+              },
+              "metadata": {
+                "description": "Metadata",
+                "instillUIOrder": 3,
+                "instillFormat": "semi-structured/object",
+                "required": [],
+                "title": "Metadata",
+                "type": "object"
+              },
+              "score": {
+                "description": "A measure of similarity between this vector and the query vector. The higher the score, the more similar they are.",
+                "instillFormat": "number",
+                "instillUIOrder": 1,
+                "title": "Score",
+                "type": "number"
+              },
+              "values": {
+                "description": "Vector data values",
+                "instillUIOrder": 2,
+                "items": {
+                  "description": "Each float value represents one dimension",
+                  "type": "number"
+                },
+                "title": "Values",
+                "type": "array"
+              }
+            },
+            "required": [
+              "id",
+              "score"
+            ],
+            "title": "Match",
+            "type": "object"
+          },
+          "title": "Matches",
+          "type": "array"
+        },
+        "namespace": {
+          "description": "The namespace of the query",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Namespace",
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace",
+        "matches"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_UPSERT": {
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "id": {
+          "description": "This is the vector's unique id",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "ID",
+          "type": "string"
+        },
+        "values": {
+          "description": "An array of dimensions for the vector to be saved",
+          "instillAcceptFormats": [
+            "array:number",
+            "array:integer"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "items": {
+            "description": "A dimension of the vector",
+            "example": 0.8167237,
+            "type": "number"
+          },
+          "minItems": 1,
+          "title": "Values",
+          "type": "array"
+        },
+        "metadata": {
+          "description": "The vector metadata",
+          "instillAcceptFormats": [
+            "semi-structured/object"
+          ],
+          "instillShortDescription": "The vector metadata",
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "order": 1,
+          "required": [],
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "values"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "upserted_count": {
+          "description": "Number of records modified or added",
+          "instillFormat": "integer",
+          "instillUIOrder": 0,
+          "title": "Upserted Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "upserted_count"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "TASK_START": {
+    "input": {
+      "description": "Input",
+      "instillEditOnNodeFields": [],
+      "instillUIOrder": 0,
+      "required": [],
+      "title": "Input",
+      "type": "object"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z_][-a-z_0-9]{0,31}$": {
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "instillFormat": {
+              "type": "string"
+            },
+            "items": {
+              "properties": {
+                "instillFormat": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "instillFormat"
+              ],
+              "type": "object"
+            },
+            "title": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "instillFormat"
+          ],
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillEditOnNodeFields": [],
+      "instillUIOrder": 0,
+      "required": [],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

@@ -1,0 +1,211 @@
+{
+  "TASK_CONVERT_TO_TEXT": {
+    "input": {
+      "description": "Input",
+      "instillEditOnNodeFields": [
+        "doc"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "doc": {
+          "description": "Base64 encoded document (PDF, DOC, DOCX, XML, HTML, RTF, etc.) to be converted to plain text",
+          "instillAcceptFormats": [
+            "*/*"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Document",
+          "type": "string"
+        }
+      },
+      "required": [
+        "doc"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillUIOrder": 0,
+      "properties": {
+        "body": {
+          "description": "Plain text converted from the document",
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "title": "Body",
+          "type": "string"
+        },
+        "error": {
+          "description": "Error message if any during the conversion process",
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 3,
+          "title": "Error",
+          "type": "string"
+        },
+        "meta": {
+          "description": "Metadata extracted from the document",
+          "instillFormat": "semi-structured/object",
+          "instillUIOrder": 1,
+          "required": [],
+          "title": "Meta",
+          "type": "object"
+        },
+        "msecs": {
+          "description": "Time taken to convert the document",
+          "instillFormat": "number",
+          "instillUIOrder": 2,
+          "title": "MSecs",
+          "type": "number"
+        }
+      },
+      "required": [
+        "body",
+        "meta",
+        "msecs",
+        "error"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_SPLIT_BY_TOKEN": {
+    "input": {
+      "description": "Input",
+      "instillEditOnNodeFields": [
+        "text"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "chunk_token_size": {
+          "default": 500,
+          "description": "Number of tokens per text chunk",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "minimum": 1,
+          "title": "Chunk Token Size",
+          "type": "integer"
+        },
+        "model": {
+          "description": "ID of the model to use for tokenization",
+          "enum": [
+            "gpt-4",
+            "gpt-3.5-turbo",
+            "text-davinci-003",
+            "text-davinci-002",
+            "text-davinci-001",
+            "text-curie-001",
+            "text-babbage-001",
+            "text-ada-001",
+            "davinci",
+            "curie",
+            "babbage",
+            "ada",
+            "code-davinci-002",
+            "code-davinci-001",
+            "code-cushman-002",
+            "code-cushman-001",
+            "davinci-codex",
+            "cushman-codex",
+            "text-davinci-edit-001",
+            "code-davinci-edit-001",
+            "text-embedding-ada-002",
+            "text-similarity-davinci-001",
+            "text-similarity-curie-001",
+            "text-similarity-babbage-001",
+            "text-similarity-ada-001",
+            "text-search-davinci-doc-001",
+            "text-search-curie-doc-001",
+            "text-search-babbage-doc-001",
+            "text-search-ada-doc-001",
+            "code-search-babbage-code-001",
+            "code-search-ada-code-001",
+            "gpt2"
+          ],
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Model",
+          "type": "string"
+        },
+        "text": {
+          "description": "Text to be split",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillEditOnNodeFields": [
+        "texts"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "chunk_num": {
+          "description": "Total number of output text chunks",
+          "instillUIOrder": 2,
+          "title": "Number of Text Chunks",
+          "type": "integer"
+        },
+        "text_chunks": {
+          "description": "Text chunks after splitting",
+          "instillUIOrder": 1,
+          "items": {
+            "instillFormat": "string",
+            "instillMultiline": true,
+            "instillUIMultiline": true,
+            "type": "string"
+          },
+          "title": "Text Chunks",
+          "type": "array"
+        },
+        "token_count": {
+          "description": "Total count of tokens in the input text",
+          "instillUIOrder": 0,
+          "title": "Token Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "token_count",
+        "text_chunks",
+        "chunk_num"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+[
+  {
+    "available_tasks": [
+      "TASK_START"
+    ],
+    "custom": false,
+    "documentation_url": "https://www.instill.tech/docs/latest/vdp/operators/op-start",
+    "icon": "start.svg",
+    "icon_url": "",
+    "id": "start",
+    "public": true,
+    "spec": {},
+    "title": "Start",
+    "tombstone": false,
+    "uid": "2ac8be70-0f7a-4b61-a33d-098b8acfa6f3"
+  }
+]

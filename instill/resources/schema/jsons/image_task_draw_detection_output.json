@@ -1,0 +1,1 @@
+{"description":"Output","instillEditOnNodeFields":["image"],"instillUIOrder":0,"properties":{"image":{"description":"Output image","instillFormat":"image/jpeg","instillUIOrder":0,"title":"Image","type":"string"}},"required":["image"],"title":"Output","type":"object"}

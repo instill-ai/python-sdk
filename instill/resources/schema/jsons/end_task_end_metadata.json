@@ -1,0 +1,1 @@
+{"additionalProperties":false,"patternProperties":{"^[a-z_][-a-z_0-9]{0,31}$":{"properties":{"description":{"type":"string"},"title":{"type":"string"}},"type":"object"}},"type":"object"}
