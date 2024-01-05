@@ -18,4 +18,4 @@ class Field0:
     client_id: Optional[str]
     client_secret: Optional[str]
     refresh_token: str
-    auth_type: Optional[AuthType] = OAuth2.AuthType.OAuth2_0
+    auth_type: Optional[AuthType] = AuthType.OAuth2_0

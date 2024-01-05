@@ -1,9 +1,8 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module,arguments-renamed
 import json
+from typing import Union
 
 import jsonschema
-
-from typing import Union
 
 from instill.clients import InstillClient
 from instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 import Component
@@ -12,10 +11,10 @@ from instill.resources.connector import Connector
 from instill.resources.schema import (
     instill_task_classification_input,
     instill_task_detection_input,
+    instill_task_image_to_image_input,
     instill_task_instance_segmentation_input,
     instill_task_keypoint_input,
     instill_task_ocr_input,
-    instill_task_image_to_image_input,
     instill_task_semantic_segmentation_input,
     instill_task_text_generation_input,
     instill_task_text_to_image_input,
@@ -139,7 +138,7 @@ class InstillModelConnector(Connector):
                 "input": vars(inp),
                 "task": "TASK_VISUAL_QUESTION_ANSWERING",
             }
-        return super().create_component(name, config)
+        return super()._create_component(name, config)
 
 
 class StabilityAIConnector(Connector):
