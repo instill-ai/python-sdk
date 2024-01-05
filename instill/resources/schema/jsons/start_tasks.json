@@ -16,24 +16,22 @@
             "description": {
               "type": "string"
             },
-            "instillAcceptFormats": {
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
+            "instillFormat": {
+              "type": "string"
             },
             "items": {
               "properties": {
-                "instillAcceptFormats": {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
+                "instillFormat": {
+                  "type": "string"
                 },
                 "type": {
                   "type": "string"
                 }
               },
+              "required": [
+                "type",
+                "instillFormat"
+              ],
               "type": "object"
             },
             "title": {
@@ -43,6 +41,10 @@
               "type": "string"
             }
           },
+          "required": [
+            "type",
+            "instillFormat"
+          ],
           "type": "object"
         }
       },
