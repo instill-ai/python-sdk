@@ -14,11 +14,6 @@ Language = str
 
 
 class Model(Enum):
-    """
-    ID of the model to use. Only `whisper-1` is currently available.
-
-    """
-
     whisper_1 = 'whisper-1'
 
 
@@ -37,7 +32,7 @@ class ChatMessage:
 @dataclass
 class Input:
     audio: File
-    language: Optional[Language]
     model: Model
-    prompt: Optional[Prompt]
-    temperature: Optional[Temperature]
+    language: Optional[Language] = None
+    prompt: Optional[Prompt] = None
+    temperature: Optional[Temperature] = None

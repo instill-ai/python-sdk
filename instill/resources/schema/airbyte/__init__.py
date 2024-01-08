@@ -11,10 +11,6 @@ from . import OAuth2
 
 
 class AWSRegion(Enum):
-    """
-    AWS Region of the SQS Queue
-    """
-
     us_east_1 = 'us-east-1'
     us_east_2 = 'us-east-2'
     us_west_1 = 'us-west-1'
@@ -44,58 +40,38 @@ class AWSRegion(Enum):
 
 @dataclass
 class Amazonsqs:
-    access_key: Optional[str]
     destination: str
-    message_body_key: Optional[str]
-    message_delay: Optional[int]
-    message_group_id: Optional[str]
     queue_url: str
     region: AWSRegion
-    secret_key: Optional[str]
+    access_key: Optional[str] = None
+    message_body_key: Optional[str] = None
+    message_delay: Optional[int] = None
+    message_group_id: Optional[str] = None
+    secret_key: Optional[str] = None
 
 
 class CredentialsTitle(Enum):
-    """
-    Name of the credentials
-    """
-
     IAM_Role = 'IAM Role'
 
 
 @dataclass
 class IAMRole:
-    """
-    Choose How to Authenticate to AWS.
-    """
-
     credentials_title: CredentialsTitle
     role_arn: str
 
 
 class CredentialsTitle1(Enum):
-    """
-    Name of the credentials
-    """
-
     IAM_User = 'IAM User'
 
 
 @dataclass
 class IAMUser:
-    """
-    Choose How to Authenticate to AWS.
-    """
-
     aws_access_key_id: str
     aws_secret_access_key: str
     credentials_title: CredentialsTitle1
 
 
 class CompressionCodecOptional(Enum):
-    """
-    The compression algorithm used to compress data.
-    """
-
     UNCOMPRESSED = 'UNCOMPRESSED'
     GZIP = 'GZIP'
 
@@ -106,10 +82,6 @@ class FormatType(Enum):
 
 @dataclass
 class JSONLinesNewlineDelimitedJSON:
-    """
-    Format of the data output.
-    """
-
     format_type: FormatType
     compression_codec: Optional[
         CompressionCodecOptional
@@ -117,10 +89,6 @@ class JSONLinesNewlineDelimitedJSON:
 
 
 class CompressionCodecOptional1(Enum):
-    """
-    The compression algorithm used to compress data.
-    """
-
     UNCOMPRESSED = 'UNCOMPRESSED'
     SNAPPY = 'SNAPPY'
     GZIP = 'GZIP'
@@ -133,10 +101,6 @@ class FormatType1(Enum):
 
 @dataclass
 class ParquetColumnarStorage:
-    """
-    Format of the data output.
-    """
-
     format_type: FormatType1
     compression_codec: Optional[
         CompressionCodecOptional1
@@ -144,10 +108,6 @@ class ParquetColumnarStorage:
 
 
 class ChooseHowToPartitionData(Enum):
-    """
-    Partition data by cursor fields when a cursor field is a date
-    """
-
     NO_PARTITIONING = 'NO PARTITIONING'
     DATE = 'DATE'
     YEAR = 'YEAR'
@@ -158,10 +118,6 @@ class ChooseHowToPartitionData(Enum):
 
 
 class S3BucketRegion(Enum):
-    """
-    The region of the S3 bucket. See <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions">here</a> for all region codes.
-    """
-
     field_ = ''
     us_east_1 = 'us-east-1'
     us_east_2 = 'us-east-2'
@@ -192,17 +148,19 @@ class S3BucketRegion(Enum):
 
 @dataclass
 class Awsdatalake:
-    aws_account_id: Optional[str]
     bucket_name: str
-    bucket_prefix: Optional[str]
     credentials: Union[IAMRole, IAMUser]
     destination: str
-    format: Optional[Union[JSONLinesNewlineDelimitedJSON, ParquetColumnarStorage]]
-    lakeformation_database_default_tag_key: Optional[str]
-    lakeformation_database_default_tag_values: Optional[str]
     lakeformation_database_name: str
     region: S3BucketRegion
+    aws_account_id: Optional[str] = None
+    bucket_prefix: Optional[str] = None
+    format: Optional[
+        Union[JSONLinesNewlineDelimitedJSON, ParquetColumnarStorage]
+    ] = None
     glue_catalog_float_as_decimal: Optional[bool] = False
+    lakeformation_database_default_tag_key: Optional[str] = None
+    lakeformation_database_default_tag_values: Optional[str] = None
     lakeformation_governed_tables: Optional[bool] = False
     partitioning: Optional[
         ChooseHowToPartitionData
@@ -210,30 +168,18 @@ class Awsdatalake:
 
 
 class NormalizationFlattening(Enum):
-    """
-    Whether the input json data should be normalized (flattened) in the output CSV. Please refer to docs for details.
-    """
-
     No_flattening = 'No flattening'
     Root_level_flattening = 'Root level flattening'
 
 
 @dataclass
 class CSVCommaSeparatedValues:
-    """
-    Output data format
-    """
-
     flattening: NormalizationFlattening
     format_type: str
 
 
 @dataclass
 class JSONLinesNewlineDelimitedJSON1:
-    """
-    Output data format
-    """
-
     format_type: str
 
 
@@ -241,19 +187,15 @@ class JSONLinesNewlineDelimitedJSON1:
 class Azureblobstorage:
     azure_blob_storage_account_key: str
     azure_blob_storage_account_name: str
-    azure_blob_storage_container_name: Optional[str]
     destination: str
     format: Union[CSVCommaSeparatedValues, JSONLinesNewlineDelimitedJSON1]
+    azure_blob_storage_container_name: Optional[str] = None
     azure_blob_storage_endpoint_domain_name: Optional[str] = 'blob.core.windows.net'
     azure_blob_storage_output_buffer_size: Optional[int] = 5
     azure_blob_storage_spill_size: Optional[int] = 500
 
 
 class DatasetLocation(Enum):
-    """
-    The location of the dataset. Warning: Changes made after creation will not be applied. Read more <a href="https://cloud.google.com/bigquery/docs/locations">here</a>.
-    """
-
     US = 'US'
     EU = 'EU'
     asia_east1 = 'asia-east1'
@@ -302,30 +244,18 @@ class DatasetLocation(Enum):
 
 @dataclass
 class HMACKey:
-    """
-    An HMAC key is a type of credential and can be associated with a service account or a user account in Cloud Storage. Read more <a href="https://cloud.google.com/storage/docs/authentication/hmackeys">here</a>.
-    """
-
     credential_type: str
     hmac_key_access_id: str
     hmac_key_secret: str
 
 
 class GCSTmpFilesAfterwardProcessing(Enum):
-    """
-    This upload method is supposed to temporary store records in GCS bucket. By this select you can chose if these records should be removed from GCS when migration has finished. The default "Delete all tmp files from GCS" value is used if not set explicitly.
-    """
-
     Delete_all_tmp_files_from_GCS = 'Delete all tmp files from GCS'
     Keep_all_tmp_files_in_GCS = 'Keep all tmp files in GCS'
 
 
 @dataclass
 class GCSStaging:
-    """
-    <i>(recommended)</i> Writes large batches of records to a file, uploads the file to GCS, then uses COPY INTO to load your data into BigQuery. Provides best-in-class speed, reliability and scalability. Read more about GCS Staging <a href="https://docs.airbyte.com/integrations/destinations/bigquery#gcs-staging">here</a>.
-    """
-
     credential: HMACKey
     gcs_bucket_name: str
     gcs_bucket_path: str
@@ -337,33 +267,25 @@ class GCSStaging:
 
 @dataclass
 class StandardInserts:
-    """
-    <i>(not recommended)</i> Direct loading using SQL INSERT statements. This method is extremely inefficient and provided only for quick testing. In all other cases, you should use GCS staging.
-    """
-
     method: str
 
 
 class TransformationQueryRunType(Enum):
-    """
-    Interactive run type means that the query is executed as soon as possible, and these queries count towards concurrent rate limit and daily limit. Read more about interactive run type <a href="https://cloud.google.com/bigquery/docs/running-queries#queries">here</a>. Batch queries are queued and started as soon as idle resources are available in the BigQuery shared resource pool, which usually occurs within a few minutes. Batch queries don’t count towards your concurrent rate limit. Read more about batch queries <a href="https://cloud.google.com/bigquery/docs/running-queries#batch">here</a>. The default "interactive" value is used if not set explicitly.
-    """
-
     interactive = 'interactive'
     batch = 'batch'
 
 
 @dataclass
 class Bigquery:
-    credentials_json: Optional[str]
     dataset_id: str
     dataset_location: DatasetLocation
     destination: str
-    loading_method: Optional[Union[GCSStaging, StandardInserts]]
     project_id: str
-    raw_data_dataset: Optional[str]
     big_query_client_buffer_size_mb: Optional[int] = 15
+    credentials_json: Optional[str] = None
     disable_type_dedupe: Optional[bool] = False
+    loading_method: Optional[Union[GCSStaging, StandardInserts]] = None
+    raw_data_dataset: Optional[str] = None
     transformation_priority: Optional[
         TransformationQueryRunType
     ] = TransformationQueryRunType.interactive
@@ -387,10 +309,6 @@ class Mode(Enum):
 
 @dataclass
 class AzureOpenAI:
-    """
-    Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions.
-    """
-
     api_base: str
     deployment: str
     mode: Mode
@@ -403,10 +321,6 @@ class Mode1(Enum):
 
 @dataclass
 class OpenAI:
-    """
-    Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions.
-    """
-
     mode: Mode1
     openai_key: str
 
@@ -417,10 +331,6 @@ class Mode2(Enum):
 
 @dataclass
 class Cohere:
-    """
-    Use the Cohere API to embed text.
-    """
-
     cohere_key: str
     mode: Mode2
 
@@ -431,10 +341,6 @@ class Mode3(Enum):
 
 @dataclass
 class FromField:
-    """
-    Use a field in the record as the embedding. This is useful if you already have an embedding for your data and want to store it in the vector store.
-    """
-
     dimensions: int
     field_name: str
     mode: Mode3
@@ -446,10 +352,6 @@ class Mode4(Enum):
 
 @dataclass
 class Fake:
-    """
-    Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs.
-    """
-
     mode: Mode4
 
 
@@ -459,10 +361,6 @@ class Mode5(Enum):
 
 @dataclass
 class OpenAICompatible:
-    """
-    Use a service that's compatible with the OpenAI API to embed text.
-    """
-
     base_url: str
     dimensions: int
     mode: Mode5
@@ -476,10 +374,6 @@ class Mode6(Enum):
 
 @dataclass
 class ChromaDefaultEmbeddingFunction:
-    """
-    Do not calculate embeddings. Chromadb uses the sentence transfomer (https://www.sbert.net/index.html) as a default if an embedding function is not defined. Note that depending on your hardware, calculating embeddings locally can be very slow and is mostly suited for prototypes.
-    """
-
     mode: Optional[Mode6] = Mode6.no_embedding
 
 
@@ -489,10 +383,6 @@ class Mode7(Enum):
 
 @dataclass
 class PersistentClientMode:
-    """
-    Configure Chroma to save and load from your local machine
-    """
-
     path: str
     mode: Optional[Mode7] = Mode7.persistent_client
 
@@ -503,10 +393,6 @@ class Mode8(Enum):
 
 @dataclass
 class ClientServerMode:
-    """
-    Authenticate using username and password (suitable for self-managed Chroma clusters)
-    """
-
     host: str
     port: int
     ssl: bool
@@ -517,10 +403,6 @@ class ClientServerMode:
 
 @dataclass
 class Indexing:
-    """
-    Indexing configuration
-    """
-
     auth_method: Union[PersistentClientMode, ClientServerMode]
     collection_name: str
 
@@ -537,10 +419,6 @@ class Mode9(Enum):
 
 @dataclass
 class BySeparator:
-    """
-    Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc.
-    """
-
     mode: Mode9
     keep_separator: Optional[bool] = False
     separators: Optional[List[str]] = field(
@@ -554,19 +432,11 @@ class Mode10(Enum):
 
 @dataclass
 class ByMarkdownHeader:
-    """
-    Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk.
-    """
-
     mode: Mode10
     split_level: Optional[int] = 1
 
 
 class Language(Enum):
-    """
-    Split code in suitable places based on the programming language
-    """
-
     cpp = 'cpp'
     go = 'go'
     java = 'java'
@@ -591,10 +461,6 @@ class Mode11(Enum):
 
 @dataclass
 class ByProgrammingLanguage:
-    """
-    Split the text by suitable delimiters based on the programming language. This is useful for splitting code into chunks.
-    """
-
     language: Language
     mode: Mode11
 
@@ -602,30 +468,19 @@ class ByProgrammingLanguage:
 @dataclass
 class ProcessingConfigModel:
     chunk_size: int
-    text_splitter: Optional[Union[BySeparator, ByMarkdownHeader, ByProgrammingLanguage]]
     chunk_overlap: Optional[int] = 0
     field_name_mappings: Optional[List[FieldNameMappingConfigModel]] = field(
         default_factory=lambda: []
     )
     metadata_fields: Optional[List[str]] = field(default_factory=lambda: [])
     text_fields: Optional[List[str]] = field(default_factory=lambda: [])
+    text_splitter: Optional[
+        Union[BySeparator, ByMarkdownHeader, ByProgrammingLanguage]
+    ] = None
 
 
 @dataclass
 class Chroma:
-    """
-    The configuration model for the Vector DB based destinations. This model is used to generate the UI for the destination configuration,
-    as well as to provide type safety for the configuration passed to the destination.
-
-    The configuration model is composed of four parts:
-    * Processing configuration
-    * Embedding configuration
-    * Indexing configuration
-    * Advanced configuration
-
-    Processing, embedding and advanced configuration are provided by this base class, while the indexing configuration is provided by the destination connector in the sub class.
-    """
-
     destination: str
     embedding: Union[
         AzureOpenAI,
@@ -643,19 +498,11 @@ class Chroma:
 
 @dataclass
 class NoTunnel:
-    """
-    Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.
-    """
-
     tunnel_method: str
 
 
 @dataclass
 class SSHKeyAuthentication:
-    """
-    Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.
-    """
-
     ssh_key: str
     tunnel_host: str
     tunnel_method: str
@@ -665,10 +512,6 @@ class SSHKeyAuthentication:
 
 @dataclass
 class PasswordAuthentication:
-    """
-    Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.
-    """
-
     tunnel_host: str
     tunnel_method: str
     tunnel_port: int
@@ -681,14 +524,14 @@ class Clickhouse:
     database: str
     destination: str
     host: str
-    jdbc_url_params: Optional[str]
-    password: Optional[str]
     port: int
+    username: str
+    jdbc_url_params: Optional[str] = None
+    password: Optional[str] = None
+    ssl: Optional[bool] = False
     tunnel_method: Optional[
         Union[NoTunnel, SSHKeyAuthentication, PasswordAuthentication]
-    ]
-    username: str
-    ssl: Optional[bool] = False
+    ] = None
 
 
 @dataclass
@@ -700,54 +543,34 @@ class Convex:
 
 @dataclass
 class Comma:
-    """
-    The character delimiting individual cells in the CSV data.
-    """
-
     delimiter: str
 
 
 @dataclass
 class Semicolon:
-    """
-    The character delimiting individual cells in the CSV data.
-    """
-
     delimiter: str
 
 
 @dataclass
 class Pipe:
-    """
-    The character delimiting individual cells in the CSV data.
-    """
-
     delimiter: str
 
 
 @dataclass
 class Tab:
-    """
-    The character delimiting individual cells in the CSV data.
-    """
-
     delimiter: str
 
 
 @dataclass
 class Space:
-    """
-    The character delimiting individual cells in the CSV data.
-    """
-
     delimiter: str
 
 
 @dataclass
 class Csv:
-    delimiter_type: Optional[Union[Comma, Semicolon, Pipe, Tab, Space]]
     destination: str
     destination_path: str
+    delimiter_type: Optional[Union[Comma, Semicolon, Pipe, Tab, Space]] = None
 
 
 @dataclass
@@ -763,75 +586,30 @@ class Databend:
     database: str
     destination: str
     host: str
-    password: Optional[str]
     username: str
+    password: Optional[str] = None
     port: Optional[int] = 443
     table: Optional[str] = 'default'
 
 
 @dataclass
 class FieldRecommendedManagedTables:
-    """
-    Storage on which the delta lake is built.
-    """
-
     data_source_type: str
-
-
-class S3BucketRegion1(Enum):
-    """
-    The region of the S3 staging bucket to use if utilising a copy strategy.
-    """
-
-    field_ = ''
-    us_east_1 = 'us-east-1'
-    us_east_2 = 'us-east-2'
-    us_west_1 = 'us-west-1'
-    us_west_2 = 'us-west-2'
-    af_south_1 = 'af-south-1'
-    ap_east_1 = 'ap-east-1'
-    ap_south_1 = 'ap-south-1'
-    ap_northeast_1 = 'ap-northeast-1'
-    ap_northeast_2 = 'ap-northeast-2'
-    ap_northeast_3 = 'ap-northeast-3'
-    ap_southeast_1 = 'ap-southeast-1'
-    ap_southeast_2 = 'ap-southeast-2'
-    ca_central_1 = 'ca-central-1'
-    cn_north_1 = 'cn-north-1'
-    cn_northwest_1 = 'cn-northwest-1'
-    eu_central_1 = 'eu-central-1'
-    eu_north_1 = 'eu-north-1'
-    eu_south_1 = 'eu-south-1'
-    eu_west_1 = 'eu-west-1'
-    eu_west_2 = 'eu-west-2'
-    eu_west_3 = 'eu-west-3'
-    sa_east_1 = 'sa-east-1'
-    me_south_1 = 'me-south-1'
-    us_gov_east_1 = 'us-gov-east-1'
-    us_gov_west_1 = 'us-gov-west-1'
 
 
 @dataclass
 class AmazonS3:
-    """
-    Storage on which the delta lake is built.
-    """
-
     data_source_type: str
-    file_name_pattern: Optional[str]
     s3_access_key_id: str
     s3_bucket_name: str
     s3_bucket_path: str
-    s3_bucket_region: S3BucketRegion1
+    s3_bucket_region: S3BucketRegion
     s3_secret_access_key: str
+    file_name_pattern: Optional[str] = None
 
 
 @dataclass
 class AzureBlobStorage:
-    """
-    Storage on which the delta lake is built.
-    """
-
     azure_blob_storage_account_name: str
     azure_blob_storage_container_name: str
     azure_blob_storage_sas_token: str
@@ -843,11 +621,11 @@ class AzureBlobStorage:
 class Databricks:
     accept_terms: bool
     data_source: Union[FieldRecommendedManagedTables, AmazonS3, AzureBlobStorage]
-    database: Optional[str]
     databricks_http_path: str
     databricks_personal_access_token: str
     databricks_server_hostname: str
     destination: str
+    database: Optional[str] = None
     databricks_port: Optional[str] = '443'
     enable_schema_evolution: Optional[bool] = False
     purge_staging_data: Optional[bool] = True
@@ -860,24 +638,20 @@ class Doris:
     destination: str
     host: str
     httpport: int
-    password: Optional[str]
     queryport: int
     username: str
+    password: Optional[str] = None
 
 
 @dataclass
 class Duckdb:
     destination: str
     destination_path: str
-    motherduck_api_key: Optional[str]
-    schema_: Optional[str]
+    motherduck_api_key: Optional[str] = None
+    schema_: Optional[str] = None
 
 
 class DynamoDBRegion(Enum):
-    """
-    The region of the DynamoDB.
-    """
-
     field_ = ''
     us_east_1 = 'us-east-1'
     us_east_2 = 'us-east-2'
@@ -922,10 +696,6 @@ class LoggingType(Enum):
 
 @dataclass
 class FirstNEntries:
-    """
-    Log first N entries per stream.
-    """
-
     logging_type: LoggingType
     max_entry_count: float
 
@@ -936,10 +706,6 @@ class LoggingType1(Enum):
 
 @dataclass
 class EveryNThEntry:
-    """
-    For each stream, log every N-th entry with a maximum cap.
-    """
-
     logging_type: LoggingType1
     max_entry_count: float
     nth_entry_to_log: float
@@ -951,51 +717,31 @@ class LoggingType2(Enum):
 
 @dataclass
 class RandomSampling:
-    """
-    For each stream, randomly log a percentage of the entries with a maximum cap.
-    """
-
     logging_type: LoggingType2
     max_entry_count: float
     sampling_ratio: float
-    seed: Optional[float]
+    seed: Optional[float] = None
 
 
 @dataclass
 class Logging:
-    """
-    The type of destination to be used
-    """
-
     logging_config: Union[FirstNEntries, EveryNThEntry, RandomSampling]
     test_destination_type: str
 
 
 @dataclass
 class Silent:
-    """
-    The type of destination to be used
-    """
-
     test_destination_type: str
 
 
 @dataclass
 class Throttled:
-    """
-    The type of destination to be used
-    """
-
     millis_per_record: int
     test_destination_type: str
 
 
 @dataclass
 class Failing:
-    """
-    The type of destination to be used
-    """
-
     num_messages: int
     test_destination_type: str
 
@@ -1008,19 +754,11 @@ class E2etest:
 
 @dataclass
 class None1:
-    """
-    No authentication will be used
-    """
-
     method: str
 
 
 @dataclass
 class ApiKeySecret:
-    """
-    Use a api key and secret combination to authenticate
-    """
-
     apiKeyId: str
     apiKeySecret: str
     method: str
@@ -1028,10 +766,6 @@ class ApiKeySecret:
 
 @dataclass
 class UsernamePassword:
-    """
-    Basic auth header with a username and password
-    """
-
     method: str
     password: str
     username: str
@@ -1039,43 +773,35 @@ class UsernamePassword:
 
 @dataclass
 class Elasticsearch:
-    authenticationMethod: Optional[Union[None1, ApiKeySecret, UsernamePassword]]
-    ca_certificate: Optional[str]
     destination: str
     endpoint: str
+    authenticationMethod: Optional[Union[None1, ApiKeySecret, UsernamePassword]] = None
+    ca_certificate: Optional[str] = None
     tunnel_method: Optional[
         Union[NoTunnel, SSHKeyAuthentication, PasswordAuthentication]
-    ]
+    ] = None
     upsert: Optional[bool] = True
 
 
 @dataclass
 class Exasol:
-    certificateFingerprint: Optional[str]
     destination: str
     host: str
-    jdbc_url_params: Optional[str]
-    password: Optional[str]
     port: int
     schema_: str
     username: str
+    certificateFingerprint: Optional[str] = None
+    jdbc_url_params: Optional[str] = None
+    password: Optional[str] = None
 
 
 @dataclass
 class SQLInserts:
-    """
-    Loading method used to select the way data will be uploaded to Firebolt
-    """
-
     method: str
 
 
 @dataclass
 class ExternalTableViaS3:
-    """
-    Loading method used to select the way data will be uploaded to Firebolt
-    """
-
     aws_key_id: str
     aws_key_secret: str
     method: str
@@ -1085,21 +811,21 @@ class ExternalTableViaS3:
 
 @dataclass
 class Firebolt:
-    account: Optional[str]
     database: str
     destination: str
-    engine: Optional[str]
-    host: Optional[str]
-    loading_method: Optional[Union[SQLInserts, ExternalTableViaS3]]
     password: str
     username: str
+    account: Optional[str] = None
+    engine: Optional[str] = None
+    host: Optional[str] = None
+    loading_method: Optional[Union[SQLInserts, ExternalTableViaS3]] = None
 
 
 @dataclass
 class Firestore:
-    credentials_json: Optional[str]
     destination: str
     project_id: str
+    credentials_json: Optional[str] = None
 
 
 class CredentialType(Enum):
@@ -1108,10 +834,6 @@ class CredentialType(Enum):
 
 @dataclass
 class HMACKey1:
-    """
-    An HMAC key is a type of credential and can be associated with a service account or a user account in Cloud Storage. Read more <a href="https://cloud.google.com/storage/docs/authentication/hmackeys">here</a>.
-    """
-
     credential_type: CredentialType
     hmac_key_access_id: str
     hmac_key_secret: str
@@ -1123,10 +845,6 @@ class Codec(Enum):
 
 @dataclass
 class NoCompression:
-    """
-    The compression algorithm used to compress data. Default to no compression.
-    """
-
     codec: Codec
 
 
@@ -1136,10 +854,6 @@ class Codec1(Enum):
 
 @dataclass
 class Deflate:
-    """
-    The compression algorithm used to compress data. Default to no compression.
-    """
-
     codec: Codec1
     compression_level: Optional[int] = 0
 
@@ -1150,10 +864,6 @@ class Codec2(Enum):
 
 @dataclass
 class Bzip2:
-    """
-    The compression algorithm used to compress data. Default to no compression.
-    """
-
     codec: Codec2
 
 
@@ -1163,10 +873,6 @@ class Codec3(Enum):
 
 @dataclass
 class Xz:
-    """
-    The compression algorithm used to compress data. Default to no compression.
-    """
-
     codec: Codec3
     compression_level: Optional[int] = 6
 
@@ -1177,10 +883,6 @@ class Codec4(Enum):
 
 @dataclass
 class Zstandard:
-    """
-    The compression algorithm used to compress data. Default to no compression.
-    """
-
     codec: Codec4
     compression_level: Optional[int] = 3
     include_checksum: Optional[bool] = False
@@ -1192,10 +894,6 @@ class Codec5(Enum):
 
 @dataclass
 class Snappy:
-    """
-    The compression algorithm used to compress data. Default to no compression.
-    """
-
     codec: Codec5
 
 
@@ -1205,10 +903,6 @@ class FormatType2(Enum):
 
 @dataclass
 class AvroApacheAvro:
-    """
-    Output data format. One of the following formats must be selected - <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-avro#advantages_of_avro">AVRO</a> format, <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-parquet#parquet_schemas">PARQUET</a> format, <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#loading_csv_data_into_a_table">CSV</a> format, or <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-json#loading_json_data_into_a_new_table">JSONL</a> format.
-    """
-
     compression_codec: Union[NoCompression, Deflate, Bzip2, Xz, Zstandard, Snappy]
     format_type: FormatType2
 
@@ -1219,10 +913,6 @@ class CompressionType(Enum):
 
 @dataclass
 class NoCompression1:
-    """
-    Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: ".csv.gz").
-    """
-
     compression_type: Optional[CompressionType] = CompressionType.No_Compression
 
 
@@ -1232,18 +922,10 @@ class CompressionType1(Enum):
 
 @dataclass
 class GZIP:
-    """
-    Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: ".csv.gz").
-    """
-
     compression_type: Optional[CompressionType1] = CompressionType1.GZIP
 
 
 class Normalization(Enum):
-    """
-    Whether the input JSON data should be normalized (flattened) in the output CSV. Please refer to docs for details.
-    """
-
     No_flattening = 'No flattening'
     Root_level_flattening = 'Root level flattening'
 
@@ -1254,12 +936,8 @@ class FormatType3(Enum):
 
 @dataclass
 class CSVCommaSeparatedValues1:
-    """
-    Output data format. One of the following formats must be selected - <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-avro#advantages_of_avro">AVRO</a> format, <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-parquet#parquet_schemas">PARQUET</a> format, <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#loading_csv_data_into_a_table">CSV</a> format, or <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-json#loading_json_data_into_a_new_table">JSONL</a> format.
-    """
-
-    compression: Optional[Union[NoCompression1, GZIP]]
     format_type: FormatType3
+    compression: Optional[Union[NoCompression1, GZIP]] = None
     flattening: Optional[Normalization] = Normalization.No_flattening
 
 
@@ -1269,10 +947,6 @@ class CompressionType2(Enum):
 
 @dataclass
 class NoCompression2:
-    """
-    Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: ".jsonl.gz").
-    """
-
     compression_type: Optional[CompressionType2] = CompressionType2.No_Compression
 
 
@@ -1282,10 +956,6 @@ class CompressionType3(Enum):
 
 @dataclass
 class GZIP1:
-    """
-    Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: ".jsonl.gz").
-    """
-
     compression_type: Optional[CompressionType3] = CompressionType3.GZIP
 
 
@@ -1295,19 +965,11 @@ class FormatType4(Enum):
 
 @dataclass
 class JSONLinesNewlineDelimitedJSON2:
-    """
-    Output data format. One of the following formats must be selected - <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-avro#advantages_of_avro">AVRO</a> format, <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-parquet#parquet_schemas">PARQUET</a> format, <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#loading_csv_data_into_a_table">CSV</a> format, or <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-json#loading_json_data_into_a_new_table">JSONL</a> format.
-    """
-
-    compression: Optional[Union[NoCompression2, GZIP1]]
     format_type: FormatType4
+    compression: Optional[Union[NoCompression2, GZIP1]] = None
 
 
 class CompressionCodec(Enum):
-    """
-    The compression algorithm used to compress data pages.
-    """
-
     UNCOMPRESSED = 'UNCOMPRESSED'
     SNAPPY = 'SNAPPY'
     GZIP = 'GZIP'
@@ -1323,10 +985,6 @@ class FormatType5(Enum):
 
 @dataclass
 class ParquetColumnarStorage1:
-    """
-    Output data format. One of the following formats must be selected - <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-avro#advantages_of_avro">AVRO</a> format, <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-parquet#parquet_schemas">PARQUET</a> format, <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#loading_csv_data_into_a_table">CSV</a> format, or <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-json#loading_json_data_into_a_new_table">JSONL</a> format.
-    """
-
     format_type: FormatType5
     block_size_mb: Optional[int] = 128
     compression_codec: Optional[CompressionCodec] = CompressionCodec.UNCOMPRESSED
@@ -1337,10 +995,6 @@ class ParquetColumnarStorage1:
 
 
 class GCSBucketRegion(Enum):
-    """
-    Select a Region of the GCS Bucket. Read more <a href="https://cloud.google.com/storage/docs/locations">here</a>.
-    """
-
     northamerica_northeast1 = 'northamerica-northeast1'
     northamerica_northeast2 = 'northamerica-northeast2'
     us_central1 = 'us-central1'
@@ -1395,10 +1049,6 @@ class Gcs:
 
 @dataclass
 class AuthenticationViaGoogleOAuth:
-    """
-    Google API Credentials for connecting to Google Sheets and Google Drive APIs
-    """
-
     client_id: str
     client_secret: str
     refresh_token: str
@@ -1417,10 +1067,6 @@ class CatalogType(Enum):
 
 @dataclass
 class HiveCatalogUseApacheHiveMetaStore:
-    """
-    Catalog config of Iceberg.
-    """
-
     catalog_type: CatalogType
     hive_thrift_uri: str
     database: Optional[str] = 'default'
@@ -1432,10 +1078,6 @@ class CatalogType1(Enum):
 
 @dataclass
 class HadoopCatalogUseHierarchicalFileSystemsAsSameAsStorageConfig:
-    """
-    A Hadoop catalog doesn’t need to connect to a Hive MetaStore, but can only be used with HDFS or similar file systems that support atomic rename.
-    """
-
     catalog_type: CatalogType1
     database: Optional[str] = 'default'
 
@@ -1446,17 +1088,13 @@ class CatalogType2(Enum):
 
 @dataclass
 class JdbcCatalogUseRelationalDatabase:
-    """
-    Using a table in a relational database to manage Iceberg tables through JDBC. Read more <a href="https://iceberg.apache.org/docs/latest/jdbc/">here</a>. Supporting: PostgreSQL
-    """
-
     catalog_type: CatalogType2
-    jdbc_url: Optional[str]
-    password: Optional[str]
-    username: Optional[str]
     catalog_schema: Optional[str] = 'public'
     database: Optional[str] = 'public'
+    jdbc_url: Optional[str] = None
+    password: Optional[str] = None
     ssl: Optional[bool] = False
+    username: Optional[str] = None
 
 
 class CatalogType3(Enum):
@@ -1465,14 +1103,10 @@ class CatalogType3(Enum):
 
 @dataclass
 class RESTCatalog:
-    """
-    The RESTCatalog connects to a REST server at the specified URI
-    """
-
     catalog_type: CatalogType3
-    rest_credential: Optional[str]
-    rest_token: Optional[str]
     rest_uri: str
+    rest_credential: Optional[str] = None
+    rest_token: Optional[str] = None
 
 
 class FileStorageFormat(Enum):
@@ -1482,47 +1116,10 @@ class FileStorageFormat(Enum):
 
 @dataclass
 class FileFormat:
-    """
-    File format of Iceberg storage.
-    """
-
     format: FileStorageFormat
     auto_compact: Optional[bool] = False
     compact_target_file_size_in_mb: Optional[int] = 100
     flush_batch_size: Optional[int] = 10000
-
-
-class S3BucketRegion2(Enum):
-    """
-    The region of the S3 bucket. See <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions">here</a> for all region codes.
-    """
-
-    field_ = ''
-    us_east_1 = 'us-east-1'
-    us_east_2 = 'us-east-2'
-    us_west_1 = 'us-west-1'
-    us_west_2 = 'us-west-2'
-    af_south_1 = 'af-south-1'
-    ap_east_1 = 'ap-east-1'
-    ap_south_1 = 'ap-south-1'
-    ap_northeast_1 = 'ap-northeast-1'
-    ap_northeast_2 = 'ap-northeast-2'
-    ap_northeast_3 = 'ap-northeast-3'
-    ap_southeast_1 = 'ap-southeast-1'
-    ap_southeast_2 = 'ap-southeast-2'
-    ca_central_1 = 'ca-central-1'
-    cn_north_1 = 'cn-north-1'
-    cn_northwest_1 = 'cn-northwest-1'
-    eu_central_1 = 'eu-central-1'
-    eu_north_1 = 'eu-north-1'
-    eu_south_1 = 'eu-south-1'
-    eu_west_1 = 'eu-west-1'
-    eu_west_2 = 'eu-west-2'
-    eu_west_3 = 'eu-west-3'
-    sa_east_1 = 'sa-east-1'
-    me_south_1 = 'me-south-1'
-    us_gov_east_1 = 'us-gov-east-1'
-    us_gov_west_1 = 'us-gov-west-1'
 
 
 class StorageType(Enum):
@@ -1531,15 +1128,11 @@ class StorageType(Enum):
 
 @dataclass
 class S3:
-    """
-    S3 object storage
-    """
-
     access_key_id: str
     s3_warehouse_uri: str
     secret_access_key: str
     storage_type: StorageType
-    s3_bucket_region: Optional[S3BucketRegion2] = ''
+    s3_bucket_region: Optional[S3BucketRegion] = ''
     s3_endpoint: Optional[str] = ''
     s3_path_style_access: Optional[bool] = True
 
@@ -1550,10 +1143,6 @@ class StorageType1(Enum):
 
 @dataclass
 class ServerManaged:
-    """
-    Server-managed object storage
-    """
-
     managed_warehouse_name: str
     storage_type: StorageType1
 
@@ -1572,20 +1161,12 @@ class Iceberg:
 
 
 class ACKs(Enum):
-    """
-    The number of acknowledgments the producer requires the leader to have received before considering a request complete. This controls the durability of records that are sent.
-    """
-
     field_0 = '0'
     field_1 = '1'
     all = 'all'
 
 
 class ClientDNSLookup(Enum):
-    """
-    Controls how the client uses DNS lookups. If set to use_all_dns_ips, connect to each returned IP address in sequence until a successful connection is established. After a disconnection, the next IP is used. Once all IPs have been used once, the client resolves the IP(s) from the hostname again. If set to resolve_canonical_bootstrap_servers_only, resolve each bootstrap address into a list of canonical names. After the bootstrap phase, this behaves the same as use_all_dns_ips. If set to default (deprecated), attempt to connect to the first IP address returned by the lookup, even if the lookup returns multiple IP addresses.
-    """
-
     default = 'default'
     use_all_dns_ips = 'use_all_dns_ips'
     resolve_canonical_bootstrap_servers_only = (
@@ -1595,10 +1176,6 @@ class ClientDNSLookup(Enum):
 
 
 class CompressionType4(Enum):
-    """
-    The compression type for all data generated by the producer.
-    """
-
     none = 'none'
     gzip = 'gzip'
     snappy = 'snappy'
@@ -1612,18 +1189,10 @@ class SecurityProtocol(Enum):
 
 @dataclass
 class PLAINTEXT:
-    """
-    Protocol used to communicate with brokers.
-    """
-
     security_protocol: SecurityProtocol
 
 
 class SASLMechanism(Enum):
-    """
-    SASL mechanism used for client connections. This may be any mechanism for which a security provider is available.
-    """
-
     PLAIN = 'PLAIN'
 
 
@@ -1633,20 +1202,12 @@ class SecurityProtocol1(Enum):
 
 @dataclass
 class SASLPLAINTEXT:
-    """
-    Protocol used to communicate with brokers.
-    """
-
     sasl_jaas_config: str
     sasl_mechanism: SASLMechanism
     security_protocol: SecurityProtocol1
 
 
 class SASLMechanism1(Enum):
-    """
-    SASL mechanism used for client connections. This may be any mechanism for which a security provider is available.
-    """
-
     GSSAPI = 'GSSAPI'
     OAUTHBEARER = 'OAUTHBEARER'
     SCRAM_SHA_256 = 'SCRAM-SHA-256'
@@ -1660,10 +1221,6 @@ class SecurityProtocol2(Enum):
 
 @dataclass
 class SASLSSL:
-    """
-    Protocol used to communicate with brokers.
-    """
-
     sasl_jaas_config: str
     sasl_mechanism: SASLMechanism1
     security_protocol: SecurityProtocol2
@@ -1676,7 +1233,6 @@ class Kafka:
     bootstrap_servers: str
     buffer_memory: str
     client_dns_lookup: ClientDNSLookup
-    client_id: Optional[str]
     compression_type: CompressionType4
     delivery_timeout_ms: int
     destination: str
@@ -1692,9 +1248,10 @@ class Kafka:
     send_buffer_bytes: int
     socket_connection_setup_timeout_max_ms: str
     socket_connection_setup_timeout_ms: str
-    test_topic: Optional[str]
     topic_pattern: str
+    client_id: Optional[str] = None
     sync_producer: Optional[bool] = False
+    test_topic: Optional[str] = None
 
 
 @dataclass
@@ -1722,10 +1279,6 @@ class Mode12(Enum):
 
 @dataclass
 class OpenAI1:
-    """
-    Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions.
-    """
-
     openai_key: str
     mode: Optional[Mode12] = Mode12.openai
 
@@ -1736,10 +1289,6 @@ class Mode13(Enum):
 
 @dataclass
 class Fake1:
-    """
-    Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs.
-    """
-
     mode: Optional[Mode13] = Mode13.fake
 
 
@@ -1749,10 +1298,6 @@ class Mode14(Enum):
 
 @dataclass
 class Pinecone:
-    """
-    Pinecone is a popular vector store that can be used to store and retrieve embeddings. It is a managed service and can also be queried from outside of langchain.
-    """
-
     index: str
     pinecone_environment: str
     pinecone_key: str
@@ -1765,10 +1310,6 @@ class Mode15(Enum):
 
 @dataclass
 class DocArrayHnswSearch:
-    """
-    DocArrayHnswSearch is a lightweight Document Index implementation provided by Docarray that runs fully locally and is best suited for small- to medium-sized datasets. It stores vectors on disk in hnswlib, and stores all other data in SQLite.
-    """
-
     destination_path: str
     mode: Optional[Mode15] = Mode15.DocArrayHnswSearch
 
@@ -1779,10 +1320,6 @@ class Mode16(Enum):
 
 @dataclass
 class ChromaLocalPersistance:
-    """
-    Chroma is a popular vector store that can be used to store and retrieve embeddings. It will build its index in memory and persist it to disk by the end of the sync.
-    """
-
     destination_path: str
     collection_name: Optional[str] = 'langchain'
     mode: Optional[Mode16] = Mode16.chroma_local
@@ -1814,20 +1351,20 @@ class Mariadbcolumnstore:
     database: str
     destination: str
     host: str
-    jdbc_url_params: Optional[str]
-    password: Optional[str]
     port: int
+    username: str
+    jdbc_url_params: Optional[str] = None
+    password: Optional[str] = None
     tunnel_method: Optional[
         Union[NoTunnel, SSHKeyAuthentication, PasswordAuthentication]
-    ]
-    username: str
+    ] = None
 
 
 @dataclass
 class Meilisearch:
-    api_key: Optional[str]
     destination: str
     host: str
+    api_key: Optional[str] = None
 
 
 class Mode17(Enum):
@@ -1836,10 +1373,6 @@ class Mode17(Enum):
 
 @dataclass
 class OpenAI2:
-    """
-    Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions.
-    """
-
     mode: Mode17
     openai_key: str
 
@@ -1850,10 +1383,6 @@ class Mode18(Enum):
 
 @dataclass
 class Cohere1:
-    """
-    Use the Cohere API to embed text.
-    """
-
     cohere_key: str
     mode: Mode18
 
@@ -1864,10 +1393,6 @@ class Mode19(Enum):
 
 @dataclass
 class Fake2:
-    """
-    Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs.
-    """
-
     mode: Mode19
 
 
@@ -1877,10 +1402,6 @@ class Mode20(Enum):
 
 @dataclass
 class AzureOpenAI1:
-    """
-    Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions.
-    """
-
     api_base: str
     deployment: str
     mode: Mode20
@@ -1893,10 +1414,6 @@ class Mode21(Enum):
 
 @dataclass
 class OpenAICompatible1:
-    """
-    Use a service that's compatible with the OpenAI API to embed text.
-    """
-
     base_url: str
     dimensions: int
     mode: Mode21
@@ -1910,10 +1427,6 @@ class Mode22(Enum):
 
 @dataclass
 class APIToken:
-    """
-    Authenticate using an API token (suitable for Zilliz Cloud)
-    """
-
     mode: Mode22
     token: str
 
@@ -1924,10 +1437,6 @@ class Mode23(Enum):
 
 @dataclass
 class UsernamePassword1:
-    """
-    Authenticate using username and password (suitable for self-managed Milvus clusters)
-    """
-
     mode: Mode23
     password: str
     username: str
@@ -1939,19 +1448,11 @@ class Mode24(Enum):
 
 @dataclass
 class NoAuth:
-    """
-    Do not authenticate (suitable for locally running test clusters, do not use for clusters with public IP addresses)
-    """
-
     mode: Mode24
 
 
 @dataclass
 class Indexing1:
-    """
-    Indexing configuration
-    """
-
     auth: Union[APIToken, UsernamePassword1, NoAuth]
     collection: str
     host: str
@@ -1966,10 +1467,6 @@ class Mode25(Enum):
 
 @dataclass
 class BySeparator1:
-    """
-    Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc.
-    """
-
     mode: Mode25
     keep_separator: Optional[bool] = False
     separators: Optional[List[str]] = field(
@@ -1983,10 +1480,6 @@ class Mode26(Enum):
 
 @dataclass
 class ByMarkdownHeader1:
-    """
-    Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk.
-    """
-
     mode: Mode26
     split_level: Optional[int] = 1
 
@@ -1997,10 +1490,6 @@ class Mode27(Enum):
 
 @dataclass
 class ByProgrammingLanguage1:
-    """
-    Split the text by suitable delimiters based on the programming language. This is useful for splitting code into chunks.
-    """
-
     language: Language
     mode: Mode27
 
@@ -2008,32 +1497,19 @@ class ByProgrammingLanguage1:
 @dataclass
 class ProcessingConfigModel2:
     chunk_size: int
-    text_splitter: Optional[
-        Union[BySeparator1, ByMarkdownHeader1, ByProgrammingLanguage1]
-    ]
     chunk_overlap: Optional[int] = 0
     field_name_mappings: Optional[List[FieldNameMappingConfigModel]] = field(
         default_factory=lambda: []
     )
     metadata_fields: Optional[List[str]] = field(default_factory=lambda: [])
     text_fields: Optional[List[str]] = field(default_factory=lambda: [])
+    text_splitter: Optional[
+        Union[BySeparator1, ByMarkdownHeader1, ByProgrammingLanguage1]
+    ] = None
 
 
 @dataclass
 class Milvus:
-    """
-    The configuration model for the Vector DB based destinations. This model is used to generate the UI for the destination configuration,
-    as well as to provide type safety for the configuration passed to the destination.
-
-    The configuration model is composed of four parts:
-    * Processing configuration
-    * Embedding configuration
-    * Indexing configuration
-    * Advanced configuration
-
-    Processing, embedding and advanced configuration are provided by this base class, while the indexing configuration is provided by the destination connector in the sub class.
-    """
-
     destination: str
     embedding: Union[OpenAI2, Cohere1, Fake2, AzureOpenAI1, OpenAICompatible1]
     indexing: Indexing1
@@ -2043,19 +1519,11 @@ class Milvus:
 
 @dataclass
 class None_1:
-    """
-    None.
-    """
-
     authorization: str
 
 
 @dataclass
 class LoginPassword:
-    """
-    Login/Password.
-    """
-
     authorization: str
     password: str
     username: str
@@ -2067,10 +1535,6 @@ class Instance(Enum):
 
 @dataclass
 class StandaloneMongoDbInstance:
-    """
-    MongoDb instance to connect to. For MongoDB Atlas and Replica Set TLS connection is used by default.
-    """
-
     host: str
     instance: Instance
     port: int
@@ -2083,13 +1547,9 @@ class Instance1(Enum):
 
 @dataclass
 class ReplicaSet:
-    """
-    MongoDb instance to connect to. For MongoDB Atlas and Replica Set TLS connection is used by default.
-    """
-
     instance: Instance1
-    replica_set: Optional[str]
     server_addresses: str
+    replica_set: Optional[str] = None
 
 
 class Instance2(Enum):
@@ -2098,10 +1558,6 @@ class Instance2(Enum):
 
 @dataclass
 class MongoDBAtlas:
-    """
-    MongoDb instance to connect to. For MongoDB Atlas and Replica Set TLS connection is used by default.
-    """
-
     cluster_url: str
     instance: Instance2
 
@@ -2111,17 +1567,15 @@ class Mongodb:
     auth_type: Union[None_1, LoginPassword]
     database: str
     destination: str
-    instance_type: Optional[Union[StandaloneMongoDbInstance, ReplicaSet, MongoDBAtlas]]
+    instance_type: Optional[
+        Union[StandaloneMongoDbInstance, ReplicaSet, MongoDBAtlas]
+    ] = None
     tunnel_method: Optional[
         Union[NoTunnel, SSHKeyAuthentication, PasswordAuthentication]
-    ]
+    ] = None
 
 
 class MessageQoS(Enum):
-    """
-    Quality of service used for each message to be delivered.
-    """
-
     AT_MOST_ONCE = 'AT_MOST_ONCE'
     AT_LEAST_ONCE = 'AT_LEAST_ONCE'
     EXACTLY_ONCE = 'EXACTLY_ONCE'
@@ -2133,17 +1587,17 @@ class Mqtt:
     broker_host: str
     broker_port: int
     clean_session: bool
-    client: Optional[str]
     connect_timeout: int
     destination: str
     message_qos: MessageQoS
     message_retained: bool
-    password: Optional[str]
     publisher_sync: bool
     topic_pattern: str
-    topic_test: Optional[str]
     use_tls: bool
-    username: Optional[str]
+    client: Optional[str] = None
+    password: Optional[str] = None
+    topic_test: Optional[str] = None
+    username: Optional[str] = None
 
 
 class SslMethod(Enum):
@@ -2152,10 +1606,6 @@ class SslMethod(Enum):
 
 @dataclass
 class Unencrypted:
-    """
-    The data transfer will not be encrypted.
-    """
-
     ssl_method: SslMethod
 
 
@@ -2165,10 +1615,6 @@ class SslMethod1(Enum):
 
 @dataclass
 class EncryptedTrustServerCertificate:
-    """
-    Use the certificate provided by the server without verification. (For testing purposes only!)
-    """
-
     ssl_method: SslMethod1
 
 
@@ -2178,12 +1624,8 @@ class SslMethod2(Enum):
 
 @dataclass
 class EncryptedVerifyCertificate:
-    """
-    Verify and use the certificate provided by the server.
-    """
-
-    hostNameInCertificate: Optional[str]
     ssl_method: SslMethod2
+    hostNameInCertificate: Optional[str] = None
 
 
 @dataclass
@@ -2191,17 +1633,17 @@ class Mssql:
     database: str
     destination: str
     host: str
-    jdbc_url_params: Optional[str]
-    password: Optional[str]
     port: int
     schema_: str
+    username: str
+    jdbc_url_params: Optional[str] = None
+    password: Optional[str] = None
     ssl_method: Optional[
         Union[Unencrypted, EncryptedTrustServerCertificate, EncryptedVerifyCertificate]
-    ]
+    ] = None
     tunnel_method: Optional[
         Union[NoTunnel, SSHKeyAuthentication, PasswordAuthentication]
-    ]
-    username: str
+    ] = None
 
 
 @dataclass
@@ -2209,14 +1651,14 @@ class Mysql:
     database: str
     destination: str
     host: str
-    jdbc_url_params: Optional[str]
-    password: Optional[str]
     port: int
+    username: str
+    jdbc_url_params: Optional[str] = None
+    password: Optional[str] = None
+    ssl: Optional[bool] = True
     tunnel_method: Optional[
         Union[NoTunnel, SSHKeyAuthentication, PasswordAuthentication]
-    ]
-    username: str
-    ssl: Optional[bool] = True
+    ] = None
 
 
 class EncryptionMethod(Enum):
@@ -2225,18 +1667,10 @@ class EncryptionMethod(Enum):
 
 @dataclass
 class Unencrypted1:
-    """
-    Data transfer will not be encrypted.
-    """
-
     encryption_method: EncryptionMethod
 
 
 class EncryptionAlgorithm(Enum):
-    """
-    This parameter defines the database encryption algorithm.
-    """
-
     AES256 = 'AES256'
     RC4_56 = 'RC4_56'
     field_3DES168 = '3DES168'
@@ -2248,10 +1682,6 @@ class EncryptionMethod1(Enum):
 
 @dataclass
 class NativeNetworkEncryptionNNE:
-    """
-    The native network encryption gives you the ability to encrypt database connections, without the configuration overhead of TCP/IP and SSL/TLS and without the need to open and listen on different ports.
-    """
-
     encryption_method: EncryptionMethod1
     encryption_algorithm: Optional[EncryptionAlgorithm] = EncryptionAlgorithm.AES256
 
@@ -2262,10 +1692,6 @@ class EncryptionMethod2(Enum):
 
 @dataclass
 class TLSEncryptedVerifyCertificate:
-    """
-    Verify and use the certificate provided by the server.
-    """
-
     encryption_method: EncryptionMethod2
     ssl_certificate: str
 
@@ -2273,19 +1699,19 @@ class TLSEncryptedVerifyCertificate:
 @dataclass
 class Oracle:
     destination: str
-    encryption: Optional[
-        Union[Unencrypted1, NativeNetworkEncryptionNNE, TLSEncryptedVerifyCertificate]
-    ]
     host: str
-    jdbc_url_params: Optional[str]
-    password: Optional[str]
     port: int
     sid: str
+    username: str
+    encryption: Optional[
+        Union[Unencrypted1, NativeNetworkEncryptionNNE, TLSEncryptedVerifyCertificate]
+    ] = None
+    jdbc_url_params: Optional[str] = None
+    password: Optional[str] = None
+    schema_: Optional[str] = 'airbyte'
     tunnel_method: Optional[
         Union[NoTunnel, SSHKeyAuthentication, PasswordAuthentication]
-    ]
-    username: str
-    schema_: Optional[str] = 'airbyte'
+    ] = None
 
 
 class Mode28(Enum):
@@ -2294,10 +1720,6 @@ class Mode28(Enum):
 
 @dataclass
 class OpenAI3:
-    """
-    Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions.
-    """
-
     mode: Mode28
     openai_key: str
 
@@ -2308,10 +1730,6 @@ class Mode29(Enum):
 
 @dataclass
 class Cohere2:
-    """
-    Use the Cohere API to embed text.
-    """
-
     cohere_key: str
     mode: Mode29
 
@@ -2322,10 +1740,6 @@ class Mode30(Enum):
 
 @dataclass
 class Fake3:
-    """
-    Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs.
-    """
-
     mode: Mode30
 
 
@@ -2335,10 +1749,6 @@ class Mode31(Enum):
 
 @dataclass
 class AzureOpenAI2:
-    """
-    Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions.
-    """
-
     api_base: str
     deployment: str
     mode: Mode31
@@ -2351,10 +1761,6 @@ class Mode32(Enum):
 
 @dataclass
 class OpenAICompatible2:
-    """
-    Use a service that's compatible with the OpenAI API to embed text.
-    """
-
     base_url: str
     dimensions: int
     mode: Mode32
@@ -2364,10 +1770,6 @@ class OpenAICompatible2:
 
 @dataclass
 class Indexing2:
-    """
-    Pinecone is a popular vector store that can be used to store and retrieve embeddings.
-    """
-
     index: str
     pinecone_environment: str
     pinecone_key: str
@@ -2379,10 +1781,6 @@ class Mode33(Enum):
 
 @dataclass
 class BySeparator2:
-    """
-    Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc.
-    """
-
     mode: Mode33
     keep_separator: Optional[bool] = False
     separators: Optional[List[str]] = field(
@@ -2396,10 +1794,6 @@ class Mode34(Enum):
 
 @dataclass
 class ByMarkdownHeader2:
-    """
-    Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk.
-    """
-
     mode: Mode34
     split_level: Optional[int] = 1
 
@@ -2410,10 +1804,6 @@ class Mode35(Enum):
 
 @dataclass
 class ByProgrammingLanguage2:
-    """
-    Split the text by suitable delimiters based on the programming language. This is useful for splitting code into chunks.
-    """
-
     language: Language
     mode: Mode35
 
@@ -2421,32 +1811,19 @@ class ByProgrammingLanguage2:
 @dataclass
 class ProcessingConfigModel3:
     chunk_size: int
-    text_splitter: Optional[
-        Union[BySeparator2, ByMarkdownHeader2, ByProgrammingLanguage2]
-    ]
     chunk_overlap: Optional[int] = 0
     field_name_mappings: Optional[List[FieldNameMappingConfigModel]] = field(
         default_factory=lambda: []
     )
     metadata_fields: Optional[List[str]] = field(default_factory=lambda: [])
     text_fields: Optional[List[str]] = field(default_factory=lambda: [])
+    text_splitter: Optional[
+        Union[BySeparator2, ByMarkdownHeader2, ByProgrammingLanguage2]
+    ] = None
 
 
 @dataclass
 class Pinecone1:
-    """
-    The configuration model for the Vector DB based destinations. This model is used to generate the UI for the destination configuration,
-    as well as to provide type safety for the configuration passed to the destination.
-
-    The configuration model is composed of four parts:
-    * Processing configuration
-    * Embedding configuration
-    * Indexing configuration
-    * Advanced configuration
-
-    Processing, embedding and advanced configuration are provided by this base class, while the indexing configuration is provided by the destination connector in the sub class.
-    """
-
     destination: str
     embedding: Union[OpenAI3, Cohere2, Fake3, AzureOpenAI2, OpenAICompatible2]
     indexing: Indexing2
@@ -2460,10 +1837,6 @@ class Mode36(Enum):
 
 @dataclass
 class Disable:
-    """
-    Disable SSL.
-    """
-
     mode: Mode36
 
 
@@ -2473,10 +1846,6 @@ class Mode37(Enum):
 
 @dataclass
 class Allow:
-    """
-    Allow SSL mode.
-    """
-
     mode: Mode37
 
 
@@ -2486,10 +1855,6 @@ class Mode38(Enum):
 
 @dataclass
 class Prefer:
-    """
-    Prefer SSL mode.
-    """
-
     mode: Mode38
 
 
@@ -2499,10 +1864,6 @@ class Mode39(Enum):
 
 @dataclass
 class Require:
-    """
-    Require SSL mode.
-    """
-
     mode: Mode39
 
 
@@ -2512,13 +1873,9 @@ class Mode40(Enum):
 
 @dataclass
 class VerifyCa:
-    """
-    Verify-ca SSL mode.
-    """
-
     ca_certificate: str
-    client_key_password: Optional[str]
     mode: Mode40
+    client_key_password: Optional[str] = None
 
 
 class Mode41(Enum):
@@ -2527,15 +1884,11 @@ class Mode41(Enum):
 
 @dataclass
 class VerifyFull:
-    """
-    Verify-full SSL mode.
-    """
-
     ca_certificate: str
     client_certificate: str
     client_key: str
-    client_key_password: Optional[str]
     mode: Mode41
+    client_key_password: Optional[str] = None
 
 
 @dataclass
@@ -2543,16 +1896,18 @@ class Postgres:
     database: str
     destination: str
     host: str
-    jdbc_url_params: Optional[str]
-    password: Optional[str]
     port: int
     schema_: str
-    ssl_mode: Optional[Union[Disable, Allow, Prefer, Require, VerifyCa, VerifyFull]]
+    username: str
+    jdbc_url_params: Optional[str] = None
+    password: Optional[str] = None
+    ssl: Optional[bool] = False
+    ssl_mode: Optional[
+        Union[Disable, Allow, Prefer, Require, VerifyCa, VerifyFull]
+    ] = None
     tunnel_method: Optional[
         Union[NoTunnel, SSHKeyAuthentication, PasswordAuthentication]
-    ]
-    username: str
-    ssl: Optional[bool] = False
+    ] = None
 
 
 @dataclass
@@ -2569,10 +1924,6 @@ class Pubsub:
 
 
 class CompressionType5(Enum):
-    """
-    Compression type for the producer.
-    """
-
     NONE = 'NONE'
     LZ4 = 'LZ4'
     ZLIB = 'ZLIB'
@@ -2581,10 +1932,6 @@ class CompressionType5(Enum):
 
 
 class TopicType(Enum):
-    """
-    It identifies type of topic. Pulsar supports two kind of topics: persistent and non-persistent. In persistent topic, all messages are durably persisted on disk (that means on multiple disks unless the broker is standalone), whereas non-persistent topic does not persist message into storage disk.
-    """
-
     persistent = 'persistent'
     non_persistent = 'non-persistent'
 
@@ -2600,15 +1947,15 @@ class Pulsar:
     destination: str
     max_pending_messages: int
     max_pending_messages_across_partitions: int
-    producer_name: Optional[str]
     send_timeout_ms: int
     topic_namespace: str
     topic_pattern: str
     topic_tenant: str
-    topic_test: Optional[str]
     topic_type: TopicType
     use_tls: bool
+    producer_name: Optional[str] = None
     producer_sync: Optional[bool] = False
+    topic_test: Optional[str] = None
 
 
 class Mode42(Enum):
@@ -2617,10 +1964,6 @@ class Mode42(Enum):
 
 @dataclass
 class OpenAI4:
-    """
-    Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions.
-    """
-
     mode: Mode42
     openai_key: str
 
@@ -2631,10 +1974,6 @@ class Mode43(Enum):
 
 @dataclass
 class Cohere3:
-    """
-    Use the Cohere API to embed text.
-    """
-
     cohere_key: str
     mode: Mode43
 
@@ -2645,10 +1984,6 @@ class Mode44(Enum):
 
 @dataclass
 class Fake4:
-    """
-    Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs.
-    """
-
     mode: Mode44
 
 
@@ -2658,10 +1993,6 @@ class Mode45(Enum):
 
 @dataclass
 class AzureOpenAI3:
-    """
-    Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions.
-    """
-
     api_base: str
     deployment: str
     mode: Mode45
@@ -2674,10 +2005,6 @@ class Mode46(Enum):
 
 @dataclass
 class OpenAICompatible3:
-    """
-    Use a service that's compatible with the OpenAI API to embed text.
-    """
-
     base_url: str
     dimensions: int
     mode: Mode46
@@ -2691,10 +2018,6 @@ class Mode47(Enum):
 
 @dataclass
 class ApiKeyAuth:
-    """
-    Method to authenticate with the Qdrant Instance
-    """
-
     api_key: str
     mode: Optional[Mode47] = Mode47.api_key_auth
 
@@ -2705,18 +2028,10 @@ class Mode48(Enum):
 
 @dataclass
 class NoAuth1:
-    """
-    Method to authenticate with the Qdrant Instance
-    """
-
     mode: Optional[Mode48] = Mode48.no_auth
 
 
 class DistanceMetric(Enum):
-    """
-    The Distance metric used to measure similarities among vectors. This field is only used if the collection defined in the does not exist yet and is created automatically by the connector.
-    """
-
     dot = 'dot'
     cos = 'cos'
     euc = 'euc'
@@ -2724,10 +2039,6 @@ class DistanceMetric(Enum):
 
 @dataclass
 class Indexing3:
-    """
-    Indexing configuration
-    """
-
     collection: str
     url: str
     auth_method: Optional[Union[ApiKeyAuth, NoAuth1]] = 'api_key_auth'
@@ -2742,10 +2053,6 @@ class Mode49(Enum):
 
 @dataclass
 class BySeparator3:
-    """
-    Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc.
-    """
-
     mode: Mode49
     keep_separator: Optional[bool] = False
     separators: Optional[List[str]] = field(
@@ -2759,10 +2066,6 @@ class Mode50(Enum):
 
 @dataclass
 class ByMarkdownHeader3:
-    """
-    Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk.
-    """
-
     mode: Mode50
     split_level: Optional[int] = 1
 
@@ -2773,10 +2076,6 @@ class Mode51(Enum):
 
 @dataclass
 class ByProgrammingLanguage3:
-    """
-    Split the text by suitable delimiters based on the programming language. This is useful for splitting code into chunks.
-    """
-
     language: Language
     mode: Mode51
 
@@ -2784,32 +2083,19 @@ class ByProgrammingLanguage3:
 @dataclass
 class ProcessingConfigModel4:
     chunk_size: int
-    text_splitter: Optional[
-        Union[BySeparator3, ByMarkdownHeader3, ByProgrammingLanguage3]
-    ]
     chunk_overlap: Optional[int] = 0
     field_name_mappings: Optional[List[FieldNameMappingConfigModel]] = field(
         default_factory=lambda: []
     )
     metadata_fields: Optional[List[str]] = field(default_factory=lambda: [])
     text_fields: Optional[List[str]] = field(default_factory=lambda: [])
+    text_splitter: Optional[
+        Union[BySeparator3, ByMarkdownHeader3, ByProgrammingLanguage3]
+    ] = None
 
 
 @dataclass
 class Qdrant:
-    """
-    The configuration model for the Vector DB based destinations. This model is used to generate the UI for the destination configuration,
-    as well as to provide type safety for the configuration passed to the destination.
-
-    The configuration model is composed of four parts:
-    * Processing configuration
-    * Embedding configuration
-    * Indexing configuration
-    * Advanced configuration
-
-    Processing, embedding and advanced configuration are provided by this base class, while the indexing configuration is provided by the destination connector in the sub class.
-    """
-
     destination: str
     embedding: Union[OpenAI4, Cohere3, Fake4, AzureOpenAI3, OpenAICompatible3]
     indexing: Indexing3
@@ -2823,10 +2109,6 @@ class Codec6(Enum):
 
 @dataclass
 class NoCompression3:
-    """
-    The compression algorithm used to compress data. Default to no compression.
-    """
-
     codec: Codec6
 
 
@@ -2836,10 +2118,6 @@ class Codec7(Enum):
 
 @dataclass
 class Deflate1:
-    """
-    The compression algorithm used to compress data. Default to no compression.
-    """
-
     codec: Codec7
     compression_level: int
 
@@ -2850,10 +2128,6 @@ class Codec8(Enum):
 
 @dataclass
 class Bzip21:
-    """
-    The compression algorithm used to compress data. Default to no compression.
-    """
-
     codec: Codec8
 
 
@@ -2863,10 +2137,6 @@ class Codec9(Enum):
 
 @dataclass
 class Xz1:
-    """
-    The compression algorithm used to compress data. Default to no compression.
-    """
-
     codec: Codec9
     compression_level: int
 
@@ -2877,10 +2147,6 @@ class Codec10(Enum):
 
 @dataclass
 class Zstandard1:
-    """
-    The compression algorithm used to compress data. Default to no compression.
-    """
-
     codec: Codec10
     compression_level: int
     include_checksum: Optional[bool] = False
@@ -2892,10 +2158,6 @@ class Codec11(Enum):
 
 @dataclass
 class Snappy1:
-    """
-    The compression algorithm used to compress data. Default to no compression.
-    """
-
     codec: Codec11
 
 
@@ -2905,10 +2167,6 @@ class FormatType6(Enum):
 
 @dataclass
 class AvroApacheAvro1:
-    """
-    Format of the data output. See <a href="https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema">here</a> for more details
-    """
-
     compression_codec: Union[NoCompression3, Deflate1, Bzip21, Xz1, Zstandard1, Snappy1]
     format_type: FormatType6
 
@@ -2919,10 +2177,6 @@ class CompressionType6(Enum):
 
 @dataclass
 class NoCompression4:
-    """
-    Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: ".csv.gz").
-    """
-
     compression_type: Optional[CompressionType6] = CompressionType6.No_Compression
 
 
@@ -2932,10 +2186,6 @@ class CompressionType7(Enum):
 
 @dataclass
 class GZIP2:
-    """
-    Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: ".csv.gz").
-    """
-
     compression_type: Optional[CompressionType7] = CompressionType7.GZIP
 
 
@@ -2945,13 +2195,9 @@ class FormatType7(Enum):
 
 @dataclass
 class CSVCommaSeparatedValues2:
-    """
-    Format of the data output. See <a href="https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema">here</a> for more details
-    """
-
-    compression: Optional[Union[NoCompression4, GZIP2]]
     flattening: NormalizationFlattening
     format_type: FormatType7
+    compression: Optional[Union[NoCompression4, GZIP2]] = None
 
 
 class CompressionType8(Enum):
@@ -2960,10 +2206,6 @@ class CompressionType8(Enum):
 
 @dataclass
 class NoCompression5:
-    """
-    Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: ".jsonl.gz").
-    """
-
     compression_type: Optional[CompressionType8] = CompressionType8.No_Compression
 
 
@@ -2973,10 +2215,6 @@ class CompressionType9(Enum):
 
 @dataclass
 class GZIP3:
-    """
-    Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: ".jsonl.gz").
-    """
-
     compression_type: Optional[CompressionType9] = CompressionType9.GZIP
 
 
@@ -2986,12 +2224,8 @@ class FormatType8(Enum):
 
 @dataclass
 class JSONLinesNewlineDelimitedJSON3:
-    """
-    Format of the data output. See <a href="https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema">here</a> for more details
-    """
-
-    compression: Optional[Union[NoCompression5, GZIP3]]
     format_type: FormatType8
+    compression: Optional[Union[NoCompression5, GZIP3]] = None
 
 
 @dataclass
@@ -2999,34 +2233,30 @@ class R2:
     access_key_id: str
     account_id: str
     destination: str
-    file_name_pattern: Optional[str]
     format: Union[
         AvroApacheAvro1, CSVCommaSeparatedValues2, JSONLinesNewlineDelimitedJSON3
     ]
     s3_bucket_name: str
     s3_bucket_path: str
-    s3_path_format: Optional[str]
     secret_access_key: str
+    file_name_pattern: Optional[str] = None
+    s3_path_format: Optional[str] = None
 
 
 @dataclass
 class Rabbitmq:
     destination: str
-    exchange: Optional[str]
     host: str
-    password: Optional[str]
-    port: Optional[int]
     routing_key: str
-    username: Optional[str]
-    virtual_host: Optional[str]
+    exchange: Optional[str] = None
+    password: Optional[str] = None
+    port: Optional[int] = None
     ssl: Optional[bool] = True
+    username: Optional[str] = None
+    virtual_host: Optional[str] = None
 
 
 class CacheType(Enum):
-    """
-    Redis cache type to store data in.
-    """
-
     hash = 'hash'
 
 
@@ -3036,10 +2266,6 @@ class Mode52(Enum):
 
 @dataclass
 class Disable1:
-    """
-    Disable SSL.
-    """
-
     mode: Mode52
 
 
@@ -3049,15 +2275,11 @@ class Mode53(Enum):
 
 @dataclass
 class VerifyFull1:
-    """
-    Verify-full SSL mode.
-    """
-
     ca_certificate: str
     client_certificate: str
     client_key: str
-    client_key_password: Optional[str]
     mode: Mode53
+    client_key_password: Optional[str] = None
 
 
 @dataclass
@@ -3065,21 +2287,17 @@ class Redis:
     cache_type: CacheType
     destination: str
     host: str
-    password: Optional[str]
     port: int
-    ssl_mode: Optional[Union[Disable1, VerifyFull1]]
+    username: str
+    password: Optional[str] = None
+    ssl: Optional[bool] = False
+    ssl_mode: Optional[Union[Disable1, VerifyFull1]] = None
     tunnel_method: Optional[
         Union[NoTunnel, SSHKeyAuthentication, PasswordAuthentication]
-    ]
-    username: str
-    ssl: Optional[bool] = False
+    ] = None
 
 
 class CompressionType10(Enum):
-    """
-    The compression type for all data generated by the producer.
-    """
-
     none = 'none'
     gzip = 'gzip'
     snappy = 'snappy'
@@ -3095,10 +2313,10 @@ class Redpanda:
     compression_type: CompressionType10
     destination: str
     retries: int
-    socket_connection_setup_timeout_max_ms: Optional[int]
-    socket_connection_setup_timeout_ms: Optional[int]
-    topic_num_partitions: Optional[int]
-    topic_replication_factor: Optional[int]
+    socket_connection_setup_timeout_max_ms: Optional[int] = None
+    socket_connection_setup_timeout_ms: Optional[int] = None
+    topic_num_partitions: Optional[int] = None
+    topic_replication_factor: Optional[int] = None
 
 
 class EncryptionType(Enum):
@@ -3107,10 +2325,6 @@ class EncryptionType(Enum):
 
 @dataclass
 class NoEncryption:
-    """
-    Staging data will be stored in plaintext.
-    """
-
     encryption_type: EncryptionType
 
 
@@ -3120,19 +2334,11 @@ class EncryptionType1(Enum):
 
 @dataclass
 class AESCBCEnvelopeEncryption:
-    """
-    Staging data will be encrypted using AES-CBC envelope encryption.
-    """
-
     encryption_type: EncryptionType1
-    key_encrypting_key: Optional[str]
+    key_encrypting_key: Optional[str] = None
 
 
 class S3BucketRegion3(Enum):
-    """
-    The region of the S3 staging bucket.
-    """
-
     field_ = ''
     us_east_1 = 'us-east-1'
     us_east_2 = 'us-east-2'
@@ -3161,30 +2367,22 @@ class S3BucketRegion3(Enum):
 
 @dataclass
 class AWSS3Staging:
-    """
-    <i>(recommended)</i> Uploads data to S3 and then uses a COPY to insert the data into Redshift. COPY is recommended for production workloads for better speed and scalability. See <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/creating-bucket.html">AWS docs</a> for more details.
-    """
-
     access_key_id: str
-    file_name_pattern: Optional[str]
     method: str
     s3_bucket_name: str
-    s3_bucket_path: Optional[str]
     s3_bucket_region: S3BucketRegion3
     secret_access_key: str
     encryption: Optional[Union[NoEncryption, AESCBCEnvelopeEncryption]] = field(
         default_factory=lambda: {'encryption_type': 'none'}
     )
     file_buffer_count: Optional[int] = 10
+    file_name_pattern: Optional[str] = None
     purge_staging_data: Optional[bool] = True
+    s3_bucket_path: Optional[str] = None
 
 
 @dataclass
 class Standard:
-    """
-    <i>(not recommended)</i> Direct loading using SQL INSERT statements. This method is extremely inefficient and provided only for quick testing. In all other cases, you should use S3 uploading.
-    """
-
     method: str
 
 
@@ -3193,17 +2391,17 @@ class Redshift:
     database: str
     destination: str
     host: str
-    jdbc_url_params: Optional[str]
     password: str
     port: int
-    raw_data_schema: Optional[str]
     schema_: str
+    username: str
+    jdbc_url_params: Optional[str] = None
+    raw_data_schema: Optional[str] = None
     tunnel_method: Optional[
         Union[NoTunnel, SSHKeyAuthentication, PasswordAuthentication]
-    ]
-    uploading_method: Optional[Union[AWSS3Staging, Standard]]
-    use_1s1t_format: Optional[bool]
-    username: str
+    ] = None
+    uploading_method: Optional[Union[AWSS3Staging, Standard]] = None
+    use_1s1t_format: Optional[bool] = None
 
 
 @dataclass
@@ -3220,10 +2418,6 @@ class CompressionType11(Enum):
 
 @dataclass
 class NoCompression6:
-    """
-    Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: ".jsonl.gz").
-    """
-
     compression_type: Optional[CompressionType11] = CompressionType11.No_Compression
 
 
@@ -3233,47 +2427,27 @@ class CompressionType12(Enum):
 
 @dataclass
 class GZIP4:
-    """
-    Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: ".jsonl.gz").
-    """
-
     compression_type: Optional[CompressionType12] = CompressionType12.GZIP
 
 
 class Flattening(Enum):
-    """
-    Whether the input json data should be normalized (flattened) in the output JSON Lines. Please refer to docs for details.
-    """
-
     No_flattening = 'No flattening'
     Root_level_flattening = 'Root level flattening'
 
 
 @dataclass
 class JSONLinesNewlineDelimitedJSON4:
-    """
-    Format of the data output. See <a href="https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema">here</a> for more details
-    """
-
-    compression: Optional[Union[NoCompression6, GZIP4]]
     format_type: FormatType8
+    compression: Optional[Union[NoCompression6, GZIP4]] = None
     flattening: Optional[Flattening] = Flattening.Root_level_flattening
 
 
 class SerializationLibrary(Enum):
-    """
-    The library that your query engine will use for reading and writing data in your lake.
-    """
-
     org_openx_data_jsonserde_JsonSerDe = 'org.openx.data.jsonserde.JsonSerDe'
     org_apache_hive_hcatalog_data_JsonSerDe = 'org.apache.hive.hcatalog.data.JsonSerDe'
 
 
 class S3BucketRegion4(Enum):
-    """
-    The region of the S3 bucket. See <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions">here</a> for all region codes.
-    """
-
     field_ = ''
     us_east_1 = 'us-east-1'
     us_east_2 = 'us-east-2'
@@ -3304,18 +2478,18 @@ class S3BucketRegion4(Enum):
 
 @dataclass
 class S3glue:
-    access_key_id: Optional[str]
     destination: str
-    file_name_pattern: Optional[str]
     format: JSONLinesNewlineDelimitedJSON4
     glue_database: str
     glue_serialization_library: SerializationLibrary
     s3_bucket_name: str
     s3_bucket_path: str
     s3_bucket_region: S3BucketRegion4
-    s3_path_format: Optional[str]
-    secret_access_key: Optional[str]
+    access_key_id: Optional[str] = None
+    file_name_pattern: Optional[str] = None
     s3_endpoint: Optional[str] = ''
+    s3_path_format: Optional[str] = None
+    secret_access_key: Optional[str] = None
 
 
 class Codec12(Enum):
@@ -3324,10 +2498,6 @@ class Codec12(Enum):
 
 @dataclass
 class NoCompression7:
-    """
-    The compression algorithm used to compress data. Default to no compression.
-    """
-
     codec: Codec12
 
 
@@ -3337,10 +2507,6 @@ class Codec13(Enum):
 
 @dataclass
 class Deflate2:
-    """
-    The compression algorithm used to compress data. Default to no compression.
-    """
-
     codec: Codec13
     compression_level: int
 
@@ -3351,10 +2517,6 @@ class Codec14(Enum):
 
 @dataclass
 class Bzip22:
-    """
-    The compression algorithm used to compress data. Default to no compression.
-    """
-
     codec: Codec14
 
 
@@ -3364,10 +2526,6 @@ class Codec15(Enum):
 
 @dataclass
 class Xz2:
-    """
-    The compression algorithm used to compress data. Default to no compression.
-    """
-
     codec: Codec15
     compression_level: int
 
@@ -3378,10 +2536,6 @@ class Codec16(Enum):
 
 @dataclass
 class Zstandard2:
-    """
-    The compression algorithm used to compress data. Default to no compression.
-    """
-
     codec: Codec16
     compression_level: int
     include_checksum: Optional[bool] = False
@@ -3393,10 +2547,6 @@ class Codec17(Enum):
 
 @dataclass
 class Snappy2:
-    """
-    The compression algorithm used to compress data. Default to no compression.
-    """
-
     codec: Codec17
 
 
@@ -3406,10 +2556,6 @@ class FormatType10(Enum):
 
 @dataclass
 class AvroApacheAvro2:
-    """
-    Format of the data output. See <a href="https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema">here</a> for more details
-    """
-
     compression_codec: Union[NoCompression7, Deflate2, Bzip22, Xz2, Zstandard2, Snappy2]
     format_type: FormatType10
 
@@ -3420,10 +2566,6 @@ class CompressionType13(Enum):
 
 @dataclass
 class NoCompression8:
-    """
-    Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: ".csv.gz").
-    """
-
     compression_type: Optional[CompressionType13] = CompressionType13.No_Compression
 
 
@@ -3433,20 +2575,7 @@ class CompressionType14(Enum):
 
 @dataclass
 class GZIP5:
-    """
-    Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: ".csv.gz").
-    """
-
     compression_type: Optional[CompressionType14] = CompressionType14.GZIP
-
-
-class Flattening1(Enum):
-    """
-    Whether the input json data should be normalized (flattened) in the output CSV. Please refer to docs for details.
-    """
-
-    No_flattening = 'No flattening'
-    Root_level_flattening = 'Root level flattening'
 
 
 class FormatType11(Enum):
@@ -3455,13 +2584,9 @@ class FormatType11(Enum):
 
 @dataclass
 class CSVCommaSeparatedValues3:
-    """
-    Format of the data output. See <a href="https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema">here</a> for more details
-    """
-
-    compression: Optional[Union[NoCompression8, GZIP5]]
-    flattening: Flattening1
+    flattening: Flattening
     format_type: FormatType11
+    compression: Optional[Union[NoCompression8, GZIP5]] = None
 
 
 class CompressionType15(Enum):
@@ -3470,10 +2595,6 @@ class CompressionType15(Enum):
 
 @dataclass
 class NoCompression9:
-    """
-    Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: ".jsonl.gz").
-    """
-
     compression_type: Optional[CompressionType15] = CompressionType15.No_Compression
 
 
@@ -3483,20 +2604,7 @@ class CompressionType16(Enum):
 
 @dataclass
 class GZIP6:
-    """
-    Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: ".jsonl.gz").
-    """
-
     compression_type: Optional[CompressionType16] = CompressionType16.GZIP
-
-
-class Flattening2(Enum):
-    """
-    Whether the input json data should be normalized (flattened) in the output JSON Lines. Please refer to docs for details.
-    """
-
-    No_flattening = 'No flattening'
-    Root_level_flattening = 'Root level flattening'
 
 
 class FormatType12(Enum):
@@ -3505,13 +2613,9 @@ class FormatType12(Enum):
 
 @dataclass
 class JSONLinesNewlineDelimitedJSON5:
-    """
-    Format of the data output. See <a href="https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema">here</a> for more details
-    """
-
-    compression: Optional[Union[NoCompression9, GZIP6]]
     format_type: FormatType12
-    flattening: Optional[Flattening2] = Flattening2.No_flattening
+    compression: Optional[Union[NoCompression9, GZIP6]] = None
+    flattening: Optional[Flattening] = Flattening.No_flattening
 
 
 class FormatType13(Enum):
@@ -3520,10 +2624,6 @@ class FormatType13(Enum):
 
 @dataclass
 class ParquetColumnarStorage2:
-    """
-    Format of the data output. See <a href="https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema">here</a> for more details
-    """
-
     format_type: FormatType13
     block_size_mb: Optional[int] = 128
     compression_codec: Optional[CompressionCodec] = CompressionCodec.UNCOMPRESSED
@@ -3535,9 +2635,7 @@ class ParquetColumnarStorage2:
 
 @dataclass
 class S31:
-    access_key_id: Optional[str]
     destination: str
-    file_name_pattern: Optional[str]
     format: Union[
         AvroApacheAvro2,
         CSVCommaSeparatedValues3,
@@ -3547,9 +2645,11 @@ class S31:
     s3_bucket_name: str
     s3_bucket_path: str
     s3_bucket_region: S3BucketRegion4
-    s3_path_format: Optional[str]
-    secret_access_key: Optional[str]
+    access_key_id: Optional[str] = None
+    file_name_pattern: Optional[str] = None
     s3_endpoint: Optional[str] = ''
+    s3_path_format: Optional[str] = None
+    secret_access_key: Optional[str] = None
 
 
 @dataclass
@@ -3591,8 +2691,8 @@ class AuthType(Enum):
 @dataclass
 class KeyPairAuthentication:
     private_key: str
-    private_key_password: Optional[str]
     auth_type: Optional[AuthType] = AuthType.Key_Pair_Authentication
+    private_key_password: Optional[str] = None
 
 
 class AuthType1(Enum):
@@ -3607,19 +2707,19 @@ class UsernameAndPassword:
 
 @dataclass
 class Snowflake:
-    credentials: Optional[
-        Union[OAuth2.Field0, KeyPairAuthentication, UsernameAndPassword]
-    ]
     database: str
     destination: str
     host: str
-    jdbc_url_params: Optional[str]
-    raw_data_schema: Optional[str]
     role: str
     schema_: str
     username: str
     warehouse: str
+    credentials: Optional[
+        Union[OAuth2.Field0, KeyPairAuthentication, UsernameAndPassword]
+    ] = None
     disable_type_dedupe: Optional[bool] = False
+    jdbc_url_params: Optional[str] = None
+    raw_data_schema: Optional[str] = None
 
 
 @dataclass
@@ -3633,10 +2733,6 @@ class ObjectStoreType(Enum):
 
 
 class S3BucketRegion6(Enum):
-    """
-    The region of the S3 bucket.
-    """
-
     ap_northeast_1 = 'ap-northeast-1'
     ap_southeast_1 = 'ap-southeast-1'
     ap_southeast_2 = 'ap-southeast-2'
@@ -3653,10 +2749,6 @@ class S3BucketRegion6(Enum):
 
 @dataclass
 class AmazonS31:
-    """
-    Temporary storage on which temporary Iceberg table is created.
-    """
-
     object_store_type: ObjectStoreType
     s3_access_key_id: str
     s3_bucket_name: str
@@ -3685,10 +2777,6 @@ class Mode54(Enum):
 
 @dataclass
 class Disable2:
-    """
-    Disable SSL.
-    """
-
     mode: Mode54
 
 
@@ -3698,10 +2786,6 @@ class Mode55(Enum):
 
 @dataclass
 class Allow1:
-    """
-    Allow SSL mode.
-    """
-
     mode: Mode55
 
 
@@ -3711,10 +2795,6 @@ class Mode56(Enum):
 
 @dataclass
 class Prefer1:
-    """
-    Prefer SSL mode.
-    """
-
     mode: Mode56
 
 
@@ -3724,10 +2804,6 @@ class Mode57(Enum):
 
 @dataclass
 class Require1:
-    """
-    Require SSL mode.
-    """
-
     mode: Mode57
 
 
@@ -3737,10 +2813,6 @@ class Mode58(Enum):
 
 @dataclass
 class VerifyCa1:
-    """
-    Verify-ca SSL mode.
-    """
-
     mode: Mode58
     ssl_ca_certificate: str
 
@@ -3751,10 +2823,6 @@ class Mode59(Enum):
 
 @dataclass
 class VerifyFull2:
-    """
-    Verify-full SSL mode.
-    """
-
     mode: Mode59
     ssl_ca_certificate: str
 
@@ -3763,14 +2831,14 @@ class VerifyFull2:
 class Teradata:
     destination: str
     host: str
-    jdbc_url_params: Optional[str]
-    password: Optional[str]
-    ssl_mode: Optional[
-        Union[Disable2, Allow1, Prefer1, Require1, VerifyCa1, VerifyFull2]
-    ]
     username: str
+    jdbc_url_params: Optional[str] = None
+    password: Optional[str] = None
     schema_: Optional[str] = 'airbyte_td'
     ssl: Optional[bool] = False
+    ssl_mode: Optional[
+        Union[Disable2, Allow1, Prefer1, Require1, VerifyCa1, VerifyFull2]
+    ] = None
 
 
 @dataclass
@@ -3778,14 +2846,14 @@ class Tidb:
     database: str
     destination: str
     host: str
-    jdbc_url_params: Optional[str]
     port: int
-    tunnel_method: Optional[
-        Union[NoTunnel, SSHKeyAuthentication, PasswordAuthentication]
-    ]
     username: str
+    jdbc_url_params: Optional[str] = None
     password: Optional[str] = ''
     ssl: Optional[bool] = False
+    tunnel_method: Optional[
+        Union[NoTunnel, SSHKeyAuthentication, PasswordAuthentication]
+    ] = None
 
 
 @dataclass
@@ -3798,11 +2866,11 @@ class Timeplus:
 @dataclass
 class Typesense:
     api_key: str
-    batch_size: Optional[int]
     destination: str
     host: str
-    port: Optional[str]
-    protocol: Optional[str]
+    batch_size: Optional[int] = None
+    port: Optional[str] = None
+    protocol: Optional[str] = None
 
 
 @dataclass
@@ -3810,14 +2878,14 @@ class Vertica:
     database: str
     destination: str
     host: str
-    jdbc_url_params: Optional[str]
-    password: Optional[str]
     port: int
     schema_: str
+    username: str
+    jdbc_url_params: Optional[str] = None
+    password: Optional[str] = None
     tunnel_method: Optional[
         Union[NoTunnel, SSHKeyAuthentication, PasswordAuthentication]
-    ]
-    username: str
+    ] = None
 
 
 class Mode60(Enum):
@@ -3826,10 +2894,6 @@ class Mode60(Enum):
 
 @dataclass
 class NoExternalEmbedding:
-    """
-    Do not calculate and pass embeddings to Weaviate. Suitable for clusters with configured vectorizers to calculate embeddings within Weaviate or for classes that should only support regular text search.
-    """
-
     mode: Mode60
 
 
@@ -3839,10 +2903,6 @@ class Mode61(Enum):
 
 @dataclass
 class AzureOpenAI4:
-    """
-    Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions.
-    """
-
     api_base: str
     deployment: str
     mode: Mode61
@@ -3855,10 +2915,6 @@ class Mode62(Enum):
 
 @dataclass
 class OpenAI5:
-    """
-    Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions.
-    """
-
     mode: Mode62
     openai_key: str
 
@@ -3869,10 +2925,6 @@ class Mode63(Enum):
 
 @dataclass
 class Cohere4:
-    """
-    Use the Cohere API to embed text.
-    """
-
     cohere_key: str
     mode: Mode63
 
@@ -3883,10 +2935,6 @@ class Mode64(Enum):
 
 @dataclass
 class FromField1:
-    """
-    Use a field in the record as the embedding. This is useful if you already have an embedding for your data and want to store it in the vector store.
-    """
-
     dimensions: int
     field_name: str
     mode: Mode64
@@ -3898,10 +2946,6 @@ class Mode65(Enum):
 
 @dataclass
 class Fake5:
-    """
-    Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs.
-    """
-
     mode: Mode65
 
 
@@ -3911,10 +2955,6 @@ class Mode66(Enum):
 
 @dataclass
 class OpenAICompatible4:
-    """
-    Use a service that's compatible with the OpenAI API to embed text.
-    """
-
     base_url: str
     dimensions: int
     mode: Mode66
@@ -3934,10 +2974,6 @@ class Mode67(Enum):
 
 @dataclass
 class APIToken1:
-    """
-    Authenticate using an API token (suitable for Weaviate Cloud)
-    """
-
     mode: Mode67
     token: str
 
@@ -3948,10 +2984,6 @@ class Mode68(Enum):
 
 @dataclass
 class UsernamePassword2:
-    """
-    Authenticate using username and password (suitable for self-managed Weaviate clusters)
-    """
-
     mode: Mode68
     password: str
     username: str
@@ -3963,18 +2995,10 @@ class Mode69(Enum):
 
 @dataclass
 class NoAuthentication:
-    """
-    Do not authenticate (suitable for locally running test clusters, do not use for clusters with public IP addresses)
-    """
-
     mode: Mode69
 
 
 class DefaultVectorizer(Enum):
-    """
-    The vectorizer to use if new classes need to be created
-    """
-
     none = 'none'
     text2vec_cohere = 'text2vec-cohere'
     text2vec_huggingface = 'text2vec-huggingface'
@@ -3987,10 +3011,6 @@ class DefaultVectorizer(Enum):
 
 @dataclass
 class Indexing4:
-    """
-    Indexing configuration
-    """
-
     auth: Union[APIToken1, UsernamePassword2, NoAuthentication]
     host: str
     additional_headers: Optional[List[Header]] = field(default_factory=lambda: [])
@@ -4005,10 +3025,6 @@ class Mode70(Enum):
 
 @dataclass
 class BySeparator4:
-    """
-    Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc.
-    """
-
     mode: Mode70
     keep_separator: Optional[bool] = False
     separators: Optional[List[str]] = field(
@@ -4022,10 +3038,6 @@ class Mode71(Enum):
 
 @dataclass
 class ByMarkdownHeader4:
-    """
-    Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk.
-    """
-
     mode: Mode71
     split_level: Optional[int] = 1
 
@@ -4036,10 +3048,6 @@ class Mode72(Enum):
 
 @dataclass
 class ByProgrammingLanguage4:
-    """
-    Split the text by suitable delimiters based on the programming language. This is useful for splitting code into chunks.
-    """
-
     language: Language
     mode: Mode72
 
@@ -4047,32 +3055,19 @@ class ByProgrammingLanguage4:
 @dataclass
 class ProcessingConfigModel5:
     chunk_size: int
-    text_splitter: Optional[
-        Union[BySeparator4, ByMarkdownHeader4, ByProgrammingLanguage4]
-    ]
     chunk_overlap: Optional[int] = 0
     field_name_mappings: Optional[List[FieldNameMappingConfigModel]] = field(
         default_factory=lambda: []
     )
     metadata_fields: Optional[List[str]] = field(default_factory=lambda: [])
     text_fields: Optional[List[str]] = field(default_factory=lambda: [])
+    text_splitter: Optional[
+        Union[BySeparator4, ByMarkdownHeader4, ByProgrammingLanguage4]
+    ] = None
 
 
 @dataclass
 class Weaviate:
-    """
-    The configuration model for the Vector DB based destinations. This model is used to generate the UI for the destination configuration,
-    as well as to provide type safety for the configuration passed to the destination.
-
-    The configuration model is composed of four parts:
-    * Processing configuration
-    * Embedding configuration
-    * Indexing configuration
-    * Advanced configuration
-
-    Processing, embedding and advanced configuration are provided by this base class, while the indexing configuration is provided by the destination connector in the sub class.
-    """
-
     destination: str
     embedding: Union[
         NoExternalEmbedding,
@@ -4100,11 +3095,11 @@ class Yugabytedb:
     database: str
     destination: str
     host: str
-    jdbc_url_params: Optional[str]
-    password: Optional[str]
     port: int
     schema_: str
     username: str
+    jdbc_url_params: Optional[str] = None
+    password: Optional[str] = None
 
 
 @dataclass

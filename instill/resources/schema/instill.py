@@ -9,14 +9,14 @@ from typing import Any, Optional, Union
 
 @dataclass
 class InstillModelConnector1:
-    mode: Optional[Any]
+    mode: Optional[Any] = None
 
 
 @dataclass
 class InstillModelConnector2:
     api_token: str
-    mode: Optional[Any]
     server_url: str
+    mode: Optional[Any] = None
 
 
 InstillModelConnector = Union[InstillModelConnector1, InstillModelConnector2]

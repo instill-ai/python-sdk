@@ -9,10 +9,10 @@ from typing import List, Optional
 
 @dataclass
 class Output:
-    aggregator: Optional[str]
     answer: str
-    cells: Optional[List[str]]
-    coordinates: Optional[List[List[int]]]
+    aggregator: Optional[str] = None
+    cells: Optional[List[str]] = None
+    coordinates: Optional[List[List[int]]] = None
 
 
 Model = str
@@ -20,8 +20,8 @@ Model = str
 
 @dataclass
 class Options:
-    use_cache: Optional[bool]
-    wait_for_model: Optional[bool]
+    use_cache: Optional[bool] = None
+    wait_for_model: Optional[bool] = None
 
 
 StringInput = str

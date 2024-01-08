@@ -10,9 +10,9 @@ from typing import List, Optional
 @dataclass
 class PageInformation:
     link: str
-    link_html: Optional[str]
-    link_text: Optional[str]
-    title: Optional[str]
+    link_html: Optional[str] = None
+    link_text: Optional[str] = None
+    title: Optional[str] = None
 
 
 @dataclass

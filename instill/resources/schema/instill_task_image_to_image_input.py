@@ -9,10 +9,6 @@ from typing import List, Optional
 
 @dataclass
 class Input1:
-    """
-    Input
-    """
-
     image_base64: str
     model_id: str
     model_namespace: str
@@ -29,16 +25,12 @@ ExtraParams = List[Param]
 
 @dataclass
 class Input:
-    """
-    Input
-    """
-
-    cfg_scale: Optional[float]
-    extra_params: Optional[ExtraParams]
     image_base64: str
     model_id: str
     model_namespace: str
     prompt: str
-    samples: Optional[int]
-    seed: Optional[int]
+    cfg_scale: Optional[float] = None
+    extra_params: Optional[ExtraParams] = None
+    samples: Optional[int] = None
+    seed: Optional[int] = None
     top_k: Optional[int] = 10

@@ -9,8 +9,4 @@ from typing import Any, Dict
 
 @dataclass
 class Output:
-    """
-    Output
-    """
-
     object: Dict[str, Any]

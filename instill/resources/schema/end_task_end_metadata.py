@@ -9,8 +9,8 @@ from typing import Dict, Optional
 
 @dataclass
 class Model1:
-    description: Optional[str]
-    title: Optional[str]
+    description: Optional[str] = None
+    title: Optional[str] = None
 
 
 Model = Dict[str, Model1]

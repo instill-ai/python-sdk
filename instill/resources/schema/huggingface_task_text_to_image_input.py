@@ -9,11 +9,11 @@ from typing import Optional
 
 @dataclass
 class Parameters:
-    guidance_scale: Optional[float]
-    height: Optional[int]
-    negative_prompt: Optional[str]
-    num_inference_steps: Optional[int]
-    width: Optional[int]
+    guidance_scale: Optional[float] = None
+    height: Optional[int] = None
+    negative_prompt: Optional[str] = None
+    num_inference_steps: Optional[int] = None
+    width: Optional[int] = None
 
 
 Model = str
@@ -21,8 +21,8 @@ Model = str
 
 @dataclass
 class Options:
-    use_cache: Optional[bool]
-    wait_for_model: Optional[bool]
+    use_cache: Optional[bool] = None
+    wait_for_model: Optional[bool] = None
 
 
 StringInput = str
@@ -31,6 +31,6 @@ StringInput = str
 @dataclass
 class Input:
     inputs: StringInput
-    model: Optional[Model]
-    options: Optional[Options]
-    parameters: Optional[Parameters]
+    model: Optional[Model] = None
+    options: Optional[Options] = None
+    parameters: Optional[Parameters] = None

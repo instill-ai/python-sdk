@@ -11,7 +11,7 @@ from typing import List, Optional
 class Output:
     labels: List[str]
     scores: List[float]
-    sequence: Optional[str]
+    sequence: Optional[str] = None
 
 
 Model = str
@@ -19,8 +19,8 @@ Model = str
 
 @dataclass
 class Options:
-    use_cache: Optional[bool]
-    wait_for_model: Optional[bool]
+    use_cache: Optional[bool] = None
+    wait_for_model: Optional[bool] = None
 
 
 StringInput = str

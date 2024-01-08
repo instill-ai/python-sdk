@@ -9,15 +9,15 @@ from typing import Optional
 
 @dataclass
 class Parameters:
-    do_sample: Optional[bool]
-    max_new_tokens: Optional[int]
-    max_time: Optional[float]
-    num_return_sequences: Optional[int]
-    repetition_penalty: Optional[float]
-    return_full_text: Optional[bool]
-    temperature: Optional[float]
-    top_k: Optional[int]
-    top_p: Optional[float]
+    do_sample: Optional[bool] = None
+    max_new_tokens: Optional[int] = None
+    max_time: Optional[float] = None
+    num_return_sequences: Optional[int] = None
+    repetition_penalty: Optional[float] = None
+    return_full_text: Optional[bool] = None
+    temperature: Optional[float] = None
+    top_k: Optional[int] = None
+    top_p: Optional[float] = None
 
 
 Model = str
@@ -25,8 +25,8 @@ Model = str
 
 @dataclass
 class Options:
-    use_cache: Optional[bool]
-    wait_for_model: Optional[bool]
+    use_cache: Optional[bool] = None
+    wait_for_model: Optional[bool] = None
 
 
 StringInput = str
@@ -35,6 +35,6 @@ StringInput = str
 @dataclass
 class Input:
     inputs: StringInput
-    model: Optional[Model]
-    options: Optional[Options]
-    parameters: Optional[Parameters]
+    model: Optional[Model] = None
+    options: Optional[Options] = None
+    parameters: Optional[Parameters] = None

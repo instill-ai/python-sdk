@@ -11,8 +11,8 @@ Model = str
 
 @dataclass
 class Options:
-    use_cache: Optional[bool]
-    wait_for_model: Optional[bool]
+    use_cache: Optional[bool] = None
+    wait_for_model: Optional[bool] = None
 
 
 StringInput = str
@@ -21,5 +21,5 @@ StringInput = str
 @dataclass
 class Input:
     inputs: StringInput
-    model: Optional[Model]
-    options: Optional[Options]
+    model: Optional[Model] = None
+    options: Optional[Options] = None

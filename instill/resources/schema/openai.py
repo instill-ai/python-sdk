@@ -10,4 +10,4 @@ from typing import Optional
 @dataclass
 class OpenAIConnectorResource:
     api_key: str
-    organization: Optional[str]
+    organization: Optional[str] = None

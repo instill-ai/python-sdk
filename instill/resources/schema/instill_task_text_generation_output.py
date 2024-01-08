@@ -9,19 +9,11 @@ from typing import List
 
 @dataclass
 class Output:
-    """
-    Output
-    """
-
     text: str
 
 
 @dataclass
 class Input:
-    """
-    Input
-    """
-
     image_base64: str
     model_id: str
     model_namespace: str

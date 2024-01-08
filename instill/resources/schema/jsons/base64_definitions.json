@@ -6,7 +6,7 @@
     ],
     "custom": false,
     "documentation_url": "https://www.instill.tech/docs/latest/vdp/operators/base64",
-    "icon": "base64.svg",
+    "icon": "Instill AI/base64.svg",
     "icon_url": "",
     "id": "base64",
     "public": true,

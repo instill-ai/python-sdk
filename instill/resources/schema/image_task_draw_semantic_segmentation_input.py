@@ -21,10 +21,6 @@ InstillTypes = Any
 
 @dataclass
 class Input:
-    """
-    Input
-    """
-
     image: str
-    showScore: Optional[bool]
     stuffs: Stuffs
+    showScore: Optional[bool] = None

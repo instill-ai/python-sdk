@@ -10,7 +10,7 @@
     ],
     "custom": false,
     "documentation_url": "https://www.instill.tech/docs/latest/vdp/operators/image",
-    "icon": "image.svg",
+    "icon": "Instill AI/image.svg",
     "icon_url": "",
     "id": "image",
     "public": true,

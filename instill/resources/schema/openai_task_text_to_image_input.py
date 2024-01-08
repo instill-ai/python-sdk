@@ -9,10 +9,6 @@ from typing import Optional
 
 
 class Model(Enum):
-    """
-    The model to use for image generation.
-    """
-
     dall_e_2 = 'dall-e-2'
     dall_e_3 = 'dall-e-3'
 
@@ -24,19 +20,11 @@ Prompt = str
 
 
 class Quality(Enum):
-    """
-    The quality of the image that will be generated. `hd` creates images with finer details and greater consistency across the image. This param is only supported for `dall-e-3`.
-    """
-
     standard = 'standard'
     hd = 'hd'
 
 
 class Size(Enum):
-    """
-    The size of the generated images. Must be one of `256x256`, `512x512`, or `1024x1024` for `dall-e-2`. Must be one of `1024x1024`, `1792x1024`, or `1024x1792` for `dall-e-3` models.
-    """
-
     field_256x256 = '256x256'
     field_512x512 = '512x512'
     field_1024x1024 = '1024x1024'
@@ -45,10 +33,6 @@ class Size(Enum):
 
 
 class Style(Enum):
-    """
-    The style of the generated images. Must be one of `vivid` or `natural`. Vivid causes the model to lean towards generating hyper-real and dramatic images. Natural causes the model to produce more natural, less hyper-real looking images. This param is only supported for `dall-e-3`.
-    """
-
     vivid = 'vivid'
     natural = 'natural'
 
@@ -62,8 +46,8 @@ class ChatMessage:
 @dataclass
 class Input:
     model: Model
-    n: Optional[N]
     prompt: Prompt
+    n: Optional[N] = None
     quality: Optional[Quality] = Quality.standard
     size: Optional[Size] = Size.field_1024x1024
     style: Optional[Style] = Style.vivid

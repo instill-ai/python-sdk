@@ -15,11 +15,11 @@ class Items:
 
 @dataclass
 class Model1:
-    description: Optional[str]
     instillFormat: str
-    items: Optional[Items]
-    title: Optional[str]
     type: str
+    description: Optional[str] = None
+    items: Optional[Items] = None
+    title: Optional[str] = None
 
 
 Model = Dict[str, Model1]

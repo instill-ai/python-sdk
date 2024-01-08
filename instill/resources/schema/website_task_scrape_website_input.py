@@ -9,9 +9,9 @@ from typing import List, Optional
 
 @dataclass
 class Input:
-    allowed_domains: Optional[List[str]]
     max_k: int
     target_url: str
+    allowed_domains: Optional[List[str]] = None
     include_link_html: Optional[bool] = False
     include_link_text: Optional[bool] = False
 
@@ -19,6 +19,6 @@ class Input:
 @dataclass
 class PageInformation:
     link: str
-    link_html: Optional[str]
-    link_text: Optional[str]
-    title: Optional[str]
+    link_html: Optional[str] = None
+    link_text: Optional[str] = None
+    title: Optional[str] = None

@@ -10,9 +10,9 @@ from typing import Any, Dict, List, Optional
 @dataclass
 class Match:
     id: str
-    metadata: Optional[Dict[str, Any]]
     score: float
-    values: Optional[List[float]]
+    metadata: Optional[Dict[str, Any]] = None
+    values: Optional[List[float]] = None
 
 
 @dataclass

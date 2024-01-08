@@ -17,11 +17,7 @@ Score = float
 
 @dataclass
 class Input:
-    """
-    Input
-    """
-
     category: Category
     image: str
     score: Score
-    showScore: Optional[bool]
+    showScore: Optional[bool] = None

@@ -15,7 +15,7 @@ class AuthType(Enum):
 @dataclass
 class Field0:
     access_token: str
-    client_id: Optional[str]
-    client_secret: Optional[str]
     refresh_token: str
     auth_type: Optional[AuthType] = AuthType.OAuth2_0
+    client_id: Optional[str] = None
+    client_secret: Optional[str] = None

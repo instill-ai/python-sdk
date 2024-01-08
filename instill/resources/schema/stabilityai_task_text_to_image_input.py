@@ -9,10 +9,6 @@ from typing import List, Optional
 
 
 class Engine(Enum):
-    """
-    Stability AI Engine (model) to be used.
-    """
-
     stable_diffusion_xl_1024_v1_0 = 'stable-diffusion-xl-1024-v1-0'
     stable_diffusion_xl_1024_v0_9 = 'stable-diffusion-xl-1024-v0-9'
     stable_diffusion_v1_6 = 'stable-diffusion-v1-6'
@@ -41,10 +37,6 @@ Text = str
 
 
 class Sampler(Enum):
-    """
-    Which sampler to use for the diffusion process. If this value is omitted we'll automatically select an appropriate sampler for you.
-    """
-
     DDIM = 'DDIM'
     DDPM = 'DDPM'
     K_DPMPP_2M = 'K_DPMPP_2M'
@@ -67,11 +59,6 @@ Steps = int
 
 
 class StylePreset(Enum):
-    """
-    Pass in a style preset to guide the image model towards a particular style.
-    This list of style presets is subject to change.
-    """
-
     enhance = 'enhance'
     anime = 'anime'
     photographic = 'photographic'
@@ -99,19 +86,15 @@ DiffuseImageWidth = int
 
 @dataclass
 class Input:
-    """
-    Input
-    """
-
-    cfg_scale: Optional[CfgScale]
-    clip_guidance_preset: Optional[ClipGuidancePreset] = ClipGuidancePreset.NONE
     engine: Engine
-    height: Optional[DiffuseImageHeight]
     prompts: List[Text]
-    sampler: Optional[Sampler]
-    samples: Optional[Samples]
-    seed: Optional[Seed]
-    steps: Optional[Steps]
-    style_preset: Optional[StylePreset]
-    weights: Optional[List[Weight]]
-    width: Optional[DiffuseImageWidth]
+    cfg_scale: Optional[CfgScale] = None
+    clip_guidance_preset: Optional[ClipGuidancePreset] = ClipGuidancePreset.NONE
+    height: Optional[DiffuseImageHeight] = None
+    sampler: Optional[Sampler] = None
+    samples: Optional[Samples] = None
+    seed: Optional[Seed] = None
+    steps: Optional[Steps] = None
+    style_preset: Optional[StylePreset] = None
+    weights: Optional[List[Weight]] = None
+    width: Optional[DiffuseImageWidth] = None

@@ -11,9 +11,5 @@ Seed = float
 
 @dataclass
 class Output:
-    """
-    Output
-    """
-
     images: List[str]
     seeds: List[Seed]

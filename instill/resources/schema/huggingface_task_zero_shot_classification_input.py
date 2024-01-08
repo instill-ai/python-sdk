@@ -10,7 +10,7 @@ from typing import List, Optional
 @dataclass
 class Parameters:
     candidate_labels: List[str]
-    multi_label: Optional[bool]
+    multi_label: Optional[bool] = None
 
 
 Model = str
@@ -18,8 +18,8 @@ Model = str
 
 @dataclass
 class Options:
-    use_cache: Optional[bool]
-    wait_for_model: Optional[bool]
+    use_cache: Optional[bool] = None
+    wait_for_model: Optional[bool] = None
 
 
 StringInput = str
@@ -28,6 +28,6 @@ StringInput = str
 @dataclass
 class Input:
     inputs: StringInput
-    model: Optional[Model]
-    options: Optional[Options]
     parameters: Parameters
+    model: Optional[Model] = None
+    options: Optional[Options] = None

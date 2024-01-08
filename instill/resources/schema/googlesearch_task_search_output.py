@@ -10,10 +10,10 @@ from typing import List, Optional
 @dataclass
 class Result:
     link: str
-    link_html: Optional[str]
-    link_text: Optional[str]
     snippet: str
     title: str
+    link_html: Optional[str] = None
+    link_text: Optional[str] = None
 
 
 @dataclass
