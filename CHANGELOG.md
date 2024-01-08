@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0](https://github.com/instill-ai/python-sdk/compare/v0.5.0...v0.6.0) (2024-01-08)
+
+
+### Features
+
+* **connector,operator,component:** adopt jsonscema validation and dataclass type hint ([#74](https://github.com/instill-ai/python-sdk/issues/74)) ([0c47e51](https://github.com/instill-ai/python-sdk/commit/0c47e51263f7e428499a8461db4b4725ac1e3144))
+
+
+### Bug Fixes
+
+* **resources:** fix resource schema path ([#76](https://github.com/instill-ai/python-sdk/issues/76)) ([25f4418](https://github.com/instill-ai/python-sdk/commit/25f4418ab713556ab5a82b9bc16f7d0f9e12adc3))
+
 ## [0.5.0](https://github.com/instill-ai/python-sdk/compare/v0.4.0...v0.5.0) (2024-01-02)
 
 
