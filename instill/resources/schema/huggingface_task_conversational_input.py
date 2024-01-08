@@ -25,9 +25,6 @@ class Parameters:
     top_p: Optional[float] = None
 
 
-Model = str
-
-
 @dataclass
 class Options:
     use_cache: Optional[bool] = None
@@ -40,6 +37,6 @@ StringInput = str
 @dataclass
 class Input:
     inputs: Inputs
-    model: Optional[Model] = None
+    model: Optional[str] = None
     options: Optional[Options] = None
     parameters: Optional[Parameters] = None

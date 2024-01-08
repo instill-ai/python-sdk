@@ -16,21 +16,15 @@ class Parameters:
     width: Optional[int] = None
 
 
-Model = str
-
-
 @dataclass
 class Options:
     use_cache: Optional[bool] = None
     wait_for_model: Optional[bool] = None
 
 
-StringInput = str
-
-
 @dataclass
 class Input:
-    inputs: StringInput
-    model: Optional[Model] = None
+    inputs: str
+    model: Optional[str] = None
     options: Optional[Options] = None
     parameters: Optional[Parameters] = None

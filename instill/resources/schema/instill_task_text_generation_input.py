@@ -20,15 +20,12 @@ class Param:
     param_value: str
 
 
-ExtraParams = List[Param]
-
-
 @dataclass
 class Input:
     model_id: str
     model_namespace: str
     prompt: str
-    extra_params: Optional[ExtraParams] = None
+    extra_params: Optional[List[Param]] = None
     max_new_tokens: Optional[int] = 50
     seed: Optional[int] = None
     temperature: Optional[float] = 0.7

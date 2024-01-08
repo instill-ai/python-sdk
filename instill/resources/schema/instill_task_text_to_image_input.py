@@ -20,16 +20,13 @@ class Param:
     param_value: str
 
 
-ExtraParams = List[Param]
-
-
 @dataclass
 class Input:
     model_id: str
     model_namespace: str
     prompt: str
     cfg_scale: Optional[float] = None
-    extra_params: Optional[ExtraParams] = None
+    extra_params: Optional[List[Param]] = None
     samples: Optional[int] = None
     seed: Optional[int] = None
     steps: Optional[int] = None

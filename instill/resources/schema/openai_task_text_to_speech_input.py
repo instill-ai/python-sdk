@@ -13,20 +13,11 @@ class Model1(Enum):
     tts_1_hd = 'tts-1-hd'
 
 
-Model = Union[str, Model1]
-
-
 class ResponseFormat(Enum):
     mp3 = 'mp3'
     opus = 'opus'
     aac = 'aac'
     flac = 'flac'
-
-
-Speed = float
-
-
-Input = str
 
 
 class Voice(Enum):
@@ -46,8 +37,8 @@ class ChatMessage:
 
 @dataclass
 class InputModel:
-    model: Model
-    text: Input
+    model: Union[str, Model1]
+    text: str
     voice: Voice
     response_format: Optional[ResponseFormat] = ResponseFormat.mp3
-    speed: Optional[Speed] = None
+    speed: Optional[float] = None

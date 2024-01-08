@@ -13,9 +13,6 @@ class Inputs:
     table: Dict[str, Any]
 
 
-Model = str
-
-
 @dataclass
 class Options:
     use_cache: Optional[bool] = None
@@ -28,5 +25,5 @@ StringInput = str
 @dataclass
 class Input:
     inputs: Inputs
-    model: Optional[Model] = None
+    model: Optional[str] = None
     options: Optional[Options] = None

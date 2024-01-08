@@ -13,21 +13,15 @@ class Parameters:
     multi_label: Optional[bool] = None
 
 
-Model = str
-
-
 @dataclass
 class Options:
     use_cache: Optional[bool] = None
     wait_for_model: Optional[bool] = None
 
 
-StringInput = str
-
-
 @dataclass
 class Input:
-    inputs: StringInput
+    inputs: str
     parameters: Parameters
-    model: Optional[Model] = None
+    model: Optional[str] = None
     options: Optional[Options] = None

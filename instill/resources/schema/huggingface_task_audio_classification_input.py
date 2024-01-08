@@ -6,8 +6,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
-Model = str
-
 
 @dataclass
 class Options:
@@ -21,4 +19,4 @@ StringInput = str
 @dataclass
 class Input:
     audio: str
-    model: Optional[Model] = None
+    model: Optional[str] = None

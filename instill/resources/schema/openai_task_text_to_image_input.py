@@ -13,12 +13,6 @@ class Model(Enum):
     dall_e_3 = 'dall-e-3'
 
 
-N = Optional[int]
-
-
-Prompt = str
-
-
 class Quality(Enum):
     standard = 'standard'
     hd = 'hd'
@@ -46,8 +40,8 @@ class ChatMessage:
 @dataclass
 class Input:
     model: Model
-    prompt: Prompt
-    n: Optional[N] = None
+    prompt: str
+    n: Optional[int] = None
     quality: Optional[Quality] = Quality.standard
     size: Optional[Size] = Size.field_1024x1024
     style: Optional[Style] = Style.vivid

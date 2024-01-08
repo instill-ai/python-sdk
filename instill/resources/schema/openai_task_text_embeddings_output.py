@@ -6,9 +6,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, List
 
-Embedding = List[float]
-
-
 UpstreamValue = str
 
 
@@ -23,4 +20,4 @@ class ChatMessage:
 
 @dataclass
 class Output:
-    embedding: Embedding
+    embedding: List[float]

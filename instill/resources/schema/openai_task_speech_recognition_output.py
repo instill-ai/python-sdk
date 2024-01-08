@@ -5,8 +5,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-Text = str
-
 
 @dataclass
 class ChatMessage:
@@ -16,4 +14,4 @@ class ChatMessage:
 
 @dataclass
 class Output:
-    text: Text
+    text: str

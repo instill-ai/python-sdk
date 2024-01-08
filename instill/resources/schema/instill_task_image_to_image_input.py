@@ -20,9 +20,6 @@ class Param:
     param_value: str
 
 
-ExtraParams = List[Param]
-
-
 @dataclass
 class Input:
     image_base64: str
@@ -30,7 +27,7 @@ class Input:
     model_namespace: str
     prompt: str
     cfg_scale: Optional[float] = None
-    extra_params: Optional[ExtraParams] = None
+    extra_params: Optional[List[Param]] = None
     samples: Optional[int] = None
     seed: Optional[int] = None
     top_k: Optional[int] = 10

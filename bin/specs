@@ -16,7 +16,7 @@ for connector in ${connector_schemas[@]}; do
         o_path=./instill/resources/schema/${connector}/
     fi
     echo "Generating ${o_path}..."
-    datamodel-codegen --disable-timestamp --use-title-as-name --input ./instill/resources/schema/jsons/${connector}_definitions.json --input-file-type jsonschema --output ${o_path} --output-model-type dataclasses.dataclass
+    datamodel-codegen --collapse-root-models --disable-timestamp --use-title-as-name --input ./instill/resources/schema/jsons/${connector}_definitions.json --input-file-type jsonschema --output ${o_path} --output-model-type dataclasses.dataclass
     # tasks
     echo "Downloading ${connector}_tasks.json..."
     curl https://raw.githubusercontent.com/instill-ai/connector/main/pkg/${connector}/config/tasks.json -L -s -o ./instill/resources/schema/jsons/${connector}_tasks.json
@@ -37,7 +37,7 @@ for connector in ${connector_schemas[@]}; do
             fi
             echo $schema >./instill/resources/schema/jsons/$filename.json
             echo "Generating $filename.py..."
-            datamodel-codegen --disable-timestamp --use-title-as-name --input ./instill/resources/schema/jsons/$filename.json --input-file-type jsonschema --output ./instill/resources/schema/$filename.py --output-model-type dataclasses.dataclass
+            datamodel-codegen --collapse-root-models --disable-timestamp --use-title-as-name --input ./instill/resources/schema/jsons/$filename.json --input-file-type jsonschema --output ./instill/resources/schema/$filename.py --output-model-type dataclasses.dataclass
         done
     done
 done
@@ -68,7 +68,7 @@ for operator in ${operator_schemas[@]}; do
             fi
             echo $schema >./instill/resources/schema/jsons/$filename.json
             echo "Generating $filename.py..."
-            datamodel-codegen --disable-timestamp --use-title-as-name --input ./instill/resources/schema/jsons/$filename.json --input-file-type jsonschema --output ./instill/resources/schema/$filename.py --output-model-type dataclasses.dataclass
+            datamodel-codegen --collapse-root-models --disable-timestamp --use-title-as-name --input ./instill/resources/schema/jsons/$filename.json --input-file-type jsonschema --output ./instill/resources/schema/$filename.py --output-model-type dataclasses.dataclass
         done
     done
 done

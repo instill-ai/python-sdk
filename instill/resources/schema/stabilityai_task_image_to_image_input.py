@@ -17,9 +17,6 @@ class Engine(Enum):
     stable_diffusion_xl_beta_v2_2_2 = 'stable-diffusion-xl-beta-v2-2-2'
 
 
-CfgScale = float
-
-
 class ClipGuidancePreset(Enum):
     FAST_BLUE = 'FAST_BLUE'
     FAST_GREEN = 'FAST_GREEN'
@@ -30,18 +27,9 @@ class ClipGuidancePreset(Enum):
     SLOWEST = 'SLOWEST'
 
 
-InitImageStrength = float
-
-
-InitImage = bytes
-
-
 class InitImageMode(Enum):
     IMAGE_STRENGTH = 'IMAGE_STRENGTH'
     STEP_SCHEDULE = 'STEP_SCHEDULE'
-
-
-Text = str
 
 
 class Sampler(Enum):
@@ -55,21 +43,6 @@ class Sampler(Enum):
     K_EULER_ANCESTRAL = 'K_EULER_ANCESTRAL'
     K_HEUN = 'K_HEUN'
     K_LMS = 'K_LMS'
-
-
-Samples = int
-
-
-Seed = int
-
-
-StepScheduleEnd = float
-
-
-StepScheduleStart = float
-
-
-Steps = int
 
 
 class StylePreset(Enum):
@@ -92,23 +65,20 @@ class StylePreset(Enum):
     tile_texture = 'tile-texture'
 
 
-Weight = float
-
-
 @dataclass
 class Input:
     engine: Engine
-    prompts: List[Text]
-    cfg_scale: Optional[CfgScale] = None
+    prompts: List[str]
+    cfg_scale: Optional[float] = None
     clip_guidance_preset: Optional[ClipGuidancePreset] = ClipGuidancePreset.NONE
-    image_strength: Optional[InitImageStrength] = None
-    init_image: Optional[InitImage] = None
+    image_strength: Optional[float] = None
+    init_image: Optional[bytes] = None
     init_image_mode: Optional[InitImageMode] = InitImageMode.IMAGE_STRENGTH
     sampler: Optional[Sampler] = None
-    samples: Optional[Samples] = None
-    seed: Optional[Seed] = None
-    step_schedule_end: Optional[StepScheduleEnd] = None
-    step_schedule_start: Optional[StepScheduleStart] = None
-    steps: Optional[Steps] = None
+    samples: Optional[int] = None
+    seed: Optional[int] = None
+    step_schedule_end: Optional[float] = None
+    step_schedule_start: Optional[float] = None
+    steps: Optional[int] = None
     style_preset: Optional[StylePreset] = None
-    weights: Optional[List[Weight]] = None
+    weights: Optional[List[float]] = None

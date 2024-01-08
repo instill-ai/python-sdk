@@ -6,8 +6,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
-Model = str
-
 
 @dataclass
 class Options:
@@ -15,11 +13,8 @@ class Options:
     wait_for_model: Optional[bool] = None
 
 
-StringInput = str
-
-
 @dataclass
 class Input:
-    inputs: StringInput
-    model: Optional[Model] = None
+    inputs: str
+    model: Optional[str] = None
     options: Optional[Options] = None
