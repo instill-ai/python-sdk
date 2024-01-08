@@ -14,10 +14,6 @@ class Model:
 
 @dataclass
 class Input:
-    """
-    Input
-    """
-
     image_base64: str
     model_id: str
     model_namespace: str

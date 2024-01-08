@@ -9,7 +9,7 @@ from typing import Optional
 
 @dataclass
 class Output:
-    audio: Optional[str]
+    audio: Optional[str] = None
 
 
 @dataclass

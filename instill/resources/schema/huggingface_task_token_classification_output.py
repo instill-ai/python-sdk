@@ -9,11 +9,11 @@ from typing import List, Optional
 
 @dataclass
 class Result:
-    end: Optional[int]
-    entity_group: Optional[str]
-    score: Optional[float]
-    start: Optional[int]
-    word: Optional[str]
+    end: Optional[int] = None
+    entity_group: Optional[str] = None
+    score: Optional[float] = None
+    start: Optional[int] = None
+    word: Optional[str] = None
 
 
 @dataclass
@@ -26,8 +26,8 @@ Model = str
 
 @dataclass
 class Options:
-    use_cache: Optional[bool]
-    wait_for_model: Optional[bool]
+    use_cache: Optional[bool] = None
+    wait_for_model: Optional[bool] = None
 
 
 StringInput = str

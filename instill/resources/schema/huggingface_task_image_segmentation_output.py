@@ -24,8 +24,8 @@ Model = str
 
 @dataclass
 class Options:
-    use_cache: Optional[bool]
-    wait_for_model: Optional[bool]
+    use_cache: Optional[bool] = None
+    wait_for_model: Optional[bool] = None
 
 
 StringInput = str

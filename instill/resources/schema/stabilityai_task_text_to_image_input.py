@@ -9,19 +9,12 @@ from typing import List, Optional
 
 
 class Engine(Enum):
-    """
-    Stability AI Engine (model) to be used.
-    """
-
     stable_diffusion_xl_1024_v1_0 = 'stable-diffusion-xl-1024-v1-0'
     stable_diffusion_xl_1024_v0_9 = 'stable-diffusion-xl-1024-v0-9'
     stable_diffusion_v1_6 = 'stable-diffusion-v1-6'
     esrgan_v1_x2plus = 'esrgan-v1-x2plus'
     stable_diffusion_512_v2_1 = 'stable-diffusion-512-v2-1'
     stable_diffusion_xl_beta_v2_2_2 = 'stable-diffusion-xl-beta-v2-2-2'
-
-
-CfgScale = float
 
 
 class ClipGuidancePreset(Enum):
@@ -34,17 +27,7 @@ class ClipGuidancePreset(Enum):
     SLOWEST = 'SLOWEST'
 
 
-DiffuseImageHeight = int
-
-
-Text = str
-
-
 class Sampler(Enum):
-    """
-    Which sampler to use for the diffusion process. If this value is omitted we'll automatically select an appropriate sampler for you.
-    """
-
     DDIM = 'DDIM'
     DDPM = 'DDPM'
     K_DPMPP_2M = 'K_DPMPP_2M'
@@ -57,21 +40,7 @@ class Sampler(Enum):
     K_LMS = 'K_LMS'
 
 
-Samples = int
-
-
-Seed = int
-
-
-Steps = int
-
-
 class StylePreset(Enum):
-    """
-    Pass in a style preset to guide the image model towards a particular style.
-    This list of style presets is subject to change.
-    """
-
     enhance = 'enhance'
     anime = 'anime'
     photographic = 'photographic'
@@ -91,27 +60,17 @@ class StylePreset(Enum):
     tile_texture = 'tile-texture'
 
 
-Weight = float
-
-
-DiffuseImageWidth = int
-
-
 @dataclass
 class Input:
-    """
-    Input
-    """
-
-    cfg_scale: Optional[CfgScale]
-    clip_guidance_preset: Optional[ClipGuidancePreset] = ClipGuidancePreset.NONE
     engine: Engine
-    height: Optional[DiffuseImageHeight]
-    prompts: List[Text]
-    sampler: Optional[Sampler]
-    samples: Optional[Samples]
-    seed: Optional[Seed]
-    steps: Optional[Steps]
-    style_preset: Optional[StylePreset]
-    weights: Optional[List[Weight]]
-    width: Optional[DiffuseImageWidth]
+    prompts: List[str]
+    cfg_scale: Optional[float] = None
+    clip_guidance_preset: Optional[ClipGuidancePreset] = ClipGuidancePreset.NONE
+    height: Optional[int] = None
+    sampler: Optional[Sampler] = None
+    samples: Optional[int] = None
+    seed: Optional[int] = None
+    steps: Optional[int] = None
+    style_preset: Optional[StylePreset] = None
+    weights: Optional[List[float]] = None
+    width: Optional[int] = None

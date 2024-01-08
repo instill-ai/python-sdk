@@ -5,7 +5,7 @@
     ],
     "custom": false,
     "documentation_url": "https://www.instill.tech/docs/latest/vdp/operators/op-start",
-    "icon": "start.svg",
+    "icon": "Instill AI/start.svg",
     "icon_url": "",
     "id": "start",
     "public": true,

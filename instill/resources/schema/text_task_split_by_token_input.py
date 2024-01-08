@@ -9,10 +9,6 @@ from typing import Optional
 
 
 class Model(Enum):
-    """
-    ID of the model to use for tokenization
-    """
-
     gpt_4 = 'gpt-4'
     gpt_3_5_turbo = 'gpt-3.5-turbo'
     text_davinci_003 = 'text-davinci-003'
@@ -49,10 +45,6 @@ class Model(Enum):
 
 @dataclass
 class Input:
-    """
-    Input
-    """
-
     model: Model
     text: str
     chunk_token_size: Optional[int] = 500

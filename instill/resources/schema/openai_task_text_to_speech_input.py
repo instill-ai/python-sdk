@@ -9,40 +9,18 @@ from typing import Optional, Union
 
 
 class Model1(Enum):
-    """
-    One of the available [TTS models](/docs/models/tts): `tts-1` or `tts-1-hd`
-
-    """
-
     tts_1 = 'tts-1'
     tts_1_hd = 'tts-1-hd'
 
 
-Model = Union[str, Model1]
-
-
 class ResponseFormat(Enum):
-    """
-    The format to audio in. Supported formats are `mp3`, `opus`, `aac`, and `flac`.
-    """
-
     mp3 = 'mp3'
     opus = 'opus'
     aac = 'aac'
     flac = 'flac'
 
 
-Speed = float
-
-
-Input = str
-
-
 class Voice(Enum):
-    """
-    The voice to use when generating the audio. Supported voices are `alloy`, `echo`, `fable`, `onyx`, `nova`, and `shimmer`.
-    """
-
     alloy = 'alloy'
     echo = 'echo'
     fable = 'fable'
@@ -59,8 +37,8 @@ class ChatMessage:
 
 @dataclass
 class InputModel:
-    model: Model
-    response_format: Optional[ResponseFormat] = ResponseFormat.mp3
-    speed: Optional[Speed]
-    text: Input
+    model: Union[str, Model1]
+    text: str
     voice: Voice
+    response_format: Optional[ResponseFormat] = ResponseFormat.mp3
+    speed: Optional[float] = None

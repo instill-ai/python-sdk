@@ -6,13 +6,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
-Model = str
-
 
 @dataclass
 class Options:
-    use_cache: Optional[bool]
-    wait_for_model: Optional[bool]
+    use_cache: Optional[bool] = None
+    wait_for_model: Optional[bool] = None
 
 
 StringInput = str
@@ -21,4 +19,4 @@ StringInput = str
 @dataclass
 class Input:
     image: str
-    model: Optional[Model]
+    model: Optional[str] = None

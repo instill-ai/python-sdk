@@ -6,22 +6,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Optional
 
-Category = str
-
-
 InstillTypes = Any
-
-
-Score = float
 
 
 @dataclass
 class Input:
-    """
-    Input
-    """
-
-    category: Category
+    category: str
     image: str
-    score: Score
-    showScore: Optional[bool]
+    score: float
+    showScore: Optional[bool] = None

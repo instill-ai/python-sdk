@@ -15,5 +15,5 @@ class Output:
 @dataclass
 class Message:
     content: str
-    metadata: Optional[Dict[str, Any]]
     role: str
+    metadata: Optional[Dict[str, Any]] = None

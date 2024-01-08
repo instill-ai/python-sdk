@@ -6,20 +6,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
-Model = str
-
 
 @dataclass
 class Options:
-    use_cache: Optional[bool]
-    wait_for_model: Optional[bool]
-
-
-StringInput = str
+    use_cache: Optional[bool] = None
+    wait_for_model: Optional[bool] = None
 
 
 @dataclass
 class Input:
-    inputs: StringInput
-    model: Optional[Model]
-    options: Optional[Options]
+    inputs: str
+    model: Optional[str] = None
+    options: Optional[Options] = None

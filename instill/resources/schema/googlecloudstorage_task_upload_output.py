@@ -9,8 +9,8 @@ from typing import Optional
 
 @dataclass
 class Output:
-    authenticated_url: Optional[str]
-    gsutil_uri: Optional[str]
-    public_access: Optional[bool]
-    public_url: Optional[str]
     status: str
+    authenticated_url: Optional[str] = None
+    gsutil_uri: Optional[str] = None
+    public_access: Optional[bool] = None
+    public_url: Optional[str] = None

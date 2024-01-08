@@ -9,10 +9,6 @@ from typing import List
 
 @dataclass
 class Output:
-    """
-    Output
-    """
-
     chunk_num: int
     text_chunks: List[str]
     token_count: int

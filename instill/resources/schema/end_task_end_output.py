@@ -8,6 +8,4 @@ from dataclasses import dataclass
 
 @dataclass
 class Output:
-    """
-    Output
-    """
+    pass

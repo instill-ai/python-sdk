@@ -9,10 +9,6 @@ from typing import List, Optional
 
 @dataclass
 class Box:
-    """
-    A dict (with keys [xmin,ymin,xmax,ymax]) representing the bounding box of a detected object.
-    """
-
     xmax: float
     xmin: float
     ymax: float
@@ -36,8 +32,8 @@ Model = str
 
 @dataclass
 class Options:
-    use_cache: Optional[bool]
-    wait_for_model: Optional[bool]
+    use_cache: Optional[bool] = None
+    wait_for_model: Optional[bool] = None
 
 
 StringInput = str

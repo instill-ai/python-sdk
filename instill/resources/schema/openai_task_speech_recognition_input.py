@@ -7,25 +7,9 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
 
-File = bytes
-
-
-Language = str
-
 
 class Model(Enum):
-    """
-    ID of the model to use. Only `whisper-1` is currently available.
-
-    """
-
     whisper_1 = 'whisper-1'
-
-
-Prompt = str
-
-
-Temperature = float
 
 
 @dataclass
@@ -36,8 +20,8 @@ class ChatMessage:
 
 @dataclass
 class Input:
-    audio: File
-    language: Optional[Language]
+    audio: bytes
     model: Model
-    prompt: Optional[Prompt]
-    temperature: Optional[Temperature]
+    language: Optional[str] = None
+    prompt: Optional[str] = None
+    temperature: Optional[float] = None

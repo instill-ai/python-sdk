@@ -6,14 +6,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import List
 
-Seed = float
-
 
 @dataclass
 class Output:
-    """
-    Output
-    """
-
     images: List[str]
-    seeds: List[Seed]
+    seeds: List[float]

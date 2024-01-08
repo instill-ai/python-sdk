@@ -11,4 +11,4 @@ from typing import Any, Dict, List, Optional
 class Input:
     id: str
     values: List[float]
-    metadata: Optional[Dict[str, Any]]
+    metadata: Optional[Dict[str, Any]] = None

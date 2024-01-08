@@ -9,10 +9,6 @@ from typing import Any, Dict
 
 @dataclass
 class Output:
-    """
-    Output
-    """
-
     body: str
     error: str
     meta: Dict[str, Any]

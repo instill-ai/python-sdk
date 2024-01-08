@@ -9,30 +9,24 @@ from typing import Optional
 
 @dataclass
 class Parameters:
-    max_length: Optional[int]
-    max_time: Optional[float]
-    min_length: Optional[int]
-    repetition_penalty: Optional[float]
-    top_k: Optional[int]
-    top_p: Optional[float]
+    max_length: Optional[int] = None
+    max_time: Optional[float] = None
+    min_length: Optional[int] = None
+    repetition_penalty: Optional[float] = None
     temperature: Optional[float] = 1
-
-
-Model = str
+    top_k: Optional[int] = None
+    top_p: Optional[float] = None
 
 
 @dataclass
 class Options:
-    use_cache: Optional[bool]
-    wait_for_model: Optional[bool]
-
-
-StringInput = str
+    use_cache: Optional[bool] = None
+    wait_for_model: Optional[bool] = None
 
 
 @dataclass
 class Input:
-    inputs: StringInput
-    model: Optional[Model]
-    options: Optional[Options]
-    parameters: Optional[Parameters]
+    inputs: str
+    model: Optional[str] = None
+    options: Optional[Options] = None
+    parameters: Optional[Parameters] = None

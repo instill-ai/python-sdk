@@ -10,13 +10,13 @@ from typing import Any, Dict, Optional
 @dataclass
 class Input:
     content: str
-    metadata: Optional[Dict[str, Any]]
     role: str
     session_id: str
+    metadata: Optional[Dict[str, Any]] = None
 
 
 @dataclass
 class Message:
     content: str
-    metadata: Optional[Dict[str, Any]]
     role: str
+    metadata: Optional[Dict[str, Any]] = None

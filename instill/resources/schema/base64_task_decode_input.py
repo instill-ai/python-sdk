@@ -8,8 +8,4 @@ from dataclasses import dataclass
 
 @dataclass
 class Input:
-    """
-    Input
-    """
-
     data: str

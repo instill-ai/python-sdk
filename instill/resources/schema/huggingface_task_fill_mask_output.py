@@ -9,10 +9,10 @@ from typing import List, Optional
 
 @dataclass
 class Result:
-    score: Optional[float]
-    sequence: Optional[str]
-    token: Optional[int]
-    token_str: Optional[str]
+    score: Optional[float] = None
+    sequence: Optional[str] = None
+    token: Optional[int] = None
+    token_str: Optional[str] = None
 
 
 @dataclass
@@ -25,8 +25,8 @@ Model = str
 
 @dataclass
 class Options:
-    use_cache: Optional[bool]
-    wait_for_model: Optional[bool]
+    use_cache: Optional[bool] = None
+    wait_for_model: Optional[bool] = None
 
 
 StringInput = str

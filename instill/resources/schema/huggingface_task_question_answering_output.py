@@ -10,9 +10,9 @@ from typing import Optional
 @dataclass
 class Output:
     answer: str
-    score: Optional[float]
-    start: Optional[int]
-    stop: Optional[int]
+    score: Optional[float] = None
+    start: Optional[int] = None
+    stop: Optional[int] = None
 
 
 Model = str
@@ -20,8 +20,8 @@ Model = str
 
 @dataclass
 class Options:
-    use_cache: Optional[bool]
-    wait_for_model: Optional[bool]
+    use_cache: Optional[bool] = None
+    wait_for_model: Optional[bool] = None
 
 
 StringInput = str

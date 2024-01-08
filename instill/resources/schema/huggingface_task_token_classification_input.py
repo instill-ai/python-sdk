@@ -9,24 +9,18 @@ from typing import Optional
 
 @dataclass
 class Parameters:
-    aggregation_strategy: Optional[str]
-
-
-Model = str
+    aggregation_strategy: Optional[str] = None
 
 
 @dataclass
 class Options:
-    use_cache: Optional[bool]
-    wait_for_model: Optional[bool]
-
-
-StringInput = str
+    use_cache: Optional[bool] = None
+    wait_for_model: Optional[bool] = None
 
 
 @dataclass
 class Input:
-    inputs: StringInput
-    model: Optional[Model]
-    options: Optional[Options]
-    parameters: Optional[Parameters]
+    inputs: str
+    model: Optional[str] = None
+    options: Optional[Options] = None
+    parameters: Optional[Parameters] = None

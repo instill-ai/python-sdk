@@ -9,36 +9,20 @@ from typing import Optional, Union
 
 
 class DisableSSL(Enum):
-    """
-    Disable SSL mode
-    """
-
     disable = 'disable'
 
 
 @dataclass
 class DisableSSLMode:
-    """
-    Disable SSL mode.
-    """
-
     mode: DisableSSL
 
 
 class Enable(Enum):
-    """
-    Verify-full SSL mode. Always require encryption and verifies the identity of the server.
-    """
-
     verify_full = 'verify-full'
 
 
 @dataclass
 class VerifyFullSSLMode:
-    """
-    Verify-full SSL mode. Always require encryption and verifies the identity of the server.
-    """
-
     ca_cert: str
     client_cert: str
     client_key: str
@@ -48,8 +32,8 @@ class VerifyFullSSLMode:
 @dataclass
 class RedisConnectorResource:
     host: str
-    password: Optional[str]
     port: int
-    ssl_mode: Optional[Union[DisableSSLMode, VerifyFullSSLMode]]
-    username: Optional[str]
+    password: Optional[str] = None
     ssl: Optional[bool] = False
+    ssl_mode: Optional[Union[DisableSSLMode, VerifyFullSSLMode]] = None
+    username: Optional[str] = None

@@ -9,10 +9,6 @@ from typing import List
 
 @dataclass
 class Image:
-    """
-    Generated result
-    """
-
     image: str
     revised_prompt: str
 

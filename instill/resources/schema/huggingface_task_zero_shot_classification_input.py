@@ -10,24 +10,18 @@ from typing import List, Optional
 @dataclass
 class Parameters:
     candidate_labels: List[str]
-    multi_label: Optional[bool]
-
-
-Model = str
+    multi_label: Optional[bool] = None
 
 
 @dataclass
 class Options:
-    use_cache: Optional[bool]
-    wait_for_model: Optional[bool]
-
-
-StringInput = str
+    use_cache: Optional[bool] = None
+    wait_for_model: Optional[bool] = None
 
 
 @dataclass
 class Input:
-    inputs: StringInput
-    model: Optional[Model]
-    options: Optional[Options]
+    inputs: str
     parameters: Parameters
+    model: Optional[str] = None
+    options: Optional[Options] = None

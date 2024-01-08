@@ -9,8 +9,8 @@ from typing import Any, Dict, Optional
 
 @dataclass
 class Input:
-    body: Optional[Dict[str, Any]]
     endpoint_path: str
+    body: Optional[Dict[str, Any]] = None
 
 
 @dataclass
@@ -20,10 +20,6 @@ class Input1:
 
 @dataclass
 class Output:
-    """
-    The HTTP response from the API
-    """
-
     body: Dict[str, Any]
     header: Dict[str, Any]
     status_code: int

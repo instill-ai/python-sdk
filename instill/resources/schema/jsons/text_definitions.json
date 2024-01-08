@@ -6,7 +6,7 @@
     ],
     "custom": false,
     "documentation_url": "https://www.instill.tech/docs/latest/vdp/operators/text",
-    "icon": "text.svg",
+    "icon": "Instill AI/text.svg",
     "icon_url": "",
     "id": "text",
     "public": true,

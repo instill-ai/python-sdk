@@ -9,9 +9,7 @@ from typing import Any, List
 
 @dataclass
 class Output:
-    """
-    Output
-    """
+    pass
 
 
 @dataclass
@@ -30,10 +28,6 @@ InstillTypes = Any
 
 @dataclass
 class Input:
-    """
-    Input
-    """
-
     image_base64: str
     model_id: str
     model_namespace: str

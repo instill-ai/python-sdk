@@ -13,18 +13,11 @@ class Object:
     rle: str
 
 
-Stuffs = List[Object]
-
-
 InstillTypes = Any
 
 
 @dataclass
 class Input:
-    """
-    Input
-    """
-
     image: str
-    showScore: Optional[bool]
-    stuffs: Stuffs
+    stuffs: List[Object]
+    showScore: Optional[bool] = None
