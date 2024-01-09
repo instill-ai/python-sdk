@@ -204,10 +204,10 @@ Simply import the GithubModel resource and fill in the corresponding fields
 from instill.resources.model import GithubModel
 
 yolov7 = GithubModel(
-    client=client,
-    name=model_name,
-    model_repo=model_repo,
-    model_tag=model_tag,
+  client=client,
+  name=model_name,
+  model_repo=model_repo,
+  model_tag=model_tag,
 )
 ```
 
@@ -242,21 +242,21 @@ Trigger the model with the correct `task` type[^4]
 ```python
 from instill.resources import model_pb, task_detection
 task_inputs = [
-    model_pb.TaskInput(
-        detection=task_detection.DetectionInput(
-            image_url="https://artifacts.instill.tech/imgs/dog.jpg"
-        )
-    ),
-    model_pb.TaskInput(
-        detection=task_detection.DetectionInput(
-            image_url="https://artifacts.instill.tech/imgs/bear.jpg"
-        )
-    ),
-    model_pb.TaskInput(
-        detection=task_detection.DetectionInput(
-            image_url="https://artifacts.instill.tech/imgs/polar-bear.jpg"
-        )
-    ),
+  model_pb.TaskInput(
+    detection=task_detection.DetectionInput(
+      image_url="https://artifacts.instill.tech/imgs/dog.jpg"
+    )
+  ),
+  model_pb.TaskInput(
+    detection=task_detection.DetectionInput(
+      image_url="https://artifacts.instill.tech/imgs/bear.jpg"
+    )
+  ),
+  model_pb.TaskInput(
+    detection=task_detection.DetectionInput(
+      image_url="https://artifacts.instill.tech/imgs/polar-bear.jpg"
+    )
+  ),
 ]
 
 outputs = yolov7(task_inputs=task_inputs)
@@ -323,8 +323,8 @@ First import our predefined `InstillModelConnector` and config dataclass `Instil
 [^5]: config dataclass is auto-gen from our json schema, we will refacor the source json to make the dataclass name makes more sense
 
 ```python
-from instill.resources.schema.instill import InstillModelConnector2
-from instill.resources import InstillModelConnector, connector_pb
+from instill.resources.schema.instill import InstillModelConnector1
+from instill.resources import InstillModelConnector, connector_pb, const
 ```
 
 Then we set up the connector resource information[^6]
@@ -333,9 +333,7 @@ Then we set up the connector resource information[^6]
 
 ```python
 # create the config dataclass object and fill in necessary fields
-instill_model_config = InstillModelConnector2(
-    mode=const.INSTILL_MODEL_INTERNAL_MODE, api_token="", server_url=""
-)
+instill_model_config = InstillModelConnector1(mode=const.INSTILL_MODEL_INTERNAL_MODE)
 
 instill_model = InstillModelConnector(
     client,
@@ -366,18 +364,18 @@ First we import `Pipeline` class and other helper functions
 
 ```python
 from instill.resources.schema import (
-    instill_task_detection_input,
-    start_task_start_metadata,
-    end_task_end_metadata,
+  instill_task_detection_input,
+  start_task_start_metadata,
+  end_task_end_metadata,
 )
 from instill.resources import (
-    const,
-    InstillModelConnector,
-    Pipeline,
-    create_start_operator,
-    create_end_operator,
-    create_recipe,
-    populate_default_value,
+  const,
+  InstillModelConnector,
+  Pipeline,
+  create_start_operator,
+  create_end_operator,
+  create_recipe,
+  populate_default_value,
 )
 ```
 
@@ -386,17 +384,17 @@ To Form a pipeine, it required a `start` operator and a `end` operator, we have 
 ```python
 # define start operator input spec
 start_metadata = {
-    "metadata": {
-        "input_image": vars(
-            populate_default_value(
-                start_task_start_metadata.Model1(
-                    instillFormat="image/*",
-                    title="Image",
-                    type="string",
-                )
-            )
-        ),
-    }
+  "metadata": {
+    "input_image": vars(
+      populate_default_value(
+        start_task_start_metadata.Model1(
+          instillFormat="image/*",
+          title="Image",
+          type="string",
+        )
+      )
+    ),
+  }
 }
 # create start operator
 start_operator_component = create_start_operator(start_metadata)
@@ -409,22 +407,29 @@ Now we can create a `model` `component`. From the already defined `instill Model
 # here we need to specify which model we want to use on our `Instill Model` instance
 # in this case there is only one model we deployed, which is the yolov7 model
 instill_model_input = populate_default_value(
-    instill_task_detection_input.Input(
-        model_namespace="admin",
-        model_id="yolov7",
-        image_base64="{start.input_image}",
-    )
+  instill_task_detection_input.Input(
+    model_namespace="admin",
+    model_id="yolov7",
+    image_base64="{start.input_image}",
+  )
 )
 # create model connector component from the connector resource we had created previously
 instill_model_connector_component = instill_model.create_component(
-    name="yolov7",
-    inp=instill_model_input,
+  name="yolov7",
+  inp=instill_model_input,
 )
 
-# define end operator input spec
-end_operator_inp = {"input": {"inference_result": "{{yolov7.output.text}}"}}
+# define end operator input and metadata spec
+end_operator_inp = {"input": {"inference_result": "{yolov7.output.objects}"}}
+end_operator_metadata = {
+  "metadata": {
+    "inference_result": vars(
+        populate_default_value(end_task_end_metadata.Model1(title="result"))
+    )
+  }
+}
 # create end operator
-end_operator_component = create_end_operator(inp=end_operator_inp)
+end_operator_component = create_end_operator(inp=end_operator_inp, metadata=end_operator_metadata)
 ```
 
 We now have all the components ready for the pipeline. Next, we add them into the recipe and create a pipeline.
@@ -442,10 +447,13 @@ Finally the pipeline is done, now let us test it by triggering it!
 
 ```python
 # we can trigger the pipeline now
+import base64
+import requests
+from google.protobuf.struct_pb2 import Struct
 i = Struct()
 i.update(
     {
-        "input": base64.b64encode(
+        "input_image": base64.b64encode(
             requests.get(
                 "https://artifacts.instill.tech/imgs/dog.jpg", timeout=5
             ).content
@@ -453,7 +461,7 @@ i.update(
     }
 )
 # verify the output
-instill_model_pipeline([i])[0][0]["output"][0]["category"] == "dog"
+instill_model_pipeline([i])[0][0]["inference_result"][0]["category"] == "dog"
 ```
 
 ## Contributing

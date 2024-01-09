@@ -3,7 +3,7 @@ import re
 
 def populate_default_value(dataclass):
     for field in dataclass.__dataclass_fields__.values():
-        if field.default is None:
+        if field.default is None and getattr(dataclass, field.name) is None:
             list_pattern = re.compile(r"^Optional\[List")
             other_optional_pattern = re.compile(r"^Optional\[")
             if field.type == "Optional[bool]":
