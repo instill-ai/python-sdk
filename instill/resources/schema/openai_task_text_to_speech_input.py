@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Union
+from typing import Any, List, Optional, Union
 
 
 class Model1(Enum):
@@ -30,9 +30,23 @@ class Voice(Enum):
 
 
 @dataclass
-class ChatMessage:
-    content: str
-    role: str
+class ImageUrl:
+    url: str
+
+
+class Type(Enum):
+    text = 'text'
+    image_url = 'image_url'
+
+
+@dataclass
+class MultiModalContentItem:
+    type: Type
+    image_url: Optional[ImageUrl] = None
+    text: Optional[str] = None
+
+
+InstillTypes = Any
 
 
 @dataclass
@@ -42,3 +56,9 @@ class InputModel:
     voice: Voice
     response_format: Optional[ResponseFormat] = ResponseFormat.mp3
     speed: Optional[float] = None
+
+
+@dataclass
+class ChatMessage:
+    content: List[MultiModalContentItem]
+    role: str

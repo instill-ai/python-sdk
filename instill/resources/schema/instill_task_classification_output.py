@@ -4,7 +4,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, List
+from enum import Enum
+from typing import Any, List, Optional
 
 
 @dataclass
@@ -22,6 +23,23 @@ InstillTypes = Any
 
 
 @dataclass
+class ImageUrl:
+    url: str
+
+
+class Type(Enum):
+    text = 'text'
+    image_url = 'image_url'
+
+
+@dataclass
+class MultiModalContentItem:
+    type: Type
+    image_url: Optional[ImageUrl] = None
+    text: Optional[str] = None
+
+
+@dataclass
 class Input:
     image_base64: str
     model_id: str
@@ -29,9 +47,11 @@ class Input:
 
 
 @dataclass
-class Param:
-    param_name: str
-    param_value: str
+class ExtraParameters:
+    pass
 
 
-ExtraParams = List[Param]
+@dataclass
+class ChatMessage:
+    content: List[MultiModalContentItem]
+    role: str

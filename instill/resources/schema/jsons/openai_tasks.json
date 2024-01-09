@@ -3,12 +3,10 @@
     "chat_message": {
       "properties": {
         "content": {
+          "$ref": "https://raw.githubusercontent.com/instill-ai/component/5e43199713238124565c596433927ef7cb92c565/schema.json#/$defs/instill_types/multi_modal_content",
           "description": "The message content",
-          "instillFormat": "string",
-          "instillUIMultiline": true,
           "instillUIOrder": 1,
-          "title": "Content",
-          "type": "string"
+          "title": "Content"
         },
         "role": {
           "description": "The message role, i.e. 'system', 'user' or 'assistant'",
@@ -186,7 +184,7 @@
         "chat_history": {
           "description": "Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : {\"role\": \"The message role, i.e. 'system', 'user' or 'assistant'\", \"content\": \"message content\"}.",
           "instillAcceptFormats": [
-            "array:*/*"
+            "structured/chat_messages"
           ],
           "instillShortDescription": "Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : {\"role\": \"The message role, i.e. 'system', 'user' or 'assistant'\", \"content\": \"message content\"}.",
           "instillUIOrder": 4,
