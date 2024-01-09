@@ -65,7 +65,7 @@ class Input:
     engine: Engine
     prompts: List[str]
     cfg_scale: Optional[float] = None
-    clip_guidance_preset: Optional[ClipGuidancePreset] = ClipGuidancePreset.NONE
+    clip_guidance_preset: Optional[ClipGuidancePreset] = ClipGuidancePreset.NONE.value
     height: Optional[int] = None
     sampler: Optional[Sampler] = None
     samples: Optional[int] = None

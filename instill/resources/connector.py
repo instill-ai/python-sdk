@@ -55,7 +55,9 @@ class Connector(Resource):
         self._resource = resource
 
     def _create_component(
-        self, name: str, config: dict
+        self,
+        name: str,
+        config: dict,
     ) -> pipeline_interface.Component:
         component = pipeline_interface.Component()
         component.id = name

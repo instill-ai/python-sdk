@@ -74,6 +74,7 @@ sniffer = "*"
 MacFSEvents = { version = "*", platform = "darwin" }
 pync = { version = "*", platform = "darwin" }
 ipython = "^8.10.0"
+ipykernel = "^6.28.0"
 mypy-protobuf = "^3.5.0"
 grpcio-tools = "^1.54.2"
 datamodel-code-generator = "^0.25.2"
