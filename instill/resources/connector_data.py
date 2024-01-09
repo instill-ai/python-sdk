@@ -3,17 +3,37 @@ import json
 
 import jsonschema
 
+
+from typing import Union
+from instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 import Component
 from instill.clients import InstillClient
 from instill.resources import const
 from instill.resources.connector import Connector
 from instill.resources.schema import (
+    helper,
     bigquery,
+    bigquery_task_insert_input,
     googlecloudstorage,
+    googlecloudstorage_task_upload_input,
     googlesearch,
+    googlesearch_task_search_input,
     pinecone,
+    pinecone_task_query_input,
+    pinecone_task_upsert_input,
     redis,
+    redis_task_chat_history_retrieve_input,
+    redis_task_chat_message_write_input,
+    redis_task_chat_message_write_multi_modal_input,
     restapi,
+    restapi_task_delete_input,
+    restapi_task_get_input,
+    restapi_task_head_input,
+    restapi_task_options_input,
+    restapi_task_patch_input,
+    restapi_task_post_input,
+    restapi_task_put_input,
     website,
+    website_task_scrape_website_input,
 )
 
 
@@ -36,6 +56,14 @@ class BigQueryConnector(Connector):
         jsonschema.validate(vars(config), BigQueryConnector.definitions_jsonschema)
         super().__init__(client, name, definition, vars(config))
 
+    def create_component(
+        self,
+        name: str,
+        inp: bigquery_task_insert_input.Input,
+    ) -> Component:
+        config = helper.construct_connector_config(inp)
+        return super()._create_component(name, config)
+
 
 class PineconeConnector(Connector):
     """Pinecone Connector"""
@@ -55,6 +83,17 @@ class PineconeConnector(Connector):
 
         jsonschema.validate(vars(config), PineconeConnector.definitions_jsonschema)
         super().__init__(client, name, definition, vars(config))
+
+    def create_component(
+        self,
+        name: str,
+        inp: Union[
+            pinecone_task_query_input.Input,
+            pinecone_task_upsert_input.Input,
+        ],
+    ) -> Component:
+        config = helper.construct_connector_config(inp)
+        return super()._create_component(name, config)
 
 
 class GoogleCloudStorageConnector(Connector):
@@ -78,6 +117,14 @@ class GoogleCloudStorageConnector(Connector):
         )
         super().__init__(client, name, definition, vars(config))
 
+    def create_component(
+        self,
+        name: str,
+        inp: googlecloudstorage_task_upload_input.Input,
+    ) -> Component:
+        config = helper.construct_connector_config(inp)
+        return super()._create_component(name, config)
+
 
 class GoogleSearchConnector(Connector):
     """GoogleSearch Connector"""
@@ -98,6 +145,14 @@ class GoogleSearchConnector(Connector):
         jsonschema.validate(vars(config), GoogleSearchConnector.definitions_jsonschema)
         super().__init__(client, name, definition, vars(config))
 
+    def create_component(
+        self,
+        name: str,
+        inp: googlesearch_task_search_input.Input,
+    ) -> Component:
+        config = helper.construct_connector_config(inp)
+        return super()._create_component(name, config)
+
 
 class RedisConnector(Connector):
     """Redis Connector"""
@@ -115,6 +170,18 @@ class RedisConnector(Connector):
 
         jsonschema.validate(vars(config), RedisConnector.definitions_jsonschema)
         super().__init__(client, name, definition, vars(config))
+
+    def create_component(
+        self,
+        name: str,
+        inp: Union[
+            redis_task_chat_history_retrieve_input.Input,
+            redis_task_chat_message_write_input.Input,
+            redis_task_chat_message_write_multi_modal_input.Input,
+        ],
+    ) -> Component:
+        config = helper.construct_connector_config(inp)
+        return super()._create_component(name, config)
 
 
 class RestAPIConnector(Connector):
@@ -134,6 +201,23 @@ class RestAPIConnector(Connector):
         jsonschema.validate(vars(config), RestAPIConnector.definitions_jsonschema)
         super().__init__(client, name, definition, vars(config))
 
+    def create_component(
+        self,
+        name: str,
+        inp: Union[
+            restapi_task_delete_input.Input,
+            restapi_task_options_input.Input,
+            restapi_task_get_input.Input,
+            restapi_task_head_input.Input,
+            restapi_task_patch_input.Input,
+            restapi_task_post_input.Input,
+            restapi_task_patch_input.Input,
+            restapi_task_put_input.Input,
+        ],
+    ) -> Component:
+        config = helper.construct_connector_config(inp)
+        return super()._create_component(name, config)
+
 
 class WebsiteConnector(Connector):
     """Website Connector"""
@@ -151,3 +235,11 @@ class WebsiteConnector(Connector):
 
         jsonschema.validate(vars(config), WebsiteConnector.definitions_jsonschema)
         super().__init__(client, name, definition, vars(config))
+
+    def create_component(
+        self,
+        name: str,
+        inp: website_task_scrape_website_input.Input,
+    ) -> Component:
+        config = helper.construct_connector_config(inp)
+        return super()._create_component(name, config)

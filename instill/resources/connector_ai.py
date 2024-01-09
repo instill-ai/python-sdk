@@ -9,6 +9,7 @@ from instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 import Component
 from instill.resources import const
 from instill.resources.connector import Connector
 from instill.resources.schema import (
+    helper,
     instill_task_classification_input,
     instill_task_detection_input,
     instill_task_image_to_image_input,
@@ -19,6 +20,31 @@ from instill.resources.schema import (
     instill_task_text_generation_input,
     instill_task_text_to_image_input,
     instill_task_visual_question_answering_input,
+    stabilityai_task_image_to_image_input,
+    stabilityai_task_text_to_image_input,
+    openai_task_speech_recognition_input,
+    openai_task_text_embeddings_input,
+    openai_task_text_to_image_input,
+    openai_task_text_to_speech_input,
+    openai_task_text_generation_input,
+    huggingface_task_audio_classification_input,
+    huggingface_task_conversational_input,
+    huggingface_task_fill_mask_input,
+    huggingface_task_image_classification_input,
+    huggingface_task_image_segmentation_input,
+    huggingface_task_object_detection_input,
+    huggingface_task_image_to_text_input,
+    huggingface_task_question_answering_input,
+    huggingface_task_sentence_similarity_input,
+    huggingface_task_speech_recognition_input,
+    huggingface_task_summarization_input,
+    huggingface_task_table_question_answering_input,
+    huggingface_task_text_generation_input,
+    huggingface_task_text_classification_input,
+    huggingface_task_text_to_image_input,
+    huggingface_task_token_classification_input,
+    huggingface_task_translation_input,
+    huggingface_task_zero_shot_classification_input,
 )
 from instill.resources.schema.huggingface import HuggingFaceConnectorSpec
 from instill.resources.schema.instill import (
@@ -46,6 +72,33 @@ class HuggingfaceConnector(Connector):
 
         jsonschema.validate(vars(config), StabilityAIConnector.definitions_jsonschema)
         super().__init__(client, name, definition, vars(config))
+
+    def create_component(
+        self,
+        name: str,
+        inp: Union[
+            huggingface_task_audio_classification_input.Input,
+            huggingface_task_conversational_input.Input,
+            huggingface_task_fill_mask_input.Input,
+            huggingface_task_image_classification_input.Input,
+            huggingface_task_image_segmentation_input.Input,
+            huggingface_task_object_detection_input.Input,
+            huggingface_task_image_to_text_input.Input,
+            huggingface_task_question_answering_input.Input,
+            huggingface_task_sentence_similarity_input.Input,
+            huggingface_task_speech_recognition_input.Input,
+            huggingface_task_summarization_input.Input,
+            huggingface_task_table_question_answering_input.Input,
+            huggingface_task_text_generation_input.Input,
+            huggingface_task_text_classification_input.Input,
+            huggingface_task_text_to_image_input.Input,
+            huggingface_task_translation_input.Input,
+            huggingface_task_zero_shot_classification_input.Input,
+            huggingface_task_token_classification_input.Input,
+        ],
+    ) -> Component:
+        config = helper.construct_connector_config(inp)
+        return super()._create_component(name, config)
 
 
 class InstillModelConnector(Connector):
@@ -81,56 +134,7 @@ class InstillModelConnector(Connector):
             instill_task_visual_question_answering_input.Input,
         ],
     ) -> Component:
-        if isinstance(inp, instill_task_classification_input.Input):
-            config = {
-                "input": vars(inp),
-                "task": "TASK_CLASSIFICATION",
-            }
-        if isinstance(inp, instill_task_detection_input.Input):
-            config = {
-                "input": vars(inp),
-                "task": "TASK_DETECTION",
-            }
-        if isinstance(inp, instill_task_instance_segmentation_input.Input):
-            config = {
-                "input": vars(inp),
-                "task": "TASK_INSTANCE_SEGMENTATION",
-            }
-        if isinstance(inp, instill_task_semantic_segmentation_input.Input):
-            config = {
-                "input": vars(inp),
-                "task": "TASK_SEMANTIC_SEGMENTATION",
-            }
-        if isinstance(inp, instill_task_keypoint_input.Input):
-            config = {
-                "input": vars(inp),
-                "task": "TASK_KEYPOINT",
-            }
-        if isinstance(inp, instill_task_ocr_input.Input):
-            config = {
-                "input": vars(inp),
-                "task": "TASK_OCR",
-            }
-        if isinstance(inp, instill_task_image_to_image_input.Input):
-            config = {
-                "input": vars(inp),
-                "task": "TASK_IMAGE_TO_IMAGE",
-            }
-        if isinstance(inp, instill_task_text_generation_input.Input):
-            config = {
-                "input": vars(inp),
-                "task": "TASK_TEXT_GENERATION",
-            }
-        if isinstance(inp, instill_task_text_to_image_input.Input):
-            config = {
-                "input": vars(inp),
-                "task": "TASK_TEXT_TO_IMAGE",
-            }
-        if isinstance(inp, instill_task_visual_question_answering_input.Input):
-            config = {
-                "input": vars(inp),
-                "task": "TASK_VISUAL_QUESTION_ANSWERING",
-            }
+        config = helper.construct_connector_config(inp)
         return super()._create_component(name, config)
 
 
@@ -153,6 +157,17 @@ class StabilityAIConnector(Connector):
         jsonschema.validate(vars(config), StabilityAIConnector.definitions_jsonschema)
         super().__init__(client, name, definition, vars(config))
 
+    def create_component(
+        self,
+        name: str,
+        inp: Union[
+            stabilityai_task_image_to_image_input.Input,
+            stabilityai_task_text_to_image_input.Input,
+        ],
+    ) -> Component:
+        config = helper.construct_connector_config(inp)
+        return super()._create_component(name, config)
+
 
 class OpenAIConnector(Connector):
     """OpenAI Connector"""
@@ -170,3 +185,17 @@ class OpenAIConnector(Connector):
 
         jsonschema.validate(vars(config), OpenAIConnector.definitions_jsonschema)
         super().__init__(client, name, definition, vars(config))
+
+    def create_component(
+        self,
+        name: str,
+        inp: Union[
+            openai_task_speech_recognition_input.Input,
+            openai_task_text_embeddings_input.Input,
+            openai_task_text_to_image_input.Input,
+            openai_task_text_generation_input.Input,
+            openai_task_text_to_speech_input.InputModel,
+        ],
+    ) -> Component:
+        config = helper.construct_connector_config(inp)
+        return super()._create_component(name, config)

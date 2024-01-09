@@ -3,10 +3,11 @@ import json
 
 import jsonschema
 
+from instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 import Component
 from instill.clients import InstillClient
 from instill.resources import const
 from instill.resources.connector import Connector
-from instill.resources.schema.numbers import NumbersProtocolBlockchainConnectorSpec
+from instill.resources.schema import helper, numbers, numbers_task_commit_input
 
 
 class NumbersConnector(Connector):
@@ -19,9 +20,17 @@ class NumbersConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: NumbersProtocolBlockchainConnectorSpec,
+        config: numbers.NumbersProtocolBlockchainConnectorSpec,
     ) -> None:
         definition = "connector-definitions/numbers"
 
         jsonschema.validate(vars(config), NumbersConnector.definitions_jsonschema)
         super().__init__(client, name, definition, vars(config))
+
+    def create_component(
+        self,
+        name: str,
+        inp: numbers_task_commit_input.Input,
+    ) -> Component:
+        config = helper.construct_connector_config(inp)
+        return super()._create_component(name, config)
