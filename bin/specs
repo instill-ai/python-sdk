@@ -1,6 +1,9 @@
 #!/bin bash
 
-connector_schemas=("airbyte" "bigquery" "googlecloudstorage" "stabilityai" "googlesearch" "airbyte" "huggingface" "instill" "numbers" "openai" "pinecone" "redis" "restapi" "website")
+echo "Downloading component/schema.json..."
+curl https://raw.githubusercontent.com/instill-ai/component/main/schema.json -L -s -o ./instill/resources/schema/jsons/component.json
+
+connector_schemas=("airbyte" "bigquery" "googlecloudstorage" "stabilityai" "googlesearch" "huggingface" "instill" "numbers" "openai" "pinecone" "redis" "restapi" "website")
 
 for connector in ${connector_schemas[@]}; do
     echo "=====================@@@ Fetching and processing $connector @@@====================="
@@ -22,14 +25,17 @@ for connector in ${connector_schemas[@]}; do
     curl https://raw.githubusercontent.com/instill-ai/connector/main/pkg/${connector}/config/tasks.json -L -s -o ./instill/resources/schema/jsons/${connector}_tasks.json
 
     common=$(cat ./instill/resources/schema/jsons/${connector}_tasks.json | jq -rc '."$defs" // empty')
-    cat ./instill/resources/schema/jsons/${connector}_tasks.json | jq -rc 'to_entries | .[]' | while read line; do
+    cat ./instill/resources/schema/jsons/${connector}_tasks.json | jq -rc 'to_entries | .[]' | while read -r line; do
         task=$(echo $line | jq -rc '.key')
-        if [[ "$task" == '$defs' ]]; then
+        if [[ "$task" == '$defs' ]] || [[ "$task" == '$ref' ]]; then
             continue
         fi
-        echo $line | jq -rc '.value | to_entries | .[]' | while read inner_line; do
+        echo $line | jq -rc '.value | to_entries | .[]' | while read -r inner_line; do
             schema=$(echo $inner_line | jq -rc '.value')
             io=$(echo $inner_line | jq -rc '.key')
+            if [[ "$io" == '$ref' ]]; then
+                continue
+            fi
             filename=$(echo "${connector}_${task}_${io}" | tr "[:upper:]" "[:lower:]")
             if [ ! -z "$common" ]; then
                 schema=${schema::${#schema}-1}
@@ -53,14 +59,17 @@ for operator in ${operator_schemas[@]}; do
     curl https://raw.githubusercontent.com/instill-ai/operator/main/pkg/${operator}/config/tasks.json -L -s -o ./instill/resources/schema/jsons/${operator}_tasks.json
 
     common=$(cat ./instill/resources/schema/jsons/${operator}_tasks.json | jq -rc '."$defs" // empty')
-    cat ./instill/resources/schema/jsons/${operator}_tasks.json | jq -rc 'to_entries | .[]' | while read line; do
+    cat ./instill/resources/schema/jsons/${operator}_tasks.json | jq -rc 'to_entries | .[]' | while read -r line; do
         task=$(echo $line | jq -rc '.key')
-        if [[ "$task" == '$defs' ]]; then
+        if [[ "$task" == '$defs' ]] || [[ "$task" == '$ref' ]]; then
             continue
         fi
-        echo $line | jq -rc '.value | to_entries | .[]' | while read inner_line; do
+        echo $line | jq -rc '.value | to_entries | .[]' | while read -r inner_line; do
             schema=$(echo $inner_line | jq -rc '.value')
             io=$(echo $inner_line | jq -rc '.key')
+            if [[ "$io" == '$ref' ]]; then
+                continue
+            fi
             filename=$(echo "${operator}_${task}_${io}" | tr "[:upper:]" "[:lower:]")
             if [ ! -z "$common" ]; then
                 schema=${schema::${#schema}-1}
