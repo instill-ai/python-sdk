@@ -3,8 +3,8 @@ import json
 
 import jsonschema
 
-from instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 import Component
 from instill.clients import InstillClient
+from instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 import Component
 from instill.resources import const
 from instill.resources.connector import Connector
 from instill.resources.schema import helper, numbers, numbers_task_commit_input

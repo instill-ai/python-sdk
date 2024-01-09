@@ -1,22 +1,21 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module
 import json
+from typing import Union
 
 import jsonschema
 
-
-from typing import Union
-from instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 import Component
 from instill.clients import InstillClient
+from instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 import Component
 from instill.resources import const
 from instill.resources.connector import Connector
 from instill.resources.schema import (
-    helper,
     bigquery,
     bigquery_task_insert_input,
     googlecloudstorage,
     googlecloudstorage_task_upload_input,
     googlesearch,
     googlesearch_task_search_input,
+    helper,
     pinecone,
     pinecone_task_query_input,
     pinecone_task_upsert_input,
