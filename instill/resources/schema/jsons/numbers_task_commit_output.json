@@ -1,0 +1,1 @@
+{"description":"Output","instillUIOrder":0,"properties":{"asset_urls":{"description":"Asset Urls","instillEnableCopyButton":true,"instillUIOrder":0,"items":{"instillEnableCopyButton":true,"instillFormat":"string","type":"string"},"title":"Asset Urls","type":"array"}},"required":["asset_urls"],"title":"Output","type":"object"}

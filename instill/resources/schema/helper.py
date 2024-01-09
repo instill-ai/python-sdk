@@ -20,3 +20,37 @@ def populate_default_value(dataclass):
                 setattr(dataclass, field.name, {})
 
     return dataclass
+
+
+def construct_connector_config(inp):
+    task_name = str(inp.__class__).split(".")[3]
+    prefix = task_name.split("_")[0] + "_"
+    suffix = "_" + task_name.split("_")[-1]
+    config = {
+        "input": vars(inp),
+        "task": remove_prefix_and_suffix(
+            task_name,
+            prefix,
+            suffix,
+        ).upper(),
+    }
+    return config
+
+
+def remove_prefix(text: str, prefix: str) -> str:
+    if text.startswith(prefix):
+        return text[len(prefix) :]
+    return text
+
+
+def remove_suffix(text: str, suffix: str) -> str:
+    if text.endswith(suffix):
+        return text[: -len(suffix)]
+    return text
+
+
+def remove_prefix_and_suffix(text: str, prefix: str, suffix: str) -> str:
+    text = remove_prefix(text, prefix)
+    text = remove_suffix(text, suffix)
+
+    return text
