@@ -13,10 +13,3 @@ class Input:
     role: str
     session_id: str
     metadata: Optional[Dict[str, Any]] = None
-
-
-@dataclass
-class Message:
-    content: str
-    role: str
-    metadata: Optional[Dict[str, Any]] = None

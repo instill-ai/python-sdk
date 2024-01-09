@@ -20,3 +20,4 @@ from instill.resources.model import GithubModel, HugginfaceModel, Model
 from instill.resources.operator import create_end_operator, create_start_operator
 from instill.resources.pipeline import Pipeline
 from instill.resources.recipe import create_recipe
+from instill.resources.schema.helper import populate_default_value

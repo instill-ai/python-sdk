@@ -62,13 +62,6 @@ class InstillModelConnector(Connector):
     ) -> None:
         definition = "connector-definitions/instill-model"
 
-        if config.api_token == "":  # type: ignore
-            config.api_token = client.model_service.hosts[  # type: ignore
-                client.model_service.instance
-            ].token
-        if config.server_url == "":  # type: ignore
-            config.server_url = "http://api-gateway:8080"  # type: ignore
-
         jsonschema.validate(vars(config), InstillModelConnector.definitions_jsonschema)
         super().__init__(client, name, definition, vars(config))
 

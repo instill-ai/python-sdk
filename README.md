@@ -5,8 +5,8 @@
 [![PyPI Downloads](https://img.shields.io/pypi/dm/instill-sdk.svg?color=orange)](https://pypistats.org/packages/instill-sdk)
 
 > [!IMPORTANT]  
-> **This SDK tool is under heavy development!!**  
-> Currently there has yet to be a stable version release, please feel free to open any issue regarding this SDK in our [community](https://github.com/instill-ai/community/issues) repo.
+> **This SDK tool is under active development**  
+> For any bug found or featur request, feel free to open any issue regarding this SDK in our [community](https://github.com/instill-ai/community/issues) repo.
 
 # Overview
 
@@ -65,7 +65,7 @@ Before we can start using this SDK, you will need to properly config your target
 
 create a config file under this path `${HOME}/.config/instill/sdk/python/config.yml`, and within that path you will need to fill in some basic parameters for your desired host.[^1]
 
-[^1]: You can obtain an `api_token`, by simply going to Settings > API Tokens page from the console, no matter it is `Instill Core` or `Instill Cloud`.
+[^1]: You can obtain an `api_token` by simply going to Settings > API Tokens page from the console, no matter it is `Instill Core` or `Instill Cloud`.
 
 Within the config file, you can define multiple instances with the `alias` of your liking, later in the SDK you can refer to this `alias` to switch between instances.[^2]
 
@@ -128,7 +128,7 @@ client = get_client()
 ```
 
 > [!NOTE]  
-> Remember to call `client.close()` at the end of script to release the channel, or the main thread will not exit
+> Remember to call `client.close()` at the end of script to release the channel and the underlying resources
 
 If you have not set up `Instill VDP` or `Instill Model`, you will get a warning like this:
 
@@ -193,11 +193,9 @@ cookie_token: ""
 Let's say we want to serve a `yolov7` model from `github` with the following configs
 
 ```python
-model = {
-    "model_name": "yolov7",
-    "model_repo": "instill-ai/model-yolov7-dvc",
-    "model_tag": "v1.0-cpu",
-}
+model_name = "yolov7"
+model_repo = "instill-ai/model-yolov7-dvc"
+model_tag = "v1.0-cpu"
 ```
 
 Simply import the GithubModel resource and fill in the corresponding fields
@@ -206,10 +204,10 @@ Simply import the GithubModel resource and fill in the corresponding fields
 from instill.resources.model import GithubModel
 
 yolov7 = GithubModel(
-    client=client,
-    name=model["model_name"],
-    model_repo=model["model_repo"],
-    model_tag=model["model_tag"],
+  client=client,
+  name=model_name,
+  model_repo=model_repo,
+  model_tag=model_tag,
 )
 ```
 
@@ -244,21 +242,21 @@ Trigger the model with the correct `task` type[^4]
 ```python
 from instill.resources import model_pb, task_detection
 task_inputs = [
-    model_pb.TaskInput(
-        detection=task_detection.DetectionInput(
-            image_url="https://artifacts.instill.tech/imgs/dog.jpg"
-        )
-    ),
-    model_pb.TaskInput(
-        detection=task_detection.DetectionInput(
-            image_url="https://artifacts.instill.tech/imgs/bear.jpg"
-        )
-    ),
-    model_pb.TaskInput(
-        detection=task_detection.DetectionInput(
-            image_url="https://artifacts.instill.tech/imgs/polar-bear.jpg"
-        )
-    ),
+  model_pb.TaskInput(
+    detection=task_detection.DetectionInput(
+      image_url="https://artifacts.instill.tech/imgs/dog.jpg"
+    )
+  ),
+  model_pb.TaskInput(
+    detection=task_detection.DetectionInput(
+      image_url="https://artifacts.instill.tech/imgs/bear.jpg"
+    )
+  ),
+  model_pb.TaskInput(
+    detection=task_detection.DetectionInput(
+      image_url="https://artifacts.instill.tech/imgs/polar-bear.jpg"
+    )
+  ),
 ]
 
 outputs = yolov7(task_inputs=task_inputs)
@@ -320,22 +318,27 @@ Now if you `print` the outputs, you will get a list of specific `task` output, i
 
 With similiar conecpt as creating `model`, below is the steps to create a `instill model connector`
 
-First import our predefined `InstillModelConnector`
+First import our predefined `InstillModelConnector` and config dataclass `InstillModelConnector2`[^5]
+
+[^5]: config dataclass is auto-gen from our json schema, we will refacor the source json to make the dataclass name makes more sense
 
 ```python
-from instill.resources import InstillModelConnector, connector_pb
+from instill.resources.schema.instill import InstillModelConnector1
+from instill.resources import InstillModelConnector, connector_pb, const
 ```
 
-Then we set up the connector resource information[^5]
+Then we set up the connector resource information[^6]
 
-[^5]: Find out the resource definition in our [json schema](https://raw.githubusercontent.com/instill-ai/connector-ai/8bf4463b57a5b668f3f656e4c168561b623d065d/pkg/instill/config/seed/resource.json)
+[^6]: Find out the resource definition in our [json schema](https://raw.githubusercontent.com/instill-ai/connector-ai/8bf4463b57a5b668f3f656e4c168561b623d065d/pkg/instill/config/seed/resource.json)
 
 ```python
-# specify the `Instill Model` host url
+# create the config dataclass object and fill in necessary fields
+instill_model_config = InstillModelConnector1(mode=const.INSTILL_MODEL_INTERNAL_MODE)
+
 instill_model = InstillModelConnector(
     client,
     name="instill",
-    server_url="http://api-gateway:8080",
+    config=instill_model_config,
 )
 ```
 
@@ -360,48 +363,73 @@ Since we have created a `Instill Model Connector` that connect to our `Instill M
 First we import `Pipeline` class and other helper functions
 
 ```python
+from instill.resources.schema import (
+  instill_task_detection_input,
+  start_task_start_metadata,
+  end_task_end_metadata,
+)
 from instill.resources import (
-    Pipeline,
-    pipeline_pb,
-    create_start_operator,
-    create_end_operator,
-    create_recipe,
+  const,
+  InstillModelConnector,
+  Pipeline,
+  create_start_operator,
+  create_end_operator,
+  create_recipe,
+  populate_default_value,
 )
 ```
 
 To Form a pipeine, it required a `start` operator and a `end` operator, we have helper functions to create both
 
 ```python
+# define start operator input spec
+start_metadata = {
+  "metadata": {
+    "input_image": vars(
+      populate_default_value(
+        start_task_start_metadata.Model1(
+          instillFormat="image/*",
+          title="Image",
+          type="string",
+        )
+      )
+    ),
+  }
+}
 # create start operator
-start_operator_component = create_start_operator(
-    {"metadata": {"input": {"title": "input", "type": "string", "instillFormat": "image/*"}}}
-)
-# create end operator
-end_operator_component = create_end_operator(
-    config={
-        "input": {"output": "{ yolov7.output.objects }"},
-        "metadata": {"output": {}},
-    }
-)
+start_operator_component = create_start_operator(start_metadata)
 ```
 
-Now that we have both `start` operator and `end ` operator ready, we can move out to create a `model` `component`. From the already defined `instill Model Connector`, we can now utilize the models serving on `Instill Model`, import them as a `component`.
+Now we can create a `model` `component`. From the already defined `instill Model Connector`, we can utilize the models served on `Instill Model`, import them as a `component`.
 
 ```python
-# create model connector component from the connector resource we had previously
+# first we create the input for the component from the dataclass
 # here we need to specify which model we want to use on our `Instill Model` instance
 # in this case there is only one model we deployed, which is the yolov7 model
-instill_model_connector_component = instill_model.create_component(
-    name="yolov7",
-    config={
-        "input": {
-            "image_base64": "{ start.input }",
-            "model_namespace": "admin",
-            "model_id": "yolov7",
-        },
-        "task": "TASK_DETECTION",
-    },
+instill_model_input = populate_default_value(
+  instill_task_detection_input.Input(
+    model_namespace="admin",
+    model_id="yolov7",
+    image_base64="{start.input_image}",
+  )
 )
+# create model connector component from the connector resource we had created previously
+instill_model_connector_component = instill_model.create_component(
+  name="yolov7",
+  inp=instill_model_input,
+)
+
+# define end operator input and metadata spec
+end_operator_inp = {"input": {"inference_result": "{yolov7.output.objects}"}}
+end_operator_metadata = {
+  "metadata": {
+    "inference_result": vars(
+        populate_default_value(end_task_end_metadata.Model1(title="result"))
+    )
+  }
+}
+# create end operator
+end_operator_component = create_end_operator(inp=end_operator_inp, metadata=end_operator_metadata)
 ```
 
 We now have all the components ready for the pipeline. Next, we add them into the recipe and create a pipeline.
@@ -419,10 +447,13 @@ Finally the pipeline is done, now let us test it by triggering it!
 
 ```python
 # we can trigger the pipeline now
+import base64
+import requests
+from google.protobuf.struct_pb2 import Struct
 i = Struct()
 i.update(
     {
-        "input": base64.b64encode(
+        "input_image": base64.b64encode(
             requests.get(
                 "https://artifacts.instill.tech/imgs/dog.jpg", timeout=5
             ).content
@@ -430,7 +461,7 @@ i.update(
     }
 )
 # verify the output
-instill_model_pipeline([i])[0][0]["output"][0]["category"] == "dog"
+instill_model_pipeline([i])[0][0]["inference_result"][0]["category"] == "dog"
 ```
 
 ## Contributing

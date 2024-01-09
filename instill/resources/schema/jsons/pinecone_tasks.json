@@ -3,12 +3,27 @@
     "input": {
       "instillUIOrder": 0,
       "properties": {
+        "filter": {
+          "description": "The filter to apply. You can use vector metadata to limit your search. See https://www.pinecone.io/docs/metadata-filtering/.",
+          "instillAcceptFormats": [
+            "semi-structured/object"
+          ],
+          "instillShortDescription": "The filter to apply on vector metadata",
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "order": 1,
+          "required": [],
+          "title": "Filter",
+          "type": "object"
+        },
         "id": {
           "description": "The unique ID of the vector to be used as a query vector. If present, the vector parameter will be ignored.",
-          "instillShortDescription": "Query by vector ID instead of by vector",
           "instillAcceptFormats": [
             "string"
           ],
+          "instillShortDescription": "Query by vector ID instead of by vector",
           "instillUIOrder": 0,
           "instillUpstreamTypes": [
             "reference",
@@ -16,6 +31,34 @@
           ],
           "title": "ID",
           "type": "string"
+        },
+        "include_metadata": {
+          "default": false,
+          "description": "Indicates whether metadata is included in the response as well as the IDs",
+          "instillAcceptFormats": [
+            "boolean"
+          ],
+          "instillUIOrder": 5,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Include Metadata",
+          "type": "boolean"
+        },
+        "include_values": {
+          "default": false,
+          "description": "Indicates whether vector values are included in the response",
+          "instillAcceptFormats": [
+            "boolean"
+          ],
+          "instillUIOrder": 4,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Include Values",
+          "type": "boolean"
         },
         "namespace": {
           "description": "The namespace to query",
@@ -30,6 +73,19 @@
           ],
           "title": "Namespace",
           "type": "string"
+        },
+        "top_k": {
+          "description": "The number of results to return for each query",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 6,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Top K",
+          "type": "integer"
         },
         "vector": {
           "description": "An array of dimensions for the query vector.",
@@ -49,62 +105,6 @@
           "minItems": 1,
           "title": "Vector",
           "type": "array"
-        },
-        "filter": {
-          "description": "The filter to apply. You can use vector metadata to limit your search. See https://www.pinecone.io/docs/metadata-filtering/.",
-          "instillAcceptFormats": [
-            "semi-structured/object"
-          ],
-          "instillShortDescription": "The filter to apply on vector metadata",
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
-          "order": 1,
-          "required": [],
-          "title": "Filter",
-          "type": "object"
-        },
-        "include_values": {
-          "default": false,
-          "description": "Indicates whether vector values are included in the response",
-          "instillAcceptFormats": [
-            "boolean"
-          ],
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Include Values",
-          "type": "boolean"
-        },
-        "include_metadata": {
-          "default": false,
-          "description": "Indicates whether metadata is included in the response as well as the IDs",
-          "instillAcceptFormats": [
-            "boolean"
-          ],
-          "instillUIOrder": 5,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Include Metadata",
-          "type": "boolean"
-        },
-        "top_k": {
-          "description": "The number of results to return for each query",
-          "instillAcceptFormats": [
-            "integer"
-          ],
-          "instillUIOrder": 6,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Top K",
-          "type": "integer"
         }
       },
       "required": [
@@ -131,8 +131,8 @@
               },
               "metadata": {
                 "description": "Metadata",
-                "instillUIOrder": 3,
                 "instillFormat": "semi-structured/object",
+                "instillUIOrder": 3,
                 "required": [],
                 "title": "Metadata",
                 "type": "object"
@@ -199,6 +199,21 @@
           "title": "ID",
           "type": "string"
         },
+        "metadata": {
+          "description": "The vector metadata",
+          "instillAcceptFormats": [
+            "semi-structured/object"
+          ],
+          "instillShortDescription": "The vector metadata",
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "order": 1,
+          "required": [],
+          "title": "Metadata",
+          "type": "object"
+        },
         "values": {
           "description": "An array of dimensions for the vector to be saved",
           "instillAcceptFormats": [
@@ -217,21 +232,6 @@
           "minItems": 1,
           "title": "Values",
           "type": "array"
-        },
-        "metadata": {
-          "description": "The vector metadata",
-          "instillAcceptFormats": [
-            "semi-structured/object"
-          ],
-          "instillShortDescription": "The vector metadata",
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
-          "order": 1,
-          "required": [],
-          "title": "Metadata",
-          "type": "object"
         }
       },
       "required": [

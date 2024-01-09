@@ -1,39 +1,4 @@
 {
-  "$defs": {
-    "message": {
-      "properties": {
-        "content": {
-          "description": "The message content",
-          "instillFormat": "string",
-          "instillUIMultiline": true,
-          "instillUIOrder": 1,
-          "title": "Content",
-          "type": "string"
-        },
-        "metadata": {
-          "additionalProperties": true,
-          "description": "The message metadata",
-          "instillUIOrder": 2,
-          "required": [],
-          "title": "Metadata",
-          "type": "object"
-        },
-        "role": {
-          "description": "The message role, i.e. 'system', 'user' or 'assistant'",
-          "instillFormat": "string",
-          "instillUIOrder": 0,
-          "title": "Role",
-          "type": "string"
-        }
-      },
-      "required": [
-        "role",
-        "content"
-      ],
-      "title": "Message",
-      "type": "object"
-    }
-  },
   "TASK_CHAT_HISTORY_RETRIEVE": {
     "input": {
       "instillUIOrder": 0,
@@ -92,13 +57,7 @@
       "instillUIOrder": 0,
       "properties": {
         "messages": {
-          "description": "The retrieved chat messages",
-          "instillUIOrder": 0,
-          "items": {
-            "$ref": "#/$defs/message"
-          },
-          "title": "Messages",
-          "type": "array"
+          "$ref": "https://raw.githubusercontent.com/instill-ai/component/747ec5eaa8fe611c3be91354923afd544eb54b13/schema.json#/$defs/instill_types/chat_messages"
         }
       },
       "required": [
@@ -123,6 +82,86 @@
             "value",
             "reference",
             "template"
+          ],
+          "title": "Content",
+          "type": "string"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "description": "The message metadata",
+          "instillUIOrder": 3,
+          "required": [],
+          "title": "Metadata",
+          "type": "object"
+        },
+        "role": {
+          "description": "The message role, i.e. 'system', 'user' or 'assistant'",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "A unique identifier for the chat session",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Session ID",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "role",
+        "content"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "The status of the write operation",
+          "instillFormat": "boolean",
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_CHAT_MESSAGE_WRITE_MULTI_MODAL": {
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "content": {
+          "$ref": "https://raw.githubusercontent.com/instill-ai/component/747ec5eaa8fe611c3be91354923afd544eb54b13/schema.json#/$defs/instill_types/multi_modal_content",
+          "description": "The multi-modal message content",
+          "instillAcceptFormats": [
+            "structured/multi_modal_content"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference"
           ],
           "title": "Content",
           "type": "string"

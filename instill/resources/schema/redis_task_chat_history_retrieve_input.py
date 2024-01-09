@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Optional
 
 
 @dataclass
@@ -12,10 +12,3 @@ class Input:
     session_id: str
     include_system_message: Optional[bool] = True
     latest_k: Optional[int] = 5
-
-
-@dataclass
-class Message:
-    content: str
-    role: str
-    metadata: Optional[Dict[str, Any]] = None

@@ -27,7 +27,7 @@ Before delving into the details to come up with your first PR, please familiaris
 
 To confirm these system dependencies are configured correctly:
 
-```text
+```bash
 $ make doctor
 ```
 
@@ -35,8 +35,15 @@ $ make doctor
 
 Fetch git submodules:
 
-```text
+```bash
 $ make get-proto
+```
+
+Fetch and generate json schema files and dataclass:
+
+```bash
+$ make update-specs
+# `instill/resources/schema/airbyte/OAuth2.py` will be generated with an error, need to manually remove the `OAuth2.` in `OAuth2.AuthType.OAuth2_0`
 ```
 
 > [!IMPORTANT]  
