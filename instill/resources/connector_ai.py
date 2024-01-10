@@ -70,8 +70,9 @@ class HuggingfaceConnector(Connector):
     ) -> None:
         definition = "connector-definitions/hugging-face"
 
-        jsonschema.validate(vars(config), StabilityAIConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, StabilityAIConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
@@ -97,7 +98,7 @@ class HuggingfaceConnector(Connector):
             huggingface_task_token_classification_input.Input,
         ],
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -115,8 +116,9 @@ class InstillModelConnector(Connector):
     ) -> None:
         definition = "connector-definitions/instill-model"
 
-        jsonschema.validate(vars(config), InstillModelConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, InstillModelConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
@@ -134,7 +136,7 @@ class InstillModelConnector(Connector):
             instill_task_visual_question_answering_input.Input,
         ],
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -154,8 +156,9 @@ class StabilityAIConnector(Connector):
     ) -> None:
         definition = "connector-definitions/stability-ai"
 
-        jsonschema.validate(vars(config), StabilityAIConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, StabilityAIConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
@@ -165,7 +168,7 @@ class StabilityAIConnector(Connector):
             stabilityai_task_text_to_image_input.Input,
         ],
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -183,8 +186,9 @@ class OpenAIConnector(Connector):
     ) -> None:
         definition = "connector-definitions/openai"
 
-        jsonschema.validate(vars(config), OpenAIConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, OpenAIConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
@@ -197,5 +201,5 @@ class OpenAIConnector(Connector):
             openai_task_text_to_speech_input.InputModel,
         ],
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)

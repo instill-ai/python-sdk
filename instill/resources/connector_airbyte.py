@@ -29,16 +29,16 @@ class AirbyteAmazonsqsConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteAmazonsqsConnector.definitions_jsonschema
+            config, AirbyteAmazonsqsConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -57,16 +57,16 @@ class AirbyteAwsdatalakeConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteAwsdatalakeConnector.definitions_jsonschema
+            config, AirbyteAwsdatalakeConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -85,16 +85,16 @@ class AirbyteAzureblobstorageConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteAzureblobstorageConnector.definitions_jsonschema
+            config, AirbyteAzureblobstorageConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -113,16 +113,16 @@ class AirbyteBigqueryConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteBigqueryConnector.definitions_jsonschema
+            config, AirbyteBigqueryConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -141,16 +141,16 @@ class AirbyteCassandraConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteCassandraConnector.definitions_jsonschema
+            config, AirbyteCassandraConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -168,15 +168,16 @@ class AirbyteChromaConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteChromaConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteChromaConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -195,16 +196,16 @@ class AirbyteClickhouseConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteClickhouseConnector.definitions_jsonschema
+            config, AirbyteClickhouseConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -222,15 +223,16 @@ class AirbyteConvexConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteConvexConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteConvexConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -248,15 +250,16 @@ class AirbyteCsvConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteCsvConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteCsvConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -275,16 +278,16 @@ class AirbyteCumulioConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteCumulioConnector.definitions_jsonschema
+            config, AirbyteCumulioConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -303,16 +306,16 @@ class AirbyteDatabendConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteDatabendConnector.definitions_jsonschema
+            config, AirbyteDatabendConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -331,16 +334,16 @@ class AirbyteDatabricksConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteDatabricksConnector.definitions_jsonschema
+            config, AirbyteDatabricksConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -358,15 +361,16 @@ class AirbyteDorisConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteDorisConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteDorisConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -384,15 +388,16 @@ class AirbyteDuckdbConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteDuckdbConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteDuckdbConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -411,16 +416,16 @@ class AirbyteDynamodbConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteDynamodbConnector.definitions_jsonschema
+            config, AirbyteDynamodbConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -439,16 +444,16 @@ class AirbyteE2etestConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteE2etestConnector.definitions_jsonschema
+            config, AirbyteE2etestConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -467,16 +472,16 @@ class AirbyteElasticsearchConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteElasticsearchConnector.definitions_jsonschema
+            config, AirbyteElasticsearchConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -494,15 +499,16 @@ class AirbyteExasolConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteExasolConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteExasolConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -521,16 +527,16 @@ class AirbyteFireboltConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteFireboltConnector.definitions_jsonschema
+            config, AirbyteFireboltConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -549,16 +555,16 @@ class AirbyteFirestoreConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteFirestoreConnector.definitions_jsonschema
+            config, AirbyteFirestoreConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -576,15 +582,16 @@ class AirbyteGcsConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteGcsConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteGcsConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -603,16 +610,16 @@ class AirbyteGooglesheetsConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteGooglesheetsConnector.definitions_jsonschema
+            config, AirbyteGooglesheetsConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -631,16 +638,16 @@ class AirbyteIcebergConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteIcebergConnector.definitions_jsonschema
+            config, AirbyteIcebergConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -658,15 +665,16 @@ class AirbyteKafkaConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteKafkaConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteKafkaConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -684,15 +692,16 @@ class AirbyteKeenConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteKeenConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteKeenConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -711,16 +720,16 @@ class AirbyteKinesisConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteKinesisConnector.definitions_jsonschema
+            config, AirbyteKinesisConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -739,16 +748,16 @@ class AirbyteLangchainConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteLangchainConnector.definitions_jsonschema
+            config, AirbyteLangchainConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -767,16 +776,16 @@ class AirbyteLocaljsonConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteLocaljsonConnector.definitions_jsonschema
+            config, AirbyteLocaljsonConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -795,16 +804,16 @@ class AirbyteMariadbcolumnstoreConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteMariadbcolumnstoreConnector.definitions_jsonschema
+            config, AirbyteMariadbcolumnstoreConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -823,16 +832,16 @@ class AirbyteMeilisearchConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteMeilisearchConnector.definitions_jsonschema
+            config, AirbyteMeilisearchConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -850,15 +859,16 @@ class AirbyteMilvusConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteMilvusConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteMilvusConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -877,16 +887,16 @@ class AirbyteMongodbConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteMongodbConnector.definitions_jsonschema
+            config, AirbyteMongodbConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -904,15 +914,16 @@ class AirbyteMqttConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteMqttConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteMqttConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -930,15 +941,16 @@ class AirbytMssqlConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbytMssqlConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbytMssqlConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -956,15 +968,16 @@ class AirbyteMysqlConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteMysqlConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteMysqlConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -982,15 +995,16 @@ class AirbyteOracleConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteOracleConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteOracleConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1009,16 +1023,16 @@ class AirbytePineconeConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbytePineconeConnector.definitions_jsonschema
+            config, AirbytePineconeConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1037,16 +1051,16 @@ class AirbytePostgresConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbytePostgresConnector.definitions_jsonschema
+            config, AirbytePostgresConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1064,15 +1078,16 @@ class AirbytePubsubConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbytePubsubConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbytePubsubConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1090,15 +1105,16 @@ class AirbytePulsarConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbytePulsarConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbytePulsarConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1116,15 +1132,16 @@ class AirbyteQdrantConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteQdrantConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteQdrantConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1142,15 +1159,16 @@ class AirbyteR2Connector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteR2Connector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteR2Connector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1169,16 +1187,16 @@ class AirbyteRabbitmqConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteRabbitmqConnector.definitions_jsonschema
+            config, AirbyteRabbitmqConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1196,15 +1214,16 @@ class AirbyteRedisConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteRedisConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteRedisConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1223,16 +1242,16 @@ class AirbyteRedpandaConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteRedpandaConnector.definitions_jsonschema
+            config, AirbyteRedpandaConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1251,16 +1270,16 @@ class AirbyteRedshiftConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteRedshiftConnector.definitions_jsonschema
+            config, AirbyteRedshiftConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1279,16 +1298,16 @@ class AirbyteRocksetConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteRocksetConnector.definitions_jsonschema
+            config, AirbyteRocksetConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1306,15 +1325,16 @@ class AirbyteS3glueConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteS3glueConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteS3glueConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1332,15 +1352,16 @@ class AirbyteS3Connector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteS3Connector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteS3Connector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1358,15 +1379,16 @@ class AirbyteScyllaConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteScyllaConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteScyllaConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1385,16 +1407,16 @@ class AirbyteSelectdbConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteSelectdbConnector.definitions_jsonschema
+            config, AirbyteSelectdbConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1413,16 +1435,16 @@ class AirbyteSftpjsonConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteSftpjsonConnector.definitions_jsonschema
+            config, AirbyteSftpjsonConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1441,16 +1463,16 @@ class AirbyteSnowflakeConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteSnowflakeConnector.definitions_jsonschema
+            config, AirbyteSnowflakeConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1468,15 +1490,16 @@ class AirbyteSqliteConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteSqliteConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteSqliteConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1495,16 +1518,16 @@ class AirbyteStarburstgalaxyConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteStarburstgalaxyConnector.definitions_jsonschema
+            config, AirbyteStarburstgalaxyConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1523,16 +1546,16 @@ class AirbyteTeradataConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteTeradataConnector.definitions_jsonschema
+            config, AirbyteTeradataConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1550,15 +1573,16 @@ class AirbyteTidbConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteTidbConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteTidbConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1577,16 +1601,16 @@ class AirbyteTimeplusConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteTimeplusConnector.definitions_jsonschema
+            config, AirbyteTimeplusConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1605,16 +1629,16 @@ class AirbyteTypesenseConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteTypesenseConnector.definitions_jsonschema
+            config, AirbyteTypesenseConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1633,16 +1657,16 @@ class AirbyteVerticaConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteVerticaConnector.definitions_jsonschema
+            config, AirbyteVerticaConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1661,16 +1685,16 @@ class AirbyteWeaviateConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteWeaviateConnector.definitions_jsonschema
+            config, AirbyteWeaviateConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1688,15 +1712,16 @@ class AirbyteXataConnector(Connector):
     ) -> None:
         definition = "connector-definitions/airbyte-destination"
 
-        jsonschema.validate(vars(config), AirbyteXataConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config, AirbyteXataConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1715,16 +1740,16 @@ class AirbyteYugabytedbConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteYugabytedbConnector.definitions_jsonschema
+            config, AirbyteYugabytedbConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -1743,14 +1768,14 @@ class AirbyteAirbytedevmatecloudConnector(Connector):
         definition = "connector-definitions/airbyte-destination"
 
         jsonschema.validate(
-            vars(config), AirbyteAirbytedevmatecloudConnector.definitions_jsonschema
+            config, AirbyteAirbytedevmatecloudConnector.definitions_jsonschema
         )
-        super().__init__(client, name, definition, vars(config))
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: airbyte_task_write_destination_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
