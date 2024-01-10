@@ -82,7 +82,7 @@ class Model(Resource):
     def get_state(self) -> model_interface.Model.State:
         return self.client.model_service.watch_model(self.resource.id).state
 
-    def deploy(self) -> model_interface.Model:
+    def deploy(self) -> model_interface.Model.State:
         self.client.model_service.deploy_model(self.resource.id)
         state = self.client.model_service.watch_model(model_name=self.resource.id).state
         while state not in (2, 3):
@@ -91,9 +91,9 @@ class Model(Resource):
                 model_name=self.resource.id
             ).state
         self._update()
-        return self._resource
+        return state
 
-    def undeploy(self) -> model_interface.Model:
+    def undeploy(self) -> model_interface.Model.State:
         self.client.model_service.undeploy_model(self.resource.id)
         state = self.client.model_service.watch_model(model_name=self.resource.id).state
         while state not in (1, 3):
@@ -102,7 +102,7 @@ class Model(Resource):
                 model_name=self.resource.id
             ).state
         self._update()
-        return self._resource
+        return state
 
     def delete(self):
         if self.resource is not None:
