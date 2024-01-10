@@ -1,33 +1,48 @@
 import re
+from dataclasses import fields, is_dataclass
 
 
-def populate_default_value(dataclass):
-    for field in dataclass.__dataclass_fields__.values():
-        if field.default is None and getattr(dataclass, field.name) is None:
+def populate_default_value(dc):
+    for field in fields(dc):
+        if field.default is None and getattr(dc, field.name) is None:
             list_pattern = re.compile(r"^Optional\[List")
             other_optional_pattern = re.compile(r"^Optional\[")
             if field.type == "Optional[bool]":
-                setattr(dataclass, field.name, False)
+                setattr(dc, field.name, False)
             elif field.type == "Optional[str]":
-                setattr(dataclass, field.name, "")
+                setattr(dc, field.name, "")
             elif field.type == "Optional[int]":
-                setattr(dataclass, field.name, 0)
+                setattr(dc, field.name, 0)
             elif field.type == "Optional[float]":
-                setattr(dataclass, field.name, 0.0)
+                setattr(dc, field.name, 0.0)
             elif list_pattern.match(field.type):
-                setattr(dataclass, field.name, [])
+                setattr(dc, field.name, [])
             elif other_optional_pattern.match(field.type):
-                setattr(dataclass, field.name, {})
+                setattr(dc, field.name, {})
 
-    return dataclass
+    return dc
 
 
-def construct_connector_config(inp):
+def pop_default_and_to_dict(dc) -> dict:
+    if isinstance(dc, dict):
+        return dc
+
+    output_dict = {}
+    for field in fields(dc):
+        field_val = getattr(dc, field.name)
+        if field_val is not None:
+            if is_dataclass(field_val):
+                field_val = pop_default_and_to_dict(field_val)
+            output_dict[field.name] = field_val
+    return output_dict
+
+
+def construct_component_config(inp):
     task_name = str(inp.__class__).split(".")[3]
     prefix = task_name.split("_")[0] + "_"
     suffix = "_" + task_name.split("_")[-1]
     config = {
-        "input": vars(inp),
+        "input": pop_default_and_to_dict(inp),
         "task": remove_prefix_and_suffix(
             task_name,
             prefix,

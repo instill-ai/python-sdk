@@ -20,17 +20,18 @@ class NumbersConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: numbers.NumbersProtocolBlockchainConnectorSpec,
+        config_spec: numbers.NumbersProtocolBlockchainConnectorSpec,
     ) -> None:
         definition = "connector-definitions/numbers"
 
-        jsonschema.validate(vars(config), NumbersConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config_spec)
+        jsonschema.validate(config, NumbersConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: numbers_task_commit_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
