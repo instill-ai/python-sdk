@@ -1,11 +1,13 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module
 from typing import Tuple, Union
 
+import grpc
 from google.longrunning import operations_pb2
 
 import instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 as pipeline_interface
 from instill.clients import InstillClient
 from instill.resources.resource import Resource
+from instill.utils.logger import Logger
 
 
 class Pipeline(Resource):
@@ -67,10 +69,16 @@ class Pipeline(Resource):
     def get_recipe(self) -> str:
         return self.resource.recipe
 
-    def validate_pipeline(self) -> pipeline_interface.Pipeline:
-        return self.client.pipeline_service.validate_pipeline(
-            name=self.resource.id
-        ).pipeline
+    def validate_pipeline(self) -> bool:
+        try:
+            self.client.pipeline_service.validate_pipeline(
+                name=self.resource.id, silent=True
+            )
+            return True
+        except grpc.RpcError as rpc_error:
+            Logger.w(rpc_error.code())
+            Logger.w(rpc_error.details())
+            return False
 
     def delete(self):
         if self.resource is not None:
