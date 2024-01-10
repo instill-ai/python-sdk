@@ -48,13 +48,13 @@ class BigQueryConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config_spec: bigquery.BigQueryConnectorSpec,
+        config: bigquery.BigQueryConnectorSpec,
     ) -> None:
         definition = "connector-definitions/bigquery"
 
-        config = helper.pop_default_and_to_dict(config_spec)
-        jsonschema.validate(config, BigQueryConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, config)
+        config_spec = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config_spec, BigQueryConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config_spec)
 
     def create_component(
         self,
@@ -77,13 +77,13 @@ class PineconeConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config_spec: pinecone.PineconeConnectorSpec,
+        config: pinecone.PineconeConnectorSpec,
     ) -> None:
         definition = "connector-definitions/pinecone"
 
-        config = helper.pop_default_and_to_dict(config_spec)
-        jsonschema.validate(config, PineconeConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, config)
+        config_spec = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config_spec, PineconeConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config_spec)
 
     def create_component(
         self,
@@ -109,13 +109,15 @@ class GoogleCloudStorageConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config_spec: googlecloudstorage.GoogleCloudStorageConnectorSpec,
+        config: googlecloudstorage.GoogleCloudStorageConnectorSpec,
     ) -> None:
         definition = "connector-definitions/gcs"
 
-        config = helper.pop_default_and_to_dict(config_spec)
-        jsonschema.validate(config, GoogleCloudStorageConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, config)
+        config_spec = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(
+            config_spec, GoogleCloudStorageConnector.definitions_jsonschema
+        )
+        super().__init__(client, name, definition, config_spec)
 
     def create_component(
         self,
@@ -138,13 +140,13 @@ class GoogleSearchConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config_spec: googlesearch.GoogleSearchConnectorSpec,
+        config: googlesearch.GoogleSearchConnectorSpec,
     ) -> None:
         definition = "connector-definitions/google-search"
 
-        config = helper.pop_default_and_to_dict(config_spec)
-        jsonschema.validate(config, GoogleSearchConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, config)
+        config_spec = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config_spec, GoogleSearchConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config_spec)
 
     def create_component(
         self,
@@ -165,13 +167,13 @@ class RedisConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config_spec: redis.RedisConnectorResource,
+        config: redis.RedisConnectorResource,
     ) -> None:
         definition = "connector-definitions/redis"
 
-        config = helper.pop_default_and_to_dict(config_spec)
-        jsonschema.validate(config, RedisConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, config)
+        config_spec = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config_spec, RedisConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config_spec)
 
     def create_component(
         self,
@@ -196,13 +198,13 @@ class RestAPIConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config_spec: restapi.RESTAPIConnectorSpec,
+        config: restapi.RESTAPIConnectorSpec,
     ) -> None:
         definition = "connector-definitions/restapi"
 
-        config = helper.pop_default_and_to_dict(config_spec)
-        jsonschema.validate(config, RestAPIConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, config)
+        config_spec = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config_spec, RestAPIConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config_spec)
 
     def create_component(
         self,
@@ -232,13 +234,13 @@ class WebsiteConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config_spec: website.WebsiteConnectorResource,
+        config: website.WebsiteConnectorResource,
     ) -> None:
         definition = "connector-definitions/website"
 
-        config = helper.pop_default_and_to_dict(config_spec)
-        jsonschema.validate(config, WebsiteConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, config)
+        config_spec = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config_spec, WebsiteConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config_spec)
 
     def create_component(
         self,

@@ -20,13 +20,13 @@ class NumbersConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config_spec: numbers.NumbersProtocolBlockchainConnectorSpec,
+        config: numbers.NumbersProtocolBlockchainConnectorSpec,
     ) -> None:
         definition = "connector-definitions/numbers"
 
-        config = helper.pop_default_and_to_dict(config_spec)
-        jsonschema.validate(config, NumbersConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, config)
+        config_spec = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config_spec, NumbersConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config_spec)
 
     def create_component(
         self,

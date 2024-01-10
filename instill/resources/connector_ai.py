@@ -66,13 +66,13 @@ class HuggingfaceConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config_spec: HuggingFaceConnectorSpec,
+        config: HuggingFaceConnectorSpec,
     ) -> None:
         definition = "connector-definitions/hugging-face"
 
-        config = helper.pop_default_and_to_dict(config_spec)
-        jsonschema.validate(config, StabilityAIConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, config)
+        config_dict = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config_dict, StabilityAIConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config_dict)
 
     def create_component(
         self,
@@ -111,14 +111,14 @@ class InstillModelConnector(Connector):
     def __init__(
         self,
         client: InstillClient,
-        config_spec: InstillModelConnectorConfig,
+        config: InstillModelConnectorConfig,
         name: str = "model-connector",
     ) -> None:
         definition = "connector-definitions/instill-model"
 
-        config = helper.pop_default_and_to_dict(config_spec)
-        jsonschema.validate(config, InstillModelConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, config)
+        config_dict = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config_dict, InstillModelConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config_dict)
 
     def create_component(
         self,
@@ -152,13 +152,13 @@ class StabilityAIConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config_spec: StabilityAIConnectorResource,
+        config: StabilityAIConnectorResource,
     ) -> None:
         definition = "connector-definitions/stability-ai"
 
-        config = helper.pop_default_and_to_dict(config_spec)
-        jsonschema.validate(config, StabilityAIConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, config)
+        config_dict = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config_dict, StabilityAIConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config_dict)
 
     def create_component(
         self,
@@ -182,13 +182,13 @@ class OpenAIConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config_spec: OpenAIConnectorResource,
+        config: OpenAIConnectorResource,
     ) -> None:
         definition = "connector-definitions/openai"
 
-        config = helper.pop_default_and_to_dict(config_spec)
-        jsonschema.validate(config, OpenAIConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, config)
+        config_dict = helper.pop_default_and_to_dict(config)
+        jsonschema.validate(config_dict, OpenAIConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config_dict)
 
     def create_component(
         self,
