@@ -203,7 +203,8 @@ class PipelineClient(Client):
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.GetUserPipeline,
                 request=pipeline_interface.GetUserPipelineRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}"
+                    name=f"{self.target_namespace}/pipelines/{name}",
+                    view=pipeline_interface.Pipeline.VIEW_FULL,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -211,7 +212,8 @@ class PipelineClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.GetUserPipeline,
             request=pipeline_interface.GetUserPipelineRequest(
-                name=f"{self.target_namespace}/pipelines/{name}"
+                name=f"{self.target_namespace}/pipelines/{name}",
+                view=pipeline_interface.Pipeline.VIEW_FULL,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
