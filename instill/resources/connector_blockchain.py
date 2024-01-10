@@ -20,11 +20,11 @@ class NumbersConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: numbers.NumbersProtocolBlockchainConnectorSpec,
+        config_spec: numbers.NumbersProtocolBlockchainConnectorSpec,
     ) -> None:
         definition = "connector-definitions/numbers"
 
-        config = helper.pop_default_and_to_dict(config)
+        config = helper.pop_default_and_to_dict(config_spec)
         jsonschema.validate(config, NumbersConnector.definitions_jsonschema)
         super().__init__(client, name, definition, config)
 

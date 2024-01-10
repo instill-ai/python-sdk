@@ -48,11 +48,11 @@ class BigQueryConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: bigquery.BigQueryConnectorSpec,
+        config_spec: bigquery.BigQueryConnectorSpec,
     ) -> None:
         definition = "connector-definitions/bigquery"
 
-        config = helper.pop_default_and_to_dict(config)
+        config = helper.pop_default_and_to_dict(config_spec)
         jsonschema.validate(config, BigQueryConnector.definitions_jsonschema)
         super().__init__(client, name, definition, config)
 
@@ -77,11 +77,11 @@ class PineconeConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: pinecone.PineconeConnectorSpec,
+        config_spec: pinecone.PineconeConnectorSpec,
     ) -> None:
         definition = "connector-definitions/pinecone"
 
-        config = helper.pop_default_and_to_dict(config)
+        config = helper.pop_default_and_to_dict(config_spec)
         jsonschema.validate(config, PineconeConnector.definitions_jsonschema)
         super().__init__(client, name, definition, config)
 
@@ -109,13 +109,12 @@ class GoogleCloudStorageConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: googlecloudstorage.GoogleCloudStorageConnectorSpec,
+        config_spec: googlecloudstorage.GoogleCloudStorageConnectorSpec,
     ) -> None:
         definition = "connector-definitions/gcs"
 
-        jsonschema.validate(
-            config, GoogleCloudStorageConnector.definitions_jsonschema
-        )
+        config = helper.pop_default_and_to_dict(config_spec)
+        jsonschema.validate(config, GoogleCloudStorageConnector.definitions_jsonschema)
         super().__init__(client, name, definition, config)
 
     def create_component(
@@ -139,11 +138,11 @@ class GoogleSearchConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: googlesearch.GoogleSearchConnectorSpec,
+        config_spec: googlesearch.GoogleSearchConnectorSpec,
     ) -> None:
         definition = "connector-definitions/google-search"
 
-        config = helper.pop_default_and_to_dict(config)
+        config = helper.pop_default_and_to_dict(config_spec)
         jsonschema.validate(config, GoogleSearchConnector.definitions_jsonschema)
         super().__init__(client, name, definition, config)
 
@@ -166,11 +165,11 @@ class RedisConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: redis.RedisConnectorResource,
+        config_spec: redis.RedisConnectorResource,
     ) -> None:
         definition = "connector-definitions/redis"
 
-        config = helper.pop_default_and_to_dict(config)
+        config = helper.pop_default_and_to_dict(config_spec)
         jsonschema.validate(config, RedisConnector.definitions_jsonschema)
         super().__init__(client, name, definition, config)
 
@@ -197,11 +196,11 @@ class RestAPIConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: restapi.RESTAPIConnectorSpec,
+        config_spec: restapi.RESTAPIConnectorSpec,
     ) -> None:
         definition = "connector-definitions/restapi"
 
-        config = helper.pop_default_and_to_dict(config)
+        config = helper.pop_default_and_to_dict(config_spec)
         jsonschema.validate(config, RestAPIConnector.definitions_jsonschema)
         super().__init__(client, name, definition, config)
 
@@ -233,11 +232,11 @@ class WebsiteConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: website.WebsiteConnectorResource,
+        config_spec: website.WebsiteConnectorResource,
     ) -> None:
         definition = "connector-definitions/website"
 
-        config = helper.pop_default_and_to_dict(config)
+        config = helper.pop_default_and_to_dict(config_spec)
         jsonschema.validate(config, WebsiteConnector.definitions_jsonschema)
         super().__init__(client, name, definition, config)
 

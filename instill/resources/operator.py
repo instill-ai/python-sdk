@@ -1,9 +1,9 @@
 # pylint: disable=no-member,wrong-import-position
 import instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 as pipeline_pb
 from instill.resources.schema import (
-    helper,
     end_task_end_input,
     end_task_end_metadata,
+    helper,
     start_task_start_metadata,
 )
 
@@ -17,7 +17,7 @@ def create_start_operator(
     start_operator_component.definition_name = "operator-definitions/start"
 
     for key, val in metadata_fields.items():
-        metadata_fields[key] = helper.pop_default_and_to_dict(val)
+        metadata_fields[key] = helper.pop_default_and_to_dict(val)  # type: ignore
     metadata = {"metadata": metadata_fields}
     start_operator_component.configuration.update(metadata)  # type: ignore
 
@@ -34,7 +34,7 @@ def create_end_operator(
     end_operator_component.definition_name = "operator-definitions/end"
 
     for metadata_key, metadata_val in metadata_fields.items():
-        metadata_fields[metadata_key] = helper.pop_default_and_to_dict(metadata_val)
+        metadata_fields[metadata_key] = helper.pop_default_and_to_dict(metadata_val)  # type: ignore
     inp = {"input": inp_fields}
     metadata = {"metadata": metadata_fields}
     end_operator_component.configuration.update(inp)

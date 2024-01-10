@@ -1,5 +1,4 @@
 import re
-
 from dataclasses import fields, is_dataclass
 
 

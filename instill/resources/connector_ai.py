@@ -66,11 +66,11 @@ class HuggingfaceConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: HuggingFaceConnectorSpec,
+        config_spec: HuggingFaceConnectorSpec,
     ) -> None:
         definition = "connector-definitions/hugging-face"
 
-        config = helper.pop_default_and_to_dict(config)
+        config = helper.pop_default_and_to_dict(config_spec)
         jsonschema.validate(config, StabilityAIConnector.definitions_jsonschema)
         super().__init__(client, name, definition, config)
 
@@ -111,12 +111,12 @@ class InstillModelConnector(Connector):
     def __init__(
         self,
         client: InstillClient,
-        config: InstillModelConnectorConfig,
+        config_spec: InstillModelConnectorConfig,
         name: str = "model-connector",
     ) -> None:
         definition = "connector-definitions/instill-model"
 
-        config = helper.pop_default_and_to_dict(config)
+        config = helper.pop_default_and_to_dict(config_spec)
         jsonschema.validate(config, InstillModelConnector.definitions_jsonschema)
         super().__init__(client, name, definition, config)
 
@@ -152,11 +152,11 @@ class StabilityAIConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: StabilityAIConnectorResource,
+        config_spec: StabilityAIConnectorResource,
     ) -> None:
         definition = "connector-definitions/stability-ai"
 
-        config = helper.pop_default_and_to_dict(config)
+        config = helper.pop_default_and_to_dict(config_spec)
         jsonschema.validate(config, StabilityAIConnector.definitions_jsonschema)
         super().__init__(client, name, definition, config)
 
@@ -182,11 +182,11 @@ class OpenAIConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: OpenAIConnectorResource,
+        config_spec: OpenAIConnectorResource,
     ) -> None:
         definition = "connector-definitions/openai"
 
-        config = helper.pop_default_and_to_dict(config)
+        config = helper.pop_default_and_to_dict(config_spec)
         jsonschema.validate(config, OpenAIConnector.definitions_jsonschema)
         super().__init__(client, name, definition, config)
 
