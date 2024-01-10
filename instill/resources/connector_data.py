@@ -48,19 +48,20 @@ class BigQueryConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: bigquery.BigQueryConnectorSpec,
+        config_spec: bigquery.BigQueryConnectorSpec,
     ) -> None:
         definition = "connector-definitions/bigquery"
 
-        jsonschema.validate(vars(config), BigQueryConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config_spec)
+        jsonschema.validate(config, BigQueryConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: bigquery_task_insert_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -76,12 +77,13 @@ class PineconeConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: pinecone.PineconeConnectorSpec,
+        config_spec: pinecone.PineconeConnectorSpec,
     ) -> None:
         definition = "connector-definitions/pinecone"
 
-        jsonschema.validate(vars(config), PineconeConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config_spec)
+        jsonschema.validate(config, PineconeConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
@@ -91,7 +93,7 @@ class PineconeConnector(Connector):
             pinecone_task_upsert_input.Input,
         ],
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -107,21 +109,20 @@ class GoogleCloudStorageConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: googlecloudstorage.GoogleCloudStorageConnectorSpec,
+        config_spec: googlecloudstorage.GoogleCloudStorageConnectorSpec,
     ) -> None:
         definition = "connector-definitions/gcs"
 
-        jsonschema.validate(
-            vars(config), GoogleCloudStorageConnector.definitions_jsonschema
-        )
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config_spec)
+        jsonschema.validate(config, GoogleCloudStorageConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: googlecloudstorage_task_upload_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -137,19 +138,20 @@ class GoogleSearchConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: googlesearch.GoogleSearchConnectorSpec,
+        config_spec: googlesearch.GoogleSearchConnectorSpec,
     ) -> None:
         definition = "connector-definitions/google-search"
 
-        jsonschema.validate(vars(config), GoogleSearchConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config_spec)
+        jsonschema.validate(config, GoogleSearchConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: googlesearch_task_search_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -163,12 +165,13 @@ class RedisConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: redis.RedisConnectorResource,
+        config_spec: redis.RedisConnectorResource,
     ) -> None:
         definition = "connector-definitions/redis"
 
-        jsonschema.validate(vars(config), RedisConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config_spec)
+        jsonschema.validate(config, RedisConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
@@ -179,7 +182,7 @@ class RedisConnector(Connector):
             redis_task_chat_message_write_multi_modal_input.Input,
         ],
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -193,12 +196,13 @@ class RestAPIConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: restapi.RESTAPIConnectorSpec,
+        config_spec: restapi.RESTAPIConnectorSpec,
     ) -> None:
         definition = "connector-definitions/restapi"
 
-        jsonschema.validate(vars(config), RestAPIConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config_spec)
+        jsonschema.validate(config, RestAPIConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
@@ -214,7 +218,7 @@ class RestAPIConnector(Connector):
             restapi_task_put_input.Input,
         ],
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
 
 
@@ -228,17 +232,18 @@ class WebsiteConnector(Connector):
         self,
         client: InstillClient,
         name: str,
-        config: website.WebsiteConnectorResource,
+        config_spec: website.WebsiteConnectorResource,
     ) -> None:
         definition = "connector-definitions/website"
 
-        jsonschema.validate(vars(config), WebsiteConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, vars(config))
+        config = helper.pop_default_and_to_dict(config_spec)
+        jsonschema.validate(config, WebsiteConnector.definitions_jsonschema)
+        super().__init__(client, name, definition, config)
 
     def create_component(
         self,
         name: str,
         inp: website_task_scrape_website_input.Input,
     ) -> Component:
-        config = helper.construct_connector_config(inp)
+        config = helper.construct_component_config(inp)
         return super()._create_component(name, config)
