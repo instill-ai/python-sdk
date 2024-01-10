@@ -383,21 +383,32 @@ To Form a pipeine, it required a `start` operator and a `end` operator, we have 
 
 ```python
 # define start operator input spec
-start_metadata = {
-  "metadata": {
-    "input_image": vars(
-      populate_default_value(
-        start_task_start_metadata.Model1(
-          instillFormat="image/*",
-          title="Image",
-          type="string",
-        )
-      )
-    ),
+start_metadata = {}
+start_metadata.update(
+  {
+    "input_image": start_task_start_metadata.Model1(
+        instillFormat="image/*",
+        title="Image",
+        type="string",
+    )
   }
-}
+)
 # create start operator
 start_operator_component = create_start_operator(start_metadata)
+```
+
+If you wish to define multiple input fields in the start operator, simply add more `"key"` and `"start_task_start_metadata.Model1"` pair by
+
+```python
+start_metadata.update(
+  {
+    "input_image": start_task_start_metadata.Model1(
+        instillFormat="{your input format}",
+        title="{input title}",
+        type="{input type}",
+    )
+  }
+)
 ```
 
 Now we can create a `model` `component`. From the already defined `instill Model Connector`, we can utilize the models served on `Instill Model`, import them as a `component`.
@@ -406,12 +417,10 @@ Now we can create a `model` `component`. From the already defined `instill Model
 # first we create the input for the component from the dataclass
 # here we need to specify which model we want to use on our `Instill Model` instance
 # in this case there is only one model we deployed, which is the yolov7 model
-instill_model_input = populate_default_value(
-  instill_task_detection_input.Input(
-    model_namespace="admin",
-    model_id="yolov7",
-    image_base64="{start.input_image}",
-  )
+instill_model_input = instill_task_detection_input.Input(
+  model_namespace="admin",
+  model_id="yolov7",
+  image_base64="{start.input_image}",
 )
 # create model connector component from the connector resource we had created previously
 instill_model_connector_component = instill_model.create_component(
@@ -420,16 +429,14 @@ instill_model_connector_component = instill_model.create_component(
 )
 
 # define end operator input and metadata spec
-end_operator_inp = {"input": {"inference_result": "{yolov7.output.objects}"}}
-end_operator_metadata = {
-  "metadata": {
-    "inference_result": vars(
-        populate_default_value(end_task_end_metadata.Model1(title="result"))
-    )
-  }
-}
+end_operator_inp = {}
+end_operator_inp.update({"inference_result": "{yolov7.output.objects}"})
+end_operator_metadata = {}
+end_operator_metadata.update(
+  {"inference_result": end_task_end_metadata.Model1(title="result")}
+)
 # create end operator
-end_operator_component = create_end_operator(inp=end_operator_inp, metadata=end_operator_metadata)
+end_operator_component = create_end_operator(end_operator_inp, end_operator_metadata)
 ```
 
 We now have all the components ready for the pipeline. Next, we add them into the recipe and create a pipeline.
@@ -439,7 +446,7 @@ We now have all the components ready for the pipeline. Next, we add them into th
 recipe = create_recipe([start_operator_component, instill_model_connector_component, end_operator_component])
 # create pipeline
 instill_model_pipeline = Pipeline(
-    client=client, name="instill-model-pipeline", recipe=recipe
+  client=client, name="instill-model-pipeline", recipe=recipe
 )
 ```
 
@@ -452,13 +459,13 @@ import requests
 from google.protobuf.struct_pb2 import Struct
 i = Struct()
 i.update(
-    {
-        "input_image": base64.b64encode(
-            requests.get(
-                "https://artifacts.instill.tech/imgs/dog.jpg", timeout=5
-            ).content
-        ).decode("ascii")
-    }
+  {
+    "input_image": base64.b64encode(
+      requests.get(
+        "https://artifacts.instill.tech/imgs/dog.jpg", timeout=5
+      ).content
+    ).decode("ascii")
+  }
 )
 # verify the output
 instill_model_pipeline([i])[0][0]["inference_result"][0]["category"] == "dog"
