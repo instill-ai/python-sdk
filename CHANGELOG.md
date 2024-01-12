@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.6.0](https://github.com/instill-ai/python-sdk/compare/v0.5.0...v0.6.0) (2024-01-12)
+
+
+### Features
+
+* **connector,operator,component:** adopt jsonscema validation and dataclass type hint ([#74](https://github.com/instill-ai/python-sdk/issues/74)) ([0c47e51](https://github.com/instill-ai/python-sdk/commit/0c47e51263f7e428499a8461db4b4725ac1e3144))
+* **helpers:** add wrapper func for protobuf message ([#85](https://github.com/instill-ai/python-sdk/issues/85)) ([279bd1e](https://github.com/instill-ai/python-sdk/commit/279bd1e5ec6f9501a001c46acff93cee2a67388f))
+* **resource:** adopt dataclass as config in component for type hinting ([#79](https://github.com/instill-ai/python-sdk/issues/79)) ([8c25bd1](https://github.com/instill-ai/python-sdk/commit/8c25bd106577cf75d0f24cd52c82ccc2f56baef1))
+* **resources:** support recipe update in pipeline resource ([#83](https://github.com/instill-ai/python-sdk/issues/83)) ([89431fa](https://github.com/instill-ai/python-sdk/commit/89431fa39f626736b16ee279ae4b6c9f19a3c1c3))
+
+
+### Bug Fixes
+
+* **resources:** fix resource schema path ([#76](https://github.com/instill-ai/python-sdk/issues/76)) ([25f4418](https://github.com/instill-ai/python-sdk/commit/25f4418ab713556ab5a82b9bc16f7d0f9e12adc3))
+
+
+### Documentation
+
+* **notebook:** update notebook ([e5da642](https://github.com/instill-ai/python-sdk/commit/e5da642266b1666fe66b08798668bce6f7e8c05b))
+
 ## [0.5.0](https://github.com/instill-ai/python-sdk/compare/v0.4.0...v0.5.0) (2024-01-02)
 
 
