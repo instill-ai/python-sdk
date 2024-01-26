@@ -12,6 +12,7 @@ from instill.helpers.const import (
     DEFAULT_RAY_ACTOR_OPRTIONS,
     DEFAULT_RUNTIME_ENV,
 )
+from instill.helpers.errors import ModelPathException
 from instill.helpers.utils import get_dir_size
 
 
@@ -36,6 +37,10 @@ class InstillDeployable:
         if self._deployment.ray_actor_options is not None:
             self._deployment.ray_actor_options.update({"num_cpus": num_cpus})
 
+    def _update_memory(self, memory: float):
+        if self._deployment.ray_actor_options is not None:
+            self._deployment.ray_actor_options.update({"memory": memory})
+
     def _update_num_gpus(self, num_gpus: float):
         if self._deployment.ray_actor_options is not None:
             self._deployment.ray_actor_options.update({"num_gpus": num_gpus})
@@ -49,7 +54,14 @@ class InstillDeployable:
             )
         if os.path.isdir(model_path):
             return 1.1 * get_dir_size(model_path) / (1024 * 1024 * 1024) / float(vram)
-        return 0.25
+        raise ModelPathException
+
+    def _determine_ram_usage(self, model_path: str):
+        if os.path.isfile(model_path):
+            return 1.1 * os.path.getsize(model_path)
+        if os.path.isdir(model_path):
+            return 1.1 * get_dir_size(model_path)
+        raise ModelPathException
 
     def update_min_replicas(self, num_replicas: int):
         new_autoscaling_config = DEFAULT_AUTOSCALING_CONFIG
@@ -78,6 +90,8 @@ class InstillDeployable:
 
         if self.use_gpu:
             self._update_num_gpus(self._determine_vram_usage(model_path, vram))
+        else:
+            self._update_memory(self._determine_ram_usage(model_path))
 
         serve.run(
             self._deployment.options(name=application_name).bind(model_path),
