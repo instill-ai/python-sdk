@@ -1,3 +1,4 @@
+import math
 import os
 from typing import Callable, Optional
 
@@ -54,13 +55,15 @@ class InstillDeployable:
                 MINIMUM_VRAM_RESERVE,
                 1.1 * os.path.getsize(model_path) / (1024 * 1024 * 1024),
             )
-            return min_vram_usage / float(vram)
+            ratio = min_vram_usage / float(vram)
+            return ratio if ratio <= 1 else math.ceil(ratio)
         if os.path.isdir(model_path):
             min_vram_usage = max(
                 MINIMUM_VRAM_RESERVE,
                 1.1 * get_dir_size(model_path) / (1024 * 1024 * 1024),
             )
-            return min_vram_usage / float(vram)
+            ratio = min_vram_usage / float(vram)
+            return ratio if ratio <= 1 else math.ceil(ratio)
         raise ModelPathException
 
     def _determine_ram_usage(self, model_path: str):
