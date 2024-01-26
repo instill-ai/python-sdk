@@ -12,8 +12,8 @@ from instill.helpers.const import (
     DEFAULT_RAY_ACTOR_OPRTIONS,
     DEFAULT_RUNTIME_ENV,
 )
-from instill.helpers.utils import get_dir_size
 from instill.helpers.errors import ModelPathException
+from instill.helpers.utils import get_dir_size
 
 
 class InstillDeployable:
