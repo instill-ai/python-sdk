@@ -11,6 +11,7 @@ from instill.helpers.const import (
     DEFAULT_MAX_CONCURRENT_QUERIES,
     DEFAULT_RAY_ACTOR_OPRTIONS,
     DEFAULT_RUNTIME_ENV,
+    MINIMUM_VRAM_RESERVE,
 )
 from instill.helpers.errors import ModelPathException
 from instill.helpers.utils import get_dir_size
@@ -49,11 +50,17 @@ class InstillDeployable:
         if vram == "":
             return 0.25
         if os.path.isfile(model_path):
-            return (
-                1.1 * os.path.getsize(model_path) / (1024 * 1024 * 1024) / float(vram)
+            min_vram_usage = max(
+                MINIMUM_VRAM_RESERVE,
+                1.1 * os.path.getsize(model_path) / (1024 * 1024 * 1024),
             )
+            return min_vram_usage / float(vram)
         if os.path.isdir(model_path):
-            return 1.1 * get_dir_size(model_path) / (1024 * 1024 * 1024) / float(vram)
+            min_vram_usage = max(
+                MINIMUM_VRAM_RESERVE,
+                1.1 * get_dir_size(model_path) / (1024 * 1024 * 1024),
+            )
+            return min_vram_usage / float(vram)
         raise ModelPathException
 
     def _determine_ram_usage(self, model_path: str):
