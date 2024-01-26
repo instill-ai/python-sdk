@@ -6,13 +6,13 @@ from ray import serve
 from ray.serve import Deployment
 from ray.serve import deployment as ray_deployment
 
-from instill.helpers.utils import get_dir_size
 from instill.helpers.const import (
     DEFAULT_AUTOSCALING_CONFIG,
     DEFAULT_MAX_CONCURRENT_QUERIES,
     DEFAULT_RAY_ACTOR_OPRTIONS,
     DEFAULT_RUNTIME_ENV,
 )
+from instill.helpers.utils import get_dir_size
 
 
 class InstillDeployable:
