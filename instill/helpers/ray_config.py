@@ -12,7 +12,8 @@ from instill.helpers.const import (
     DEFAULT_MAX_CONCURRENT_QUERIES,
     DEFAULT_RAY_ACTOR_OPRTIONS,
     DEFAULT_RUNTIME_ENV,
-    MINIMUM_VRAM_RESERVE,
+    VRAM_MINIMUM_RESERVE,
+    VRAM_UPSCALE_FACTOR,
 )
 from instill.helpers.errors import ModelPathException
 from instill.helpers.utils import get_dir_size
@@ -30,10 +31,10 @@ class InstillDeployable:
         # params
         self.model_weight_or_folder_name: str = model_weight_or_folder_name
         if use_gpu:
-            self._update_num_cpus(1)
+            self._update_num_cpus(2)
             self._update_num_gpus(0.25)
         else:
-            self._update_num_cpus(2)
+            self._update_num_cpus(4)
 
     def _update_num_cpus(self, num_cpus: float):
         if self._deployment.ray_actor_options is not None:
@@ -52,15 +53,17 @@ class InstillDeployable:
             return 0.25
         if os.path.isfile(model_path):
             min_vram_usage = max(
-                MINIMUM_VRAM_RESERVE,
-                1.1 * os.path.getsize(model_path) / (1024 * 1024 * 1024),
+                VRAM_MINIMUM_RESERVE,
+                VRAM_UPSCALE_FACTOR
+                * os.path.getsize(model_path)
+                / (1024 * 1024 * 1024),
             )
             ratio = min_vram_usage / float(vram)
             return ratio if ratio <= 1 else math.ceil(ratio)
         if os.path.isdir(model_path):
             min_vram_usage = max(
-                MINIMUM_VRAM_RESERVE,
-                1.1 * get_dir_size(model_path) / (1024 * 1024 * 1024),
+                VRAM_MINIMUM_RESERVE,
+                VRAM_UPSCALE_FACTOR * get_dir_size(model_path) / (1024 * 1024 * 1024),
             )
             ratio = min_vram_usage / float(vram)
             return ratio if ratio <= 1 else math.ceil(ratio)
