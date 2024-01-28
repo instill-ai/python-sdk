@@ -212,8 +212,8 @@ class RestAPIConnector(Connector):
         inp: Union[
             restapi_task_delete_input.Input,
             restapi_task_options_input.Input,
-            restapi_task_get_input.Input,
-            restapi_task_head_input.Input,
+            restapi_task_get_input.InputWithoutBody,
+            restapi_task_head_input.InputWithoutBody,
             restapi_task_patch_input.Input,
             restapi_task_post_input.Input,
             restapi_task_patch_input.Input,
