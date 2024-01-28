@@ -122,6 +122,10 @@ class InstillDeployable:
         else:
             self._update_memory(self._determine_ram_usage(model_path))
 
+        if model_name in MODEL_VRAM_OVERRIDE_LIST:
+            self.update_min_replicas(1)
+            self.update_max_replicas(1)
+
         serve.run(
             self._deployment.options(name=model_name).bind(model_path),
             name=application_name,

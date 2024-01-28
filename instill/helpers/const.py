@@ -88,12 +88,12 @@ DEFAULT_AUTOSCALING_CONFIG = {
     "target_num_ongoing_requests_per_replica": 1,
     "initial_replicas": 1,
     "min_replicas": 0,
-    "max_replicas": 20,
+    "max_replicas": 10,
     "upscale_delay_s": 4,
-    "downscale_delay_s": 1800,
+    "downscale_delay_s": 600,
     "smoothing_factor": 1.0,
-    "upscale_smoothing_factor": 1.5,
-    "downscale_smoothing_factor": 0.3,
+    "upscale_smoothing_factor": 0.8,
+    "downscale_smoothing_factor": 0.8,
     "metrics_interval_s": 2,
     "look_back_period_s": 4,
 }
@@ -102,7 +102,7 @@ DEFAULT_RUNTIME_ENV = {
         "PYTHONPATH": os.getcwd(),
     },
 }
-DEFAULT_MAX_CONCURRENT_QUERIES = 10
+DEFAULT_MAX_CONCURRENT_QUERIES = 5
 
 RAM_MINIMUM_RESERVE = 1  # GB
 RAM_UPSCALE_FACTOR = 1.25
@@ -114,4 +114,6 @@ MODEL_VRAM_OVERRIDE_LIST = {
     "controlnet-canny": 0.45,
     "llava-7b": 0.4,
     "lama2-7b-chat": 0.4,
+    "llama2-7b": 0.4,
+    "zephyr-7b": 0.4,
 }
