@@ -1,4 +1,3 @@
-import math
 import os
 from typing import Callable, Optional
 
@@ -12,10 +11,13 @@ from instill.helpers.const import (
     DEFAULT_MAX_CONCURRENT_QUERIES,
     DEFAULT_RAY_ACTOR_OPRTIONS,
     DEFAULT_RUNTIME_ENV,
+    MODEL_VRAM_OVERRIDE_LIST,
+    RAM_MINIMUM_RESERVE,
+    RAM_UPSCALE_FACTOR,
     VRAM_MINIMUM_RESERVE,
     VRAM_UPSCALE_FACTOR,
 )
-from instill.helpers.errors import ModelPathException
+from instill.helpers.errors import ModelPathException, ModelVramException
 from instill.helpers.utils import get_dir_size
 
 
@@ -48,8 +50,8 @@ class InstillDeployable:
         if self._deployment.ray_actor_options is not None:
             self._deployment.ray_actor_options.update({"num_gpus": num_gpus})
 
-    def _determine_vram_usage(self, model_path: str, vram: str):
-        if vram == "":
+    def _determine_vram_usage(self, model_path: str, total_vram: str):
+        if total_vram == "":
             return 0.25
         if os.path.isfile(model_path):
             min_vram_usage = max(
@@ -58,22 +60,32 @@ class InstillDeployable:
                 * os.path.getsize(model_path)
                 / (1024 * 1024 * 1024),
             )
-            ratio = min_vram_usage / float(vram)
-            return ratio if ratio <= 1 else math.ceil(ratio)
+            ratio = min_vram_usage / float(total_vram)
+            if ratio > 1:
+                raise ModelVramException
+            return ratio
         if os.path.isdir(model_path):
             min_vram_usage = max(
                 VRAM_MINIMUM_RESERVE,
                 VRAM_UPSCALE_FACTOR * get_dir_size(model_path) / (1024 * 1024 * 1024),
             )
-            ratio = min_vram_usage / float(vram)
-            return ratio if ratio <= 1 else math.ceil(ratio)
+            ratio = min_vram_usage / float(total_vram)
+            if ratio > 1:
+                raise ModelVramException
+            return ratio
         raise ModelPathException
 
     def _determine_ram_usage(self, model_path: str):
         if os.path.isfile(model_path):
-            return 1.1 * os.path.getsize(model_path)
+            return max(
+                RAM_MINIMUM_RESERVE * (1024 * 1024 * 1024),
+                RAM_UPSCALE_FACTOR * os.path.getsize(model_path),
+            )
         if os.path.isdir(model_path):
-            return 1.1 * get_dir_size(model_path)
+            return max(
+                RAM_MINIMUM_RESERVE * (1024 * 1024 * 1024),
+                RAM_UPSCALE_FACTOR * get_dir_size(model_path),
+            )
         raise ModelPathException
 
     def update_min_replicas(self, num_replicas: int):
@@ -90,25 +102,28 @@ class InstillDeployable:
             autoscaling_config=new_autoscaling_config
         )
 
-    def deploy(self, model_folder_path: str, ray_addr: str, vram: str):
+    def deploy(self, model_folder_path: str, ray_addr: str, total_vram: str):
         if not ray.is_initialized():
             ray_addr = "ray://" + ray_addr.replace("9000", "10001")
             ray.init(address=ray_addr, runtime_env=DEFAULT_RUNTIME_ENV)
 
         model_path = "/".join([model_folder_path, self.model_weight_or_folder_name])
-        model_path_string_parts = model_path.split("/")
-        application_name = model_path_string_parts[5]
-        model_name = "_".join(model_path_string_parts[3].split("#")[:2])
-        route_prefix = f'/{model_name}/{model_path_string_parts[3].split("#")[3]}'
+        application_name = model_path.split("/")[5]
+        route_prefix = f"/{application_name}"
 
         if self.use_gpu:
-            self._update_num_gpus(self._determine_vram_usage(model_path, vram))
+            if application_name in MODEL_VRAM_OVERRIDE_LIST:
+                self._update_num_gpus(MODEL_VRAM_OVERRIDE_LIST[application_name])
+            else:
+                self._update_num_gpus(
+                    self._determine_vram_usage(model_path, total_vram)
+                )
         else:
             self._update_memory(self._determine_ram_usage(model_path))
 
         serve.run(
             self._deployment.options(name=application_name).bind(model_path),
-            name=model_name,
+            name=application_name,
             route_prefix=route_prefix,
         )
 
@@ -117,9 +132,8 @@ class InstillDeployable:
             ray_addr = "ray://" + ray_addr.replace("9000", "10001")
             ray.init(address=ray_addr, runtime_env=DEFAULT_RUNTIME_ENV)
         model_path = "/".join([model_folder_path, self.model_weight_or_folder_name])
-        model_path_string_parts = model_path.split("/")
-        model_name = "_".join(model_path_string_parts[3].split("#")[:2])
-        serve.delete(model_name)
+        application_name = model_path.split("/")[5]
+        serve.delete(application_name)
 
     def __call__(self):
         raise RuntimeError(
