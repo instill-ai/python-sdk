@@ -108,12 +108,13 @@ class InstillDeployable:
             ray.init(address=ray_addr, runtime_env=DEFAULT_RUNTIME_ENV)
 
         model_path = "/".join([model_folder_path, self.model_weight_or_folder_name])
-        application_name = model_path.split("/")[5]
-        route_prefix = f"/{application_name}"
+        model_path_string_parts = model_path.split("/")
+        application_name = "_".join(model_path_string_parts[3].split("#")[:2])
+        model_name = application_name.split("_")[1]
 
         if self.use_gpu:
-            if application_name in MODEL_VRAM_OVERRIDE_LIST:
-                self._update_num_gpus(MODEL_VRAM_OVERRIDE_LIST[application_name])
+            if model_name in MODEL_VRAM_OVERRIDE_LIST:
+                self._update_num_gpus(MODEL_VRAM_OVERRIDE_LIST[model_name])
             else:
                 self._update_num_gpus(
                     self._determine_vram_usage(model_path, total_vram)
@@ -122,9 +123,9 @@ class InstillDeployable:
             self._update_memory(self._determine_ram_usage(model_path))
 
         serve.run(
-            self._deployment.options(name=application_name).bind(model_path),
+            self._deployment.options(name=model_name).bind(model_path),
             name=application_name,
-            route_prefix=route_prefix,
+            route_prefix=f"/{application_name}",
         )
 
     def undeploy(self, model_folder_path: str, ray_addr: str):
@@ -132,7 +133,8 @@ class InstillDeployable:
             ray_addr = "ray://" + ray_addr.replace("9000", "10001")
             ray.init(address=ray_addr, runtime_env=DEFAULT_RUNTIME_ENV)
         model_path = "/".join([model_folder_path, self.model_weight_or_folder_name])
-        application_name = model_path.split("/")[5]
+        model_path_string_parts = model_path.split("/")
+        application_name = "_".join(model_path_string_parts[3].split("#")[:2])
         serve.delete(application_name)
 
     def __call__(self):
