@@ -4,16 +4,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, List, Optional
+from typing import List, Optional
 
 
 @dataclass
 class Object:
     category: str
     rle: str
-
-
-InstillTypes = Any
 
 
 @dataclass

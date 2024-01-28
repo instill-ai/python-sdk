@@ -198,7 +198,7 @@ class OpenAIConnector(Connector):
             openai_task_text_embeddings_input.Input,
             openai_task_text_to_image_input.Input,
             openai_task_text_generation_input.Input,
-            openai_task_text_to_speech_input.InputModel,
+            openai_task_text_to_speech_input.Input,
         ],
     ) -> Component:
         config = helper.construct_component_config(inp)

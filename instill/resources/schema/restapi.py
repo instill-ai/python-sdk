@@ -42,4 +42,3 @@ class BearerToken:
 @dataclass
 class RESTAPIConnectorSpec:
     authentication: Union[NoAuth, BasicAuth, APIKey, BearerToken]
-    base_url: str

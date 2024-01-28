@@ -8,15 +8,6 @@ from enum import Enum
 from typing import List, Optional
 
 
-class Engine(Enum):
-    stable_diffusion_xl_1024_v1_0 = 'stable-diffusion-xl-1024-v1-0'
-    stable_diffusion_xl_1024_v0_9 = 'stable-diffusion-xl-1024-v0-9'
-    stable_diffusion_v1_6 = 'stable-diffusion-v1-6'
-    esrgan_v1_x2plus = 'esrgan-v1-x2plus'
-    stable_diffusion_512_v2_1 = 'stable-diffusion-512-v2-1'
-    stable_diffusion_xl_beta_v2_2_2 = 'stable-diffusion-xl-beta-v2-2-2'
-
-
 class ClipGuidancePreset(Enum):
     FAST_BLUE = 'FAST_BLUE'
     FAST_GREEN = 'FAST_GREEN'
@@ -25,6 +16,15 @@ class ClipGuidancePreset(Enum):
     SLOW = 'SLOW'
     SLOWER = 'SLOWER'
     SLOWEST = 'SLOWEST'
+
+
+class Engine(Enum):
+    stable_diffusion_xl_1024_v1_0 = 'stable-diffusion-xl-1024-v1-0'
+    stable_diffusion_xl_1024_v0_9 = 'stable-diffusion-xl-1024-v0-9'
+    stable_diffusion_v1_6 = 'stable-diffusion-v1-6'
+    esrgan_v1_x2plus = 'esrgan-v1-x2plus'
+    stable_diffusion_512_v2_1 = 'stable-diffusion-512-v2-1'
+    stable_diffusion_xl_beta_v2_2_2 = 'stable-diffusion-xl-beta-v2-2-2'
 
 
 class InitImageMode(Enum):
@@ -69,16 +69,16 @@ class StylePreset(Enum):
 class Input:
     engine: Engine
     prompts: List[str]
-    cfg_scale: Optional[float] = None
+    cfg_scale: Optional[float] = 7
     clip_guidance_preset: Optional[ClipGuidancePreset] = ClipGuidancePreset.NONE
-    image_strength: Optional[float] = None
+    image_strength: Optional[float] = 0.35
     init_image: Optional[bytes] = None
     init_image_mode: Optional[InitImageMode] = InitImageMode.IMAGE_STRENGTH
     sampler: Optional[Sampler] = None
-    samples: Optional[int] = None
-    seed: Optional[int] = None
+    samples: Optional[int] = 1
+    seed: Optional[int] = 0
     step_schedule_end: Optional[float] = None
-    step_schedule_start: Optional[float] = None
-    steps: Optional[int] = None
+    step_schedule_start: Optional[float] = 0.65
+    steps: Optional[int] = 30
     style_preset: Optional[StylePreset] = None
     weights: Optional[List[float]] = None

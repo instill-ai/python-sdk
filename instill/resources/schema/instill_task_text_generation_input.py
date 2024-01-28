@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
@@ -19,40 +19,24 @@ class Type(Enum):
 
 
 @dataclass
-class MultiModalContentItem:
+class ContentItem:
     type: Type
     image_url: Optional[ImageUrl] = None
     text: Optional[str] = None
 
 
-InstillTypes = Any
-
-
-@dataclass
-class Input1:
-    image_base64: str
-    model_id: str
-    model_namespace: str
-
-
-@dataclass
-class ExtraParameters:
-    pass
-
-
 @dataclass
 class ChatMessage:
-    content: List[MultiModalContentItem]
+    content: List[ContentItem]
     role: str
 
 
 @dataclass
 class Input:
-    model_id: str
-    model_namespace: str
+    model_name: str
     prompt: str
     chat_history: Optional[List[ChatMessage]] = None
-    extra_params: Optional[ExtraParameters] = None
+    extra_params: Optional[Dict[str, Any]] = None
     max_new_tokens: Optional[int] = 50
     prompt_images: Optional[List[str]] = None
     seed: Optional[int] = None

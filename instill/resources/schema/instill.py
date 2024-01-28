@@ -8,15 +8,17 @@ from typing import Any, Optional, Union
 
 
 @dataclass
-class InstillModelConnector1:
+class InstillModelConnectorInternalMode:
     mode: Optional[Any] = None
 
 
 @dataclass
-class InstillModelConnector2:
+class InstillModelConnectorExternalMode:
     api_token: str
     server_url: str
     mode: Optional[Any] = None
 
 
-InstillModelConnector = Union[InstillModelConnector1, InstillModelConnector2]
+InstillModelConnector = Union[
+    InstillModelConnectorInternalMode, InstillModelConnectorExternalMode
+]

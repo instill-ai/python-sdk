@@ -19,9 +19,6 @@ class Options:
     wait_for_model: Optional[bool] = None
 
 
-StringInput = str
-
-
 @dataclass
 class Input:
     inputs: Inputs

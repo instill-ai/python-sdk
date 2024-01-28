@@ -9,15 +9,15 @@ from instill.resources.schema import (
 
 
 def create_start_operator(
-    metadata_fields: start_task_start_metadata.Model,
+    metadata_fields: start_task_start_metadata.Metadata,
 ) -> pipeline_pb.Component:
     start_operator_component = pipeline_pb.Component()
     start_operator_component.id = "start"
     start_operator_component.resource_name = ""
     start_operator_component.definition_name = "operator-definitions/start"
 
-    for key, val in metadata_fields.items():
-        metadata_fields[key] = helper.pop_default_and_to_dict(val)  # type: ignore
+    for metadata_key, metadata_val in metadata_fields.items():
+        metadata_fields[metadata_key] = helper.pop_default_and_to_dict(metadata_val)  # type: ignore
     metadata = {"metadata": metadata_fields}
     start_operator_component.configuration.update(metadata)  # type: ignore
 
@@ -26,7 +26,7 @@ def create_start_operator(
 
 def create_end_operator(
     inp_fields: end_task_end_input.Input,
-    metadata_fields: end_task_end_metadata.Model,
+    metadata_fields: end_task_end_metadata.Metadata,
 ) -> pipeline_pb.Component:
     end_operator_component = pipeline_pb.Component()
     end_operator_component.id = "end"

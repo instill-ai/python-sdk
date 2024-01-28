@@ -9,10 +9,11 @@ from typing import Any, Dict, List, Optional
 
 @dataclass
 class Input:
-    top_k: int
     vector: List[float]
-    filter: Optional[Dict[str, Any]] = None
+    top_k: int
     id: Optional[str] = None
+    namespace: Optional[str] = None
+    filter: Optional[Dict[str, Any]] = None
+    min_score: Optional[float] = None
     include_metadata: Optional[bool] = False
     include_values: Optional[bool] = False
-    namespace: Optional[str] = None

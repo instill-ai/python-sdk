@@ -19,15 +19,3 @@ class Result:
 @dataclass
 class Output:
     results: List[Result]
-
-
-Model = str
-
-
-@dataclass
-class Options:
-    use_cache: Optional[bool] = None
-    wait_for_model: Optional[bool] = None
-
-
-StringInput = str

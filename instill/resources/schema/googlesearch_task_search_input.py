@@ -13,12 +13,3 @@ class Input:
     include_link_html: Optional[bool] = False
     include_link_text: Optional[bool] = False
     top_k: Optional[int] = 10
-
-
-@dataclass
-class Result:
-    link: str
-    snippet: str
-    title: str
-    link_html: Optional[str] = None
-    link_text: Optional[str] = None

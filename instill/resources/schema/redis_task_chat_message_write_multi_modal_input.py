@@ -19,18 +19,15 @@ class Type(Enum):
 
 
 @dataclass
-class MultiModalContentItem:
+class ContentItem:
     type: Type
     image_url: Optional[ImageUrl] = None
     text: Optional[str] = None
 
 
-InstillTypes = Any
-
-
 @dataclass
 class Input:
-    content: List[MultiModalContentItem]
+    content: List[ContentItem]
     role: str
     session_id: str
     metadata: Optional[Dict[str, Any]] = None

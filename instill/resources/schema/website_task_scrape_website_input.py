@@ -14,11 +14,3 @@ class Input:
     allowed_domains: Optional[List[str]] = None
     include_link_html: Optional[bool] = False
     include_link_text: Optional[bool] = False
-
-
-@dataclass
-class PageInformation:
-    link: str
-    link_html: Optional[str] = None
-    link_text: Optional[str] = None
-    title: Optional[str] = None

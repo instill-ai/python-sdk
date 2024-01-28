@@ -8,15 +8,6 @@ from typing import Optional
 
 
 @dataclass
-class Options:
-    use_cache: Optional[bool] = None
-    wait_for_model: Optional[bool] = None
-
-
-StringInput = str
-
-
-@dataclass
 class Input:
     image: str
     model: Optional[str] = None

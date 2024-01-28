@@ -9,20 +9,6 @@ from typing import Any, Dict, Optional
 
 @dataclass
 class Input:
-    endpoint_path: str
+    endpoint_url: str
     body: Optional[Dict[str, Any]] = None
-
-
-@dataclass
-class Input1:
-    endpoint_path: str
-
-
-@dataclass
-class Output:
-    body: Dict[str, Any]
-    header: Dict[str, Any]
-    status_code: int
-
-
-Model = Input
+    output_body_schema: Optional[str] = None
