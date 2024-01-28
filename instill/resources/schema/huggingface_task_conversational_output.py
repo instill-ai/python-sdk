@@ -17,15 +17,3 @@ class Conversation:
 class Output:
     generated_text: str
     conversation: Optional[Conversation] = None
-
-
-Model = str
-
-
-@dataclass
-class Options:
-    use_cache: Optional[bool] = None
-    wait_for_model: Optional[bool] = None
-
-
-StringInput = str

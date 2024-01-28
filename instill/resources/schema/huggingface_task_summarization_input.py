@@ -8,20 +8,20 @@ from typing import Optional
 
 
 @dataclass
+class Options:
+    use_cache: Optional[bool] = None
+    wait_for_model: Optional[bool] = None
+
+
+@dataclass
 class Parameters:
     max_length: Optional[int] = None
     max_time: Optional[float] = None
     min_length: Optional[int] = None
     repetition_penalty: Optional[float] = None
-    temperature: Optional[float] = 1
+    temperature: Optional[float] = 1.0
     top_k: Optional[int] = None
     top_p: Optional[float] = None
-
-
-@dataclass
-class Options:
-    use_cache: Optional[bool] = None
-    wait_for_model: Optional[bool] = None
 
 
 @dataclass

@@ -13,15 +13,3 @@ class Output:
     aggregator: Optional[str] = None
     cells: Optional[List[str]] = None
     coordinates: Optional[List[List[int]]] = None
-
-
-Model = str
-
-
-@dataclass
-class Options:
-    use_cache: Optional[bool] = None
-    wait_for_model: Optional[bool] = None
-
-
-StringInput = str

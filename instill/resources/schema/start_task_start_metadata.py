@@ -14,7 +14,7 @@ class Items:
 
 
 @dataclass
-class Model1:
+class MetadataItem:
     instillFormat: str
     type: str
     description: Optional[str] = None
@@ -22,4 +22,4 @@ class Model1:
     title: Optional[str] = None
 
 
-Model = Dict[str, Model1]
+Metadata = Dict[str, MetadataItem]

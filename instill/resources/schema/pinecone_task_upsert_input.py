@@ -12,3 +12,4 @@ class Input:
     id: str
     values: List[float]
     metadata: Optional[Dict[str, Any]] = None
+    namespace: Optional[str] = None

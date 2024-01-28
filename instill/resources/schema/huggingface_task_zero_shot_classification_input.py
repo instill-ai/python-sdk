@@ -8,15 +8,15 @@ from typing import List, Optional
 
 
 @dataclass
-class Parameters:
-    candidate_labels: List[str]
-    multi_label: Optional[bool] = None
-
-
-@dataclass
 class Options:
     use_cache: Optional[bool] = None
     wait_for_model: Optional[bool] = None
+
+
+@dataclass
+class Parameters:
+    candidate_labels: List[str]
+    multi_label: Optional[bool] = None
 
 
 @dataclass

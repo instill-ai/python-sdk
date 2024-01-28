@@ -4,25 +4,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Optional
 
 
 @dataclass
-class Input:
-    endpoint_path: str
-    body: Optional[Dict[str, Any]] = None
-
-
-@dataclass
-class Input1:
-    endpoint_path: str
-
-
-@dataclass
-class Output:
-    body: Dict[str, Any]
-    header: Dict[str, Any]
-    status_code: int
-
-
-Model = Input1
+class InputWithoutBody:
+    endpoint_url: str
+    output_body_schema: Optional[str] = None

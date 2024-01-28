@@ -8,18 +8,18 @@ from typing import Optional
 
 
 @dataclass
+class Options:
+    use_cache: Optional[bool] = None
+    wait_for_model: Optional[bool] = None
+
+
+@dataclass
 class Parameters:
     guidance_scale: Optional[float] = None
     height: Optional[int] = None
     negative_prompt: Optional[str] = None
     num_inference_steps: Optional[int] = None
     width: Optional[int] = None
-
-
-@dataclass
-class Options:
-    use_cache: Optional[bool] = None
-    wait_for_model: Optional[bool] = None
 
 
 @dataclass

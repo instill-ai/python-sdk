@@ -4,18 +4,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
-
-
-@dataclass
-class Input:
-    endpoint_path: str
-    body: Optional[Dict[str, Any]] = None
-
-
-@dataclass
-class Input1:
-    endpoint_path: str
+from typing import Any, Dict
 
 
 @dataclass
@@ -23,6 +12,3 @@ class Output:
     body: Dict[str, Any]
     header: Dict[str, Any]
     status_code: int
-
-
-Model = Output

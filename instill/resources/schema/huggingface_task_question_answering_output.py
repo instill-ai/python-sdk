@@ -13,15 +13,3 @@ class Output:
     score: Optional[float] = None
     start: Optional[int] = None
     stop: Optional[int] = None
-
-
-Model = str
-
-
-@dataclass
-class Options:
-    use_cache: Optional[bool] = None
-    wait_for_model: Optional[bool] = None
-
-
-StringInput = str

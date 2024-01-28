@@ -12,15 +12,3 @@ class Output:
     labels: List[str]
     scores: List[float]
     sequence: Optional[str] = None
-
-
-Model = str
-
-
-@dataclass
-class Options:
-    use_cache: Optional[bool] = None
-    wait_for_model: Optional[bool] = None
-
-
-StringInput = str

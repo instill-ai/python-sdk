@@ -5,7 +5,30 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, List, Optional
+from typing import List, Optional
+
+
+@dataclass
+class ImageUrl:
+    url: str
+
+
+class Type(Enum):
+    text = 'text'
+    image_url = 'image_url'
+
+
+@dataclass
+class ContentItem:
+    type: Type
+    image_url: Optional[ImageUrl] = None
+    text: Optional[str] = None
+
+
+@dataclass
+class ChatMessage:
+    content: List[ContentItem]
+    role: str
 
 
 class Model(Enum):
@@ -24,40 +47,14 @@ class Model(Enum):
     gpt_3_5_turbo_16k_0613 = 'gpt-3.5-turbo-16k-0613'
 
 
-class Type(Enum):
+class Type1(Enum):
     text = 'text'
     json_object = 'json_object'
 
 
 @dataclass
-class ImageUrl:
-    url: str
-
-
-class Type1(Enum):
-    text = 'text'
-    image_url = 'image_url'
-
-
-@dataclass
-class MultiModalContentItem:
-    type: Type1
-    image_url: Optional[ImageUrl] = None
-    text: Optional[str] = None
-
-
-InstillTypes = Any
-
-
-@dataclass
 class ResponseFormat:
-    type: Type
-
-
-@dataclass
-class ChatMessage:
-    content: List[MultiModalContentItem]
-    role: str
+    type: Type1
 
 
 @dataclass
@@ -65,12 +62,12 @@ class Input:
     model: Model
     prompt: str
     chat_history: Optional[List[ChatMessage]] = None
-    frequency_penalty: Optional[float] = None
+    frequency_penalty: Optional[float] = 0
     images: Optional[List[str]] = None
     max_tokens: Optional[int] = None
-    n: Optional[int] = None
-    presence_penalty: Optional[float] = None
+    n: Optional[int] = 1
+    presence_penalty: Optional[float] = 0
     response_format: Optional[ResponseFormat] = None
     system_message: Optional[str] = 'You are a helpful assistant.'
-    temperature: Optional[float] = None
-    top_p: Optional[float] = None
+    temperature: Optional[float] = 1
+    top_p: Optional[float] = 1

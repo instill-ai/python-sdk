@@ -8,14 +8,14 @@ from typing import Optional
 
 
 @dataclass
-class Parameters:
-    aggregation_strategy: Optional[str] = None
-
-
-@dataclass
 class Options:
     use_cache: Optional[bool] = None
     wait_for_model: Optional[bool] = None
+
+
+@dataclass
+class Parameters:
+    aggregation_strategy: Optional[str] = None
 
 
 @dataclass

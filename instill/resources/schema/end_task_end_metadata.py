@@ -8,9 +8,9 @@ from typing import Dict, Optional
 
 
 @dataclass
-class Model1:
+class MetadataItem:
     description: Optional[str] = None
     title: Optional[str] = None
 
 
-Model = Dict[str, Model1]
+Metadata = Dict[str, MetadataItem]

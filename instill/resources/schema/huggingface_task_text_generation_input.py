@@ -8,6 +8,12 @@ from typing import Optional
 
 
 @dataclass
+class Options:
+    use_cache: Optional[bool] = None
+    wait_for_model: Optional[bool] = None
+
+
+@dataclass
 class Parameters:
     do_sample: Optional[bool] = None
     max_new_tokens: Optional[int] = None
@@ -18,12 +24,6 @@ class Parameters:
     temperature: Optional[float] = None
     top_k: Optional[int] = None
     top_p: Optional[float] = None
-
-
-@dataclass
-class Options:
-    use_cache: Optional[bool] = None
-    wait_for_model: Optional[bool] = None
 
 
 @dataclass
