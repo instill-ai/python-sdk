@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.7.0](https://github.com/instill-ai/python-sdk/compare/v0.6.0...v0.7.0) (2024-01-30)
+
+
+### Features
+
+* **ray:** determine ram usage by file size ([#89](https://github.com/instill-ai/python-sdk/issues/89)) ([7a0023d](https://github.com/instill-ai/python-sdk/commit/7a0023d1e2dd6600f69dd2ab08a8e9431a36da2b))
+* **ray:** determine vram usage by file size ([#87](https://github.com/instill-ai/python-sdk/issues/87)) ([71e84e6](https://github.com/instill-ai/python-sdk/commit/71e84e68f029daa7b482e300e72f928cacb5e738))
+
+
+### Bug Fixes
+
+* **ray:** add vram ceiling and override list ([#94](https://github.com/instill-ai/python-sdk/issues/94)) ([5804e4a](https://github.com/instill-ai/python-sdk/commit/5804e4a182e6c3eba7011cf2d879b94b264d214f))
+* **ray:** fix application name ([f2bb563](https://github.com/instill-ai/python-sdk/commit/f2bb56369c356619c95b6ef9d3568146c85a1ba7))
+* **ray:** fix gpu resource &gt; 1 ([#91](https://github.com/instill-ai/python-sdk/issues/91)) ([b121f56](https://github.com/instill-ai/python-sdk/commit/b121f566011714c208ee804beba2db9f72849a56))
+* **ray:** fix ray autoscaling ([#95](https://github.com/instill-ai/python-sdk/issues/95)) ([5bd8c2a](https://github.com/instill-ai/python-sdk/commit/5bd8c2a8b8432d6855854448b4f92ac755b0b020))
+
 ## [0.6.0](https://github.com/instill-ai/python-sdk/compare/v0.5.0...v0.6.0) (2024-01-12)
 
 
