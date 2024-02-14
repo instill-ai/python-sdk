@@ -107,9 +107,10 @@ class InstillDeployable:
             ray_addr = "ray://" + ray_addr.replace("9000", "10001")
             ray.init(address=ray_addr, runtime_env=DEFAULT_RUNTIME_ENV)
 
+        # /model-repository/{owner_type}/{owner_uid}/{model_id}/{weight}
         model_path = "/".join([model_folder_path, self.model_weight_or_folder_name])
         model_path_string_parts = model_path.split("/")
-        application_name = "_".join(model_path_string_parts[3].split("#")[:2])
+        application_name = "_".join(model_path_string_parts[3:5])
         model_name = application_name.split("_")[1]
 
         if self.use_gpu:
@@ -136,9 +137,10 @@ class InstillDeployable:
         if not ray.is_initialized():
             ray_addr = "ray://" + ray_addr.replace("9000", "10001")
             ray.init(address=ray_addr, runtime_env=DEFAULT_RUNTIME_ENV)
+        # /model-repository/{owner_type}/{owner_uid}/{model_id}/{weight}
         model_path = "/".join([model_folder_path, self.model_weight_or_folder_name])
         model_path_string_parts = model_path.split("/")
-        application_name = "_".join(model_path_string_parts[3].split("#")[:2])
+        application_name = "_".join(model_path_string_parts[3:5])
         serve.delete(application_name)
 
     def __call__(self):
