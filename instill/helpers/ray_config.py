@@ -33,10 +33,10 @@ class InstillDeployable:
         # params
         self.model_weight_or_folder_name: str = model_weight_or_folder_name
         if use_gpu:
-            self._update_num_cpus(1)
-            self._update_num_gpus(0.25)
+            self._update_num_cpus(0.25)
+            self._update_num_gpus(0.2)
         else:
-            self._update_num_cpus(2)
+            self._update_num_cpus(0.25)
 
     def _update_num_cpus(self, num_cpus: float):
         if self._deployment.ray_actor_options is not None:
