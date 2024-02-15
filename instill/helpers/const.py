@@ -112,7 +112,7 @@ VRAM_UPSCALE_FACTOR = 1.25
 MODEL_VRAM_OVERRIDE_LIST = {
     "stable-diffusion-xl": 0.45,
     "controlnet-canny": 0.45,
-    "llava-7b": 0.4,
+    "llava-1-6-7b": 0.4,
     "llama2-7b-chat": 0.4,
     "llama2-7b": 0.4,
     "zephyr-7b": 0.4,
