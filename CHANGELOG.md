@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.7.1](https://github.com/instill-ai/python-sdk/compare/v0.7.0...v0.7.1) (2024-02-22)
+
+
+### Bug Fixes
+
+* **ray:** update default resources allocation for test ([#102](https://github.com/instill-ai/python-sdk/issues/102)) ([1aaa905](https://github.com/instill-ai/python-sdk/commit/1aaa905ca74cc8afaa29e0290792b57bd12143e2))
+
+
+### Miscellaneous Chores
+
+* **release:** release v0.7.1 ([b7dec13](https://github.com/instill-ai/python-sdk/commit/b7dec13d87cf4bf1a6a25ba71b85213fc4dc582e))
+
 ## [0.7.0](https://github.com/instill-ai/python-sdk/compare/v0.6.0...v0.7.0) (2024-01-30)
 
 
