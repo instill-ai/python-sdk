@@ -1,5 +1,6 @@
 import os
 from typing import Callable, Optional
+from warnings import warn
 
 import ray
 from ray import serve
@@ -25,13 +26,11 @@ class InstillDeployable:
     def __init__(
         self,
         deployable: Deployment,
-        model_weight_or_folder_name: str,
         use_gpu: bool,
     ) -> None:
         self._deployment: Deployment = deployable
         self.use_gpu = use_gpu
         # params
-        self.model_weight_or_folder_name: str = model_weight_or_folder_name
         if use_gpu:
             self._update_num_cpus(0.25)
             self._update_num_gpus(0.2)
@@ -95,6 +94,8 @@ class InstillDeployable:
             autoscaling_config=new_autoscaling_config
         )
 
+        return self
+
     def update_max_replicas(self, num_replicas: int):
         new_autoscaling_config = DEFAULT_AUTOSCALING_CONFIG
         new_autoscaling_config["max_replicas"] = num_replicas
@@ -102,15 +103,23 @@ class InstillDeployable:
             autoscaling_config=new_autoscaling_config
         )
 
+        return self
+
+    def get_deployment_handle(self):
+        return self._deployment.bind()
+
     def deploy(self, model_folder_path: str, ray_addr: str, total_vram: str):
+        warn(
+            "Deploy/Undeploy will soon be remove from the scope of SDK",
+            PendingDeprecationWarning,
+        )
         if not ray.is_initialized():
             ray_addr = "ray://" + ray_addr.replace("9000", "10001")
             ray.init(address=ray_addr, runtime_env=DEFAULT_RUNTIME_ENV)
 
-        # /model-repository/{owner_type}/{owner_uid}/{model_id}/{weight}
-        model_path = "/".join([model_folder_path, self.model_weight_or_folder_name])
-        model_path_string_parts = model_path.split("/")
-        application_name = "_".join(model_path_string_parts[3:5])
+        # /model-repository/{owner_type}/{owner_uid}/{model_id}
+        model_path_string_parts = model_folder_path.split("/")
+        application_name = "_".join(model_path_string_parts[3:])
         model_name = application_name.split("_")[1]
 
         if self.use_gpu:
@@ -118,29 +127,32 @@ class InstillDeployable:
                 self._update_num_gpus(MODEL_VRAM_OVERRIDE_LIST[model_name])
             else:
                 self._update_num_gpus(
-                    self._determine_vram_usage(model_path, total_vram)
+                    self._determine_vram_usage(model_folder_path, total_vram)
                 )
         else:
-            self._update_memory(self._determine_ram_usage(model_path))
+            self._update_memory(self._determine_ram_usage(model_folder_path))
 
         if model_name in MODEL_VRAM_OVERRIDE_LIST:
             self.update_min_replicas(1)
             self.update_max_replicas(1)
 
         serve.run(
-            self._deployment.options(name=model_name).bind(model_path),
+            self._deployment.options(name=model_name).bind(),
             name=application_name,
             route_prefix=f"/{application_name}",
         )
 
     def undeploy(self, model_folder_path: str, ray_addr: str):
+        warn(
+            "Deploy/Undeploy will soon be remove from the scope of SDK",
+            PendingDeprecationWarning,
+        )
         if not ray.is_initialized():
             ray_addr = "ray://" + ray_addr.replace("9000", "10001")
             ray.init(address=ray_addr, runtime_env=DEFAULT_RUNTIME_ENV)
-        # /model-repository/{owner_type}/{owner_uid}/{model_id}/{weight}
-        model_path = "/".join([model_folder_path, self.model_weight_or_folder_name])
-        model_path_string_parts = model_path.split("/")
-        application_name = "_".join(model_path_string_parts[3:5])
+        # /model-repository/{owner_type}/{owner_uid}/{model_id}
+        model_path_string_parts = model_folder_path.split("/")
+        application_name = "_".join(model_path_string_parts[3:])
         serve.delete(application_name)
 
     def __call__(self):
