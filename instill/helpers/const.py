@@ -117,3 +117,5 @@ MODEL_VRAM_OVERRIDE_LIST = {
     "llama2-7b": 0.4,
     "zephyr-7b": 0.4,
 }
+
+DEFAULT_DEPENDENCIES = ["protobuf==4.25.3", "grpcio-tools==1.62.0"]
