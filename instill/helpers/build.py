@@ -1,6 +1,5 @@
 import os
 import shutil
-from platform import python_version
 
 import docker
 import ray
@@ -24,18 +23,11 @@ if __name__ == "__main__":
         repo = config["repo"]
         tag = config["tag"]
 
+        python_version = build["python_version"]
         ray_version = ray.__version__
         instill_version = instill.__version__
 
         cuda_suffix = "" if not build["gpu"] else "-cu121"
-
-        pversion = python_version()
-        if pversion.split(".")[0] != "3":
-            raise RuntimeError("only support python major version = 3")
-        if int(pversion.split(".")[1]) < 9 or int(pversion.split(".")[1]) > 11:
-            raise RuntimeError("only support python3 minor version >= 9 and <= 11 ")
-
-        pversion = f"3{pversion.split('.')[1]}"
 
         packages_str = ""
         for p in build["python_packages"]:
@@ -50,7 +42,7 @@ if __name__ == "__main__":
             tag=f"{repo}:{tag}",
             buildargs={
                 "RAY_VERSION": ray_version,
-                "PYTHON_VERSION": pversion,
+                "PYTHON_VERSION": python_version,
                 "PACKAGES": packages_str,
             },
             quiet=False,
