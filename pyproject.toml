@@ -39,6 +39,7 @@ pydantic = ">=1.10.13"
 pillow = "^10.1.0"
 ray = {version = "2.9.3", extras = ["serve"]}
 jsonschema = "^4.20.0"
+docker = "^7.0.0"
 
 [tool.poetry.dev-dependencies]
 
