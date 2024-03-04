@@ -23,15 +23,16 @@ if __name__ == "__main__":
         repo = config["repo"]
         tag = config["tag"]
 
-        python_version = build["python_version"]
+        python_version = build["python_version"].replace(".", "")
         ray_version = ray.__version__
         instill_version = instill.__version__
 
         cuda_suffix = "" if not build["gpu"] else "-cu121"
 
         packages_str = ""
-        for p in build["python_packages"]:
-            packages_str += p + " "
+        if not build["python_packages"] is None:
+            for p in build["python_packages"]:
+                packages_str += p + " "
         for p in DEFAULT_DEPENDENCIES:
             packages_str += p + " "
         packages_str += f"instill-sdk=={instill_version}"
@@ -39,6 +40,7 @@ if __name__ == "__main__":
         img, _ = client.images.build(
             path="./",
             rm=True,
+            nocache=True,
             tag=f"{repo}:{tag}",
             buildargs={
                 "RAY_VERSION": ray_version,

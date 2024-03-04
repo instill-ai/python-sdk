@@ -12,4 +12,4 @@ RUN for package in ${PACKAGES}; do \
     done;
 
 WORKDIR /home/ray
-COPY model.py ./model.py
+COPY . .
