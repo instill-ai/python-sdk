@@ -46,6 +46,7 @@ if __name__ == "__main__":
             path="./",
             rm=True,
             nocache=True,
+            forcerm=True,
             tag=f"{repo}:{tag}",
             buildargs={
                 "RAY_VERSION": ray_version,
