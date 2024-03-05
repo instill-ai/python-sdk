@@ -32,24 +32,34 @@ class InstillDeployable:
         self.use_gpu = use_gpu
         # params
         if use_gpu:
-            self._update_num_cpus(0.25)
-            self._update_num_gpus(0.2)
+            self.update_num_cpus(0.25)
+            self.update_num_gpus(0.2)
         else:
-            self._update_num_cpus(0.25)
+            self.update_num_cpus(0.25)
 
-    def _update_num_cpus(self, num_cpus: float):
+    def update_num_cpus(self, num_cpus: float):
         if self._deployment.ray_actor_options is not None:
             self._deployment.ray_actor_options.update({"num_cpus": num_cpus})
 
-    def _update_memory(self, memory: float):
+        return self
+
+    def update_memory(self, memory: float):
         if self._deployment.ray_actor_options is not None:
             self._deployment.ray_actor_options.update({"memory": memory})
 
-    def _update_num_gpus(self, num_gpus: float):
+        return self
+
+    def update_num_gpus(self, num_gpus: float):
         if self._deployment.ray_actor_options is not None:
             self._deployment.ray_actor_options.update({"num_gpus": num_gpus})
 
+        return self
+
     def _determine_vram_usage(self, model_path: str, total_vram: str):
+        warn(
+            "determine vram usage base on file size will soon be removed",
+            PendingDeprecationWarning,
+        )
         if total_vram == "":
             return 0.25
         if os.path.isfile(model_path):
@@ -75,6 +85,10 @@ class InstillDeployable:
         raise ModelPathException
 
     def _determine_ram_usage(self, model_path: str):
+        warn(
+            "determine ram usage base on file size will soon be removed",
+            PendingDeprecationWarning,
+        )
         if os.path.isfile(model_path):
             return max(
                 RAM_MINIMUM_RESERVE * (1024 * 1024 * 1024),
@@ -124,13 +138,13 @@ class InstillDeployable:
 
         if self.use_gpu:
             if model_name in MODEL_VRAM_OVERRIDE_LIST:
-                self._update_num_gpus(MODEL_VRAM_OVERRIDE_LIST[model_name])
+                self.update_num_gpus(MODEL_VRAM_OVERRIDE_LIST[model_name])
             else:
-                self._update_num_gpus(
+                self.update_num_gpus(
                     self._determine_vram_usage(model_folder_path, total_vram)
                 )
         else:
-            self._update_memory(self._determine_ram_usage(model_folder_path))
+            self.update_memory(self._determine_ram_usage(model_folder_path))
 
         if model_name in MODEL_VRAM_OVERRIDE_LIST:
             self.update_min_replicas(1)
