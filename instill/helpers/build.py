@@ -7,15 +7,19 @@ import yaml
 
 import instill
 from instill.helpers.const import DEFAULT_DEPENDENCIES
+from instill.utils.logger import Logger
 
 if __name__ == "__main__":
+    Logger.i("[Instill Builder] Setup docker...")
     client = docker.from_env()
     shutil.copyfile(
         __file__.replace("build.py", "Dockerfile"), os.getcwd() + "/Dockerfile"
     )
 
     try:
+        Logger.i("[Instill Builder] Loading config file...")
         with open("instill.yaml", "r", encoding="utf8") as f:
+            Logger.i("[Instill Builder] Parsing config file...")
             config = yaml.safe_load(f)
 
         build = config["build"]
@@ -37,6 +41,7 @@ if __name__ == "__main__":
             packages_str += p + " "
         packages_str += f"instill-sdk=={instill_version}"
 
+        Logger.i("[Instill Builder] Building model image...")
         img, _ = client.images.build(
             path="./",
             rm=True,
@@ -50,8 +55,11 @@ if __name__ == "__main__":
             quiet=False,
         )
         img.tag(f"{registry}/{repo}", tag)
+        Logger.i("[Instill Builder] Pushing model image...")
         client.images.push(f"{registry}/{repo}", tag=tag)
     except Exception as e:
-        print(e)
+        Logger.e("[Instill Builder] Build failed")
+        Logger.e(e)
     finally:
         os.remove("Dockerfile")
+        Logger.i("[Instill Builder] Build successful")
