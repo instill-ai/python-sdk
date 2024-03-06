@@ -42,7 +42,7 @@ if __name__ == "__main__":
         packages_str += f"instill-sdk=={instill_version}"
 
         Logger.i("[Instill Builder] Building model image...")
-        img, _ = client.images.build(
+        img, logs = client.images.build(
             path="./",
             rm=True,
             nocache=True,
@@ -56,10 +56,12 @@ if __name__ == "__main__":
             quiet=False,
         )
         Logger.i(f"[Instill Builder] {registry}/{repo}:{tag} built")
+        for line in logs:
+            print(*line.values())
         img.tag(f"{registry}/{repo}", tag)
-        client.images.remove(f"{repo}:{tag}")
         Logger.i("[Instill Builder] Pushing model image...")
         client.images.push(f"{registry}/{repo}", tag=tag)
+        client.images.remove(f"{repo}:{tag}")
         Logger.i(f"[Instill Builder] {registry}/{repo}:{tag} pushed")
     except Exception as e:
         Logger.e("[Instill Builder] Build failed")
