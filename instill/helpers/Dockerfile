@@ -8,7 +8,7 @@ RUN sudo apt-get update && sudo apt-get install curl -y
 
 ARG PACKAGES
 RUN for package in ${PACKAGES}; do \
-    pip install $package; \
+    pip install --default-timeout=1000 --no-cache-dir $package; \
     done;
 
 WORKDIR /home/ray
