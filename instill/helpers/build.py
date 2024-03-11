@@ -23,7 +23,6 @@ if __name__ == "__main__":
             config = yaml.safe_load(f)
 
         build = config["build"]
-        registry = config["registry"]
         repo = config["repo"]
         tag = config["tag"]
 
@@ -55,17 +54,12 @@ if __name__ == "__main__":
             },
             quiet=False,
         )
-        Logger.i(f"[Instill Builder] {registry}/{repo}:{tag} built")
         for line in logs:
             print(*line.values())
-        img.tag(f"{registry}/{repo}", tag)
-        Logger.i("[Instill Builder] Pushing model image...")
-        client.images.push(f"{registry}/{repo}", tag=tag)
-        client.images.remove(f"{repo}:{tag}")
-        Logger.i(f"[Instill Builder] {registry}/{repo}:{tag} pushed")
+        Logger.i(f"[Instill Builder] {repo}:{tag} built")
     except Exception as e:
         Logger.e("[Instill Builder] Build failed")
         Logger.e(e)
     finally:
         os.remove("Dockerfile")
-        Logger.i("[Instill Builder] Build successful")
+        Logger.i("[Instill Builder] Done")
