@@ -110,10 +110,11 @@ VRAM_MINIMUM_RESERVE = 2  # GB
 VRAM_UPSCALE_FACTOR = 1.25
 
 MODEL_VRAM_OVERRIDE_LIST = {
-    "stable-diffusion-xl": 0.45,
-    "controlnet-canny": 0.45,
-    "llava-1-6-7b": 0.4,
-    "llama2-7b-chat": 0.4,
+    "stable-diffusion-xl": 0.375,
+    "controlnet-canny": 0.375,
+    "llava-1-6-7b": 0.2,
+    "llava-1-6-13b": 0.7,
+    "llama2-7b-chat": 0.3,
     "llama2-7b": 0.4,
     "zephyr-7b": 0.4,
 }
