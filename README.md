@@ -14,8 +14,8 @@ Welcome to Instill Python SDK, where the world of AI-first application comes ali
 
 Before you jump into creating your first application with this SDK tool, we recommend you to get familiar with the core concepts of Instill Product first. You can check out our documentation here:
 
-- [Instill Core](http://instill.tech/docs/core/v1.0.0/welcome)
-- [Instill SDK](http://instill.tech/docs/sdk/v1.0.0/welcome)
+- [Instill Core](https://www.instill.tech/docs/latest/core/concepts)
+- [Instill SDK](https://www.instill.tech/docs/latest/sdk/python)
 
 ## Setup
 
