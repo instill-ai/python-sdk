@@ -50,6 +50,7 @@ if __name__ == "__main__":
             buildargs={
                 "RAY_VERSION": ray_version,
                 "PYTHON_VERSION": python_version,
+                "CUDA_SUFFIX": cuda_suffix,
                 "PACKAGES": packages_str,
             },
             quiet=False,
