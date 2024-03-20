@@ -26,6 +26,7 @@ class InstillDeployable:
     def __init__(
         self,
         deployable: Deployment,
+        model_weight_or_folder_name: str, # kept for backward compatibility
         use_gpu: bool,
     ) -> None:
         self._deployment: Deployment = deployable
@@ -151,7 +152,8 @@ class InstillDeployable:
             self.update_max_replicas(1)
 
         serve.run(
-            self._deployment.options(name=model_name).bind(),
+            # kept model_folder_path for backward compatibility
+            self._deployment.options(name=model_name).bind(model_folder_path),
             name=application_name,
             route_prefix=f"/{application_name}",
         )
