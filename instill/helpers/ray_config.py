@@ -57,6 +57,22 @@ class InstillDeployable:
 
         return self
 
+    def update_accelerator_type(self, accelerator_type: str):
+        if self._deployment.ray_actor_options is not None:
+            self._deployment.ray_actor_options.update(
+                {"accelerator_type": accelerator_type}
+            )
+
+        return self
+
+    def update_num_custom_resource(self, resource_name: str, num: float):
+        if self._deployment.ray_actor_options is not None:
+            self._deployment.ray_actor_options.update(
+                {"resources": {resource_name: num}}
+            )
+
+        return self
+
     def _determine_vram_usage(self, model_path: str, total_vram: str):
         warn(
             "determine vram usage base on file size will soon be removed",
