@@ -1,3 +1,4 @@
+# pylint: disable=unused-argument
 import os
 from typing import Callable, Optional
 from warnings import warn
@@ -26,7 +27,7 @@ class InstillDeployable:
     def __init__(
         self,
         deployable: Deployment,
-        model_weight_or_folder_name: str, # kept for backward compatibility
+        model_weight_or_folder_name: str,  # kept for backward compatibility
         use_gpu: bool,
     ) -> None:
         self._deployment: Deployment = deployable
