@@ -39,6 +39,10 @@ class InstillDeployable:
         else:
             self.update_num_cpus(0.25)
 
+        accelerator_type = os.getenv("RAY_ACCELERATOR_TYPE")
+        if accelerator_type is not None and accelerator_type != "":
+            self.update_accelerator_type(accelerator_type)
+
     def update_num_cpus(self, num_cpus: float):
         if self._deployment.ray_actor_options is not None:
             self._deployment.ray_actor_options.update({"num_cpus": num_cpus})
