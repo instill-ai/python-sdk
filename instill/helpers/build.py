@@ -1,3 +1,4 @@
+import hashlib
 import os
 import shutil
 
@@ -24,7 +25,11 @@ if __name__ == "__main__":
 
         build = config["build"]
         repo = config["repo"]
-        tag = config["tag"]
+        tag = (
+            config["tag"]
+            if config["tag"] is not None and config["tag"] != ""
+            else hashlib.sha256().hexdigest()
+        )
 
         python_version = build["python_version"].replace(".", "")
         ray_version = ray.__version__
