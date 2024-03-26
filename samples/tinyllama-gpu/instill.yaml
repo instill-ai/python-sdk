@@ -1,0 +1,9 @@
+build:
+  gpu: true
+  python_version: "3.11"  # support only 3.11
+  python_packages:
+    - torch==2.2.1
+    - transformers==4.36.2
+    - accelerate==0.25.0
+repo: admin/tinyllama-gpu  # make sure the format is {user-id}/{model-id} and the
+tag: rev1                  # {model-id} match the model namespace created on console
