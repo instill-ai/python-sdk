@@ -81,7 +81,7 @@ class VisualQuestionAnsweringInput:
     extra_params: Dict[str, str] = {}
 
 
-DEFAULT_RAY_ACTOR_OPRTIONS = {
+DEFAULT_RAY_ACTOR_OPTIONS = {
     "num_cpus": 2,
 }
 DEFAULT_AUTOSCALING_CONFIG = {
@@ -109,14 +109,12 @@ RAM_UPSCALE_FACTOR = 1.25
 VRAM_MINIMUM_RESERVE = 2  # GB
 VRAM_UPSCALE_FACTOR = 1.25
 
-MODEL_VRAM_OVERRIDE_LIST = {
-    "stable-diffusion-xl": 0.375,
-    "controlnet-canny": 0.375,
-    "llava-1-6-7b": 0.2,
-    "llava-1-6-13b": 0.7,
-    "llama2-7b-chat": 0.3,
-    "llama2-7b": 0.4,
-    "zephyr-7b": 0.4,
-}
-
 DEFAULT_DEPENDENCIES = ["protobuf==4.25.3", "grpcio-tools==1.62.0"]
+
+ENV_MEMORY = "RAY_MEMORY"
+ENV_TOTAL_VRAM = "RAY_TOTAL_VRAM"
+ENV_RAY_ACCELERATOR_TYPE = "RAY_ACCELERATOR_TYPE"
+ENV_NUM_OF_GPUS = "RAY_NUM_OF_GPUS"
+ENV_NUM_OF_CPUS = "RAY_NUM_OF_CPUS"
+ENV_NUM_OF_MIN_REPLICAS = "RAY_NUM_OF_MIN_REPLICAS"
+ENV_NUM_OF_MAX_REPLICAS = "RAY_NUM_OF_MAX_REPLICAS"
