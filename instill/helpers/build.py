@@ -1,6 +1,8 @@
+import argparse
 import hashlib
 import os
 import shutil
+import tempfile
 
 import docker
 import ray
@@ -12,12 +14,19 @@ from instill.utils.logger import Logger
 
 if __name__ == "__main__":
     Logger.i("[Instill Builder] Setup docker...")
-    client = docker.from_env()
-    shutil.copyfile(
-        __file__.replace("build.py", "Dockerfile"), os.getcwd() + "/Dockerfile"
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--no-cache",
+        help="build the image without cache",
+        action="store_true",
+        required=False,
     )
 
+    client = docker.from_env()
     try:
+        args = parser.parse_args()
+
         Logger.i("[Instill Builder] Loading config file...")
         with open("instill.yaml", "r", encoding="utf8") as f:
             Logger.i("[Instill Builder] Parsing config file...")
@@ -45,27 +54,32 @@ if __name__ == "__main__":
             packages_str += p + " "
         packages_str += f"instill-sdk=={instill_version}"
 
-        Logger.i("[Instill Builder] Building model image...")
-        img, logs = client.images.build(
-            path="./",
-            rm=True,
-            nocache=True,
-            forcerm=True,
-            tag=f"{repo}:{tag}",
-            buildargs={
-                "RAY_VERSION": ray_version,
-                "PYTHON_VERSION": python_version,
-                "CUDA_SUFFIX": cuda_suffix,
-                "PACKAGES": packages_str,
-            },
-            quiet=False,
-        )
-        for line in logs:
-            print(*line.values())
-        Logger.i(f"[Instill Builder] {repo}:{tag} built")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            shutil.copyfile(
+                __file__.replace("build.py", "Dockerfile"), f"{tmpdir}/Dockerfile"
+            )
+            shutil.copytree(os.getcwd(), tmpdir, dirs_exist_ok=True)
+
+            Logger.i("[Instill Builder] Building model image...")
+            img, logs = client.images.build(
+                path=tmpdir,
+                rm=True,
+                pull=True,
+                nocache=args.no_cache,
+                tag=f"{repo}:{tag}",
+                buildargs={
+                    "RAY_VERSION": ray_version,
+                    "PYTHON_VERSION": python_version,
+                    "CUDA_SUFFIX": cuda_suffix,
+                    "PACKAGES": packages_str,
+                },
+                quiet=False,
+            )
+            for line in logs:
+                print(*line.values())
+            Logger.i(f"[Instill Builder] {repo}:{tag} built")
     except Exception as e:
         Logger.e("[Instill Builder] Build failed")
         Logger.e(e)
     finally:
-        os.remove("Dockerfile")
         Logger.i("[Instill Builder] Done")
