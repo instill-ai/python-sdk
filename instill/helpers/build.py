@@ -49,9 +49,9 @@ if __name__ == "__main__":
         packages_str = ""
         if not build["python_packages"] is None:
             for p in build["python_packages"]:
-                packages_str += p + " "
+                packages_str += f"{p},"
         for p in DEFAULT_DEPENDENCIES:
-            packages_str += p + " "
+            packages_str += f"{p},"
         packages_str += f"instill-sdk=={instill_version}"
 
         with tempfile.TemporaryDirectory() as tmpdir:

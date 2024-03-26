@@ -2,8 +2,8 @@ build:
   gpu: false
   python_version: "3.11"  # support only 3.11
   python_packages:
-    - '"torch==2.2.1 --index-url https://download.pytorch.org/whl/cpu"'
-    - '"torchvision==0.17.1 --index-url https://download.pytorch.org/whl/cpu"'
+    - torch==2.2.1 --index-url https://download.pytorch.org/whl/cpu
+    - torchvision==0.17.1 --index-url https://download.pytorch.org/whl/cpu
     - opencv-contrib-python-headless==4.8.1.78
     - onnxruntime==1.17.1
 repo: admin/yolov7-cpu  # make sure the format is {user-id}/{model-id} and the
