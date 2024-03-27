@@ -11,5 +11,5 @@ RUN for package in ${PACKAGES}; do \
     pip install --default-timeout=1000 --no-cache-dir $package; \
     done;
 
-WORKDIR /home/ray/model
+WORKDIR /home/ray
 COPY . .
