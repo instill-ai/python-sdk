@@ -71,6 +71,7 @@ if __name__ == "__main__":
             )
             shutil.copytree(os.getcwd(), tmpdir, dirs_exist_ok=True)
 
+            target_arch_suffix = "-aarch64" if args.target_arch == "arm64" else ""
             Logger.i("[Instill Builder] Building model image...")
             img, logs = client.images.build(
                 path=tmpdir,
@@ -80,6 +81,7 @@ if __name__ == "__main__":
                 platform=f"linux/{args.target_arch}",
                 tag=f"{repo}:{tag}",
                 buildargs={
+                    "TARGET_ARCH_SUFFIX": target_arch_suffix,
                     "RAY_VERSION": ray_version,
                     "PYTHON_VERSION": python_version,
                     "CUDA_SUFFIX": cuda_suffix,
