@@ -1,4 +1,5 @@
 """Integration tests configuration file."""
+
 # pylint: disable=unused-import,no-name-in-module
 
 import pytest
