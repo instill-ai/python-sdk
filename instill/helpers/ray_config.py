@@ -8,7 +8,6 @@ from ray.serve import deployment as ray_deployment
 from instill.helpers.const import (
     DEFAULT_AUTOSCALING_CONFIG,
     DEFAULT_MAX_CONCURRENT_QUERIES,
-    DEFAULT_RAY_ACTOR_OPTIONS,
     ENV_MEMORY,
     ENV_NUM_OF_CPUS,
     ENV_NUM_OF_GPUS,
@@ -32,8 +31,10 @@ class InstillDeployable:
         num_of_cpus = os.getenv(ENV_NUM_OF_CPUS)
         if num_of_cpus is not None and num_of_cpus != "":
             self._update_num_cpus(float(num_of_cpus))
-        else:
-            self._update_num_cpus(1)
+
+        memory = os.getenv(ENV_MEMORY)
+        if memory is not None and memory != "":
+            self._update_memory(float(memory))
 
         num_of_gpus = os.getenv(ENV_NUM_OF_GPUS)
         vram = os.getenv(ENV_TOTAL_VRAM)
@@ -45,10 +46,6 @@ class InstillDeployable:
         accelerator_type = os.getenv(ENV_RAY_ACCELERATOR_TYPE)
         if accelerator_type is not None and accelerator_type != "":
             self._update_accelerator_type(accelerator_type)
-
-        memory = os.getenv(ENV_MEMORY)
-        if memory is not None and memory != "":
-            self._update_memory(float(memory))
 
         num_of_min_replicas = os.getenv(ENV_NUM_OF_MIN_REPLICAS)
         if num_of_min_replicas is not None and num_of_min_replicas != "":
@@ -169,7 +166,7 @@ def instill_deployment(
 ) -> Callable[[Callable], InstillDeployable]:
     return ray_deployment(
         _func_or_class=_func_or_class,
-        ray_actor_options=DEFAULT_RAY_ACTOR_OPTIONS,
+        ray_actor_options={},
         autoscaling_config=DEFAULT_AUTOSCALING_CONFIG,
         max_concurrent_queries=DEFAULT_MAX_CONCURRENT_QUERIES,
     )

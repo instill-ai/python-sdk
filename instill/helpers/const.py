@@ -81,9 +81,6 @@ class VisualQuestionAnsweringInput:
     extra_params: Dict[str, str] = {}
 
 
-DEFAULT_RAY_ACTOR_OPTIONS = {
-    "num_cpus": 2,
-}
 DEFAULT_AUTOSCALING_CONFIG = {
     "target_num_ongoing_requests_per_replica": 2,
     "initial_replicas": 1,
