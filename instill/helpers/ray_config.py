@@ -15,6 +15,7 @@ from instill.helpers.const import (
     ENV_NUM_OF_MAX_REPLICAS,
     ENV_NUM_OF_MIN_REPLICAS,
     ENV_RAY_ACCELERATOR_TYPE,
+    ENV_RAY_CUSTOM_RESOURCE,
     ENV_TOTAL_VRAM,
     RAM_MINIMUM_RESERVE,
     RAM_UPSCALE_FACTOR,
@@ -47,6 +48,10 @@ class InstillDeployable:
         accelerator_type = os.getenv(ENV_RAY_ACCELERATOR_TYPE)
         if accelerator_type is not None and accelerator_type != "":
             self._update_accelerator_type(accelerator_type)
+
+        custom_resource = os.getenv(ENV_RAY_CUSTOM_RESOURCE)
+        if custom_resource is not None and custom_resource != "":
+            self._update_custom_resource(custom_resource)
 
         num_of_min_replicas = os.getenv(ENV_NUM_OF_MIN_REPLICAS)
         if num_of_min_replicas is not None and num_of_min_replicas != "":
@@ -132,10 +137,10 @@ class InstillDeployable:
 
         return self
 
-    def _update_num_custom_resource(self, resource_name: str, num: float):
+    def _update_custom_resource(self, resource_name: str):
         if self._deployment.ray_actor_options is not None:
             self._deployment.ray_actor_options.update(
-                {"resources": {resource_name: num}}
+                {"resources": {resource_name: 0.001}}
             )
 
         return self
