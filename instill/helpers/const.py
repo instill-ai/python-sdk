@@ -82,7 +82,7 @@ class VisualQuestionAnsweringInput:
 
 
 DEFAULT_RAY_ACTOR_OPTIONS = {
-    "num_cpus": 2,
+    "num_cpus": 0,
 }
 DEFAULT_AUTOSCALING_CONFIG = {
     "target_num_ongoing_requests_per_replica": 2,

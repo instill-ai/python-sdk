@@ -32,8 +32,10 @@ class InstillDeployable:
         num_of_cpus = os.getenv(ENV_NUM_OF_CPUS)
         if num_of_cpus is not None and num_of_cpus != "":
             self._update_num_cpus(float(num_of_cpus))
-        else:
-            self._update_num_cpus(1)
+
+        memory = os.getenv(ENV_MEMORY)
+        if memory is not None and memory != "":
+            self._update_memory(float(memory))
 
         num_of_gpus = os.getenv(ENV_NUM_OF_GPUS)
         vram = os.getenv(ENV_TOTAL_VRAM)
@@ -45,10 +47,6 @@ class InstillDeployable:
         accelerator_type = os.getenv(ENV_RAY_ACCELERATOR_TYPE)
         if accelerator_type is not None and accelerator_type != "":
             self._update_accelerator_type(accelerator_type)
-
-        memory = os.getenv(ENV_MEMORY)
-        if memory is not None and memory != "":
-            self._update_memory(float(memory))
 
         num_of_min_replicas = os.getenv(ENV_NUM_OF_MIN_REPLICAS)
         if num_of_min_replicas is not None and num_of_min_replicas != "":
