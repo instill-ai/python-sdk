@@ -29,39 +29,38 @@ class InstillDeployable:
     def __init__(self, deployable: Deployment) -> None:
         self._deployment: Deployment = deployable
 
-        accelerator_type = os.getenv(ENV_RAY_ACCELERATOR_TYPE)
-        if accelerator_type is not None and accelerator_type != "":
-            self.update_accelerator_type(accelerator_type)
-
-        num_of_gpus = os.getenv(ENV_NUM_OF_GPUS)
-        if num_of_gpus is not None and num_of_gpus != "":
-            self.update_num_gpus(float(num_of_gpus))
-
         num_of_cpus = os.getenv(ENV_NUM_OF_CPUS)
         if num_of_cpus is not None and num_of_cpus != "":
-            self.update_num_cpus(float(num_of_cpus))
+            self._update_num_cpus(float(num_of_cpus))
         else:
-            self.update_num_cpus(1)
+            self._update_num_cpus(1)
+
+        num_of_gpus = os.getenv(ENV_NUM_OF_GPUS)
+        vram = os.getenv(ENV_TOTAL_VRAM)
+        if num_of_gpus is not None and num_of_gpus != "":
+            self._update_num_gpus(float(num_of_gpus))
+        elif vram is not None and vram != "":
+            self._update_num_gpus(self._determine_vram_usage(os.getcwd(), vram))
+
+        accelerator_type = os.getenv(ENV_RAY_ACCELERATOR_TYPE)
+        if accelerator_type is not None and accelerator_type != "":
+            self._update_accelerator_type(accelerator_type)
 
         memory = os.getenv(ENV_MEMORY)
         if memory is not None and memory != "":
-            self.update_memory(float(memory))
+            self._update_memory(float(memory))
 
         num_of_min_replicas = os.getenv(ENV_NUM_OF_MIN_REPLICAS)
         if num_of_min_replicas is not None and num_of_min_replicas != "":
-            self.update_min_replicas(int(num_of_min_replicas))
+            self._update_min_replicas(int(num_of_min_replicas))
         else:
-            self.update_min_replicas(0)
+            self._update_min_replicas(0)
 
         num_of_max_replicas = os.getenv(ENV_NUM_OF_MAX_REPLICAS)
         if num_of_max_replicas is not None and num_of_max_replicas != "":
-            self.update_max_replicas(int(num_of_max_replicas))
+            self._update_max_replicas(int(num_of_max_replicas))
         else:
-            self.update_max_replicas(1)
-
-        vram = os.getenv(ENV_TOTAL_VRAM)
-        if vram is not None and vram != "":
-            self.update_num_gpus(self._determine_vram_usage(os.getcwd(), vram))
+            self._update_max_replicas(1)
 
     def _determine_vram_usage(self, model_path: str, total_vram: str):
         warn(
@@ -109,25 +108,25 @@ class InstillDeployable:
             )
         raise ModelPathException
 
-    def update_num_cpus(self, num_cpus: float):
+    def _update_num_cpus(self, num_cpus: float):
         if self._deployment.ray_actor_options is not None:
             self._deployment.ray_actor_options.update({"num_cpus": num_cpus})
 
         return self
 
-    def update_memory(self, memory: float):
+    def _update_memory(self, memory: float):
         if self._deployment.ray_actor_options is not None:
             self._deployment.ray_actor_options.update({"memory": memory})
 
         return self
 
-    def update_num_gpus(self, num_gpus: float):
+    def _update_num_gpus(self, num_gpus: float):
         if self._deployment.ray_actor_options is not None:
             self._deployment.ray_actor_options.update({"num_gpus": num_gpus})
 
         return self
 
-    def update_accelerator_type(self, accelerator_type: str):
+    def _update_accelerator_type(self, accelerator_type: str):
         if self._deployment.ray_actor_options is not None:
             self._deployment.ray_actor_options.update(
                 {"accelerator_type": accelerator_type}
@@ -135,7 +134,7 @@ class InstillDeployable:
 
         return self
 
-    def update_num_custom_resource(self, resource_name: str, num: float):
+    def _update_num_custom_resource(self, resource_name: str, num: float):
         if self._deployment.ray_actor_options is not None:
             self._deployment.ray_actor_options.update(
                 {"resources": {resource_name: num}}
@@ -143,7 +142,7 @@ class InstillDeployable:
 
         return self
 
-    def update_min_replicas(self, num_replicas: int):
+    def _update_min_replicas(self, num_replicas: int):
         new_autoscaling_config = DEFAULT_AUTOSCALING_CONFIG
         new_autoscaling_config["min_replicas"] = num_replicas
         self._deployment = self._deployment.options(
@@ -152,7 +151,7 @@ class InstillDeployable:
 
         return self
 
-    def update_max_replicas(self, num_replicas: int):
+    def _update_max_replicas(self, num_replicas: int):
         new_autoscaling_config = DEFAULT_AUTOSCALING_CONFIG
         new_autoscaling_config["max_replicas"] = num_replicas
         self._deployment = self._deployment.options(
