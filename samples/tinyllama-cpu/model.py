@@ -147,9 +147,5 @@ class TinyLlama:
 
 entrypoint = (
     InstillDeployable(TinyLlama)
-    .update_max_replicas(4)
-    .update_min_replicas(0)
-    .update_num_cpus(4)
-    .update_memory(4 * (1024 * 1024 * 1024))
     .get_deployment_handle()
 )

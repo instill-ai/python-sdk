@@ -409,8 +409,5 @@ class Yolov7:
 
 entrypoint = (
     InstillDeployable(Yolov7)
-    .update_max_replicas(4)
-    .update_min_replicas(0)
-    .update_num_gpus(0.25)
     .get_deployment_handle()
 )

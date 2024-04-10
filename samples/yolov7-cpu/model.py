@@ -407,9 +407,5 @@ class Yolov7:
 
 entrypoint = (
     InstillDeployable(Yolov7)
-    .update_max_replicas(4)
-    .update_min_replicas(0)
-    .update_num_cpus(1)
-    .update_memory(4 * (1024 * 1024 * 1024))
     .get_deployment_handle()
 )
