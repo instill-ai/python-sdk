@@ -1,14 +1,12 @@
 import argparse
-import types
+import subprocess
 
-import docker
 import yaml
 
 from instill.utils.logger import Logger
 
 if __name__ == "__main__":
     Logger.i("[Instill Builder] Setup docker...")
-    client = docker.from_env()
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -31,26 +29,16 @@ if __name__ == "__main__":
         repo = config["repo"]
         tag = config["tag"]
 
-        img = client.images.get(name=f"{repo}:{tag}")
-        img.tag(f"{registry}/{repo}", tag)
+        subprocess.run(
+            ["docker", "tag", f"{repo}:{tag}", f"{registry}/{repo}:{tag}"], check=True
+        )
         Logger.i("[Instill Builder] Pushing model image...")
-        logs = client.images.push(f"{registry}/{repo}", tag=tag)
-        if isinstance(logs, types.GeneratorType):
-            for line in logs:
-                print(*line.values())
-        elif isinstance(logs, list):
-            for line in logs:
-                if "errorDetail" in line:
-                    raise RuntimeError(line["errorDetail"]["message"])
-                print(line)
-        else:
-            if "errorDetail" in logs:
-                err = logs.split('{"errorDetail":{"message":', 1)[1][1:-4]
-                raise RuntimeError(err)
-            print(logs)
+        subprocess.run(["docker", "push", f"{registry}/{repo}:{tag}"], check=True)
         Logger.i(f"[Instill Builder] {registry}/{repo}:{tag} pushed")
-    except Exception as e:
+    except subprocess.CalledProcessError as e:
         Logger.e("[Instill Builder] Push failed")
+    except Exception as e:
+        Logger.e("[Instill Builder] Prepare failed")
         Logger.e(e)
     finally:
         Logger.i("[Instill Builder] Done")
