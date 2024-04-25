@@ -4,8 +4,8 @@ import os
 import platform
 import shutil
 import tempfile
+import subprocess
 
-import docker
 import ray
 import yaml
 
@@ -34,7 +34,6 @@ if __name__ == "__main__":
         required=False,
     )
 
-    client = docker.from_env()
     try:
         args = parser.parse_args()
 
@@ -69,31 +68,46 @@ if __name__ == "__main__":
             shutil.copyfile(
                 __file__.replace("build.py", "Dockerfile"), f"{tmpdir}/Dockerfile"
             )
+            shutil.copyfile(
+                __file__.replace("build.py", ".dockerignore"), f"{tmpdir}/.dockerignore"
+            )
             shutil.copytree(os.getcwd(), tmpdir, dirs_exist_ok=True)
 
             target_arch_suffix = "-aarch64" if args.target_arch == "arm64" else ""
+
             Logger.i("[Instill Builder] Building model image...")
-            img, logs = client.images.build(
-                path=tmpdir,
-                rm=True,
-                pull=True,
-                nocache=args.no_cache,
-                platform=f"linux/{args.target_arch}",
-                tag=f"{repo}:{tag}",
-                buildargs={
-                    "TARGET_ARCH_SUFFIX": target_arch_suffix,
-                    "RAY_VERSION": ray_version,
-                    "PYTHON_VERSION": python_version,
-                    "CUDA_SUFFIX": cuda_suffix,
-                    "PACKAGES": packages_str,
-                },
-                quiet=False,
+            command = [
+                "docker",
+                "buildx",
+                "build",
+                "--build-arg",
+                f"TARGET_ARCH_SUFFIX={target_arch_suffix}",
+                "--build-arg",
+                f"RAY_VERSION={ray_version}",
+                "--build-arg",
+                f"PYTHON_VERSION={python_version}",
+                "--build-arg",
+                f"CUDA_SUFFIX={cuda_suffix}",
+                "--build-arg",
+                f"PACKAGES={packages_str}",
+                "--platform",
+                f"linux/{args.target_arch}",
+                "-t",
+                f"{repo}:{tag}",
+                tmpdir,
+                "--load",
+            ]
+            if args.no_cache:
+                command.append("--no-cache")
+            subprocess.run(
+                command,
+                check=True,
             )
-            for line in logs:
-                print(*line.values())
             Logger.i(f"[Instill Builder] {repo}:{tag} built")
-    except Exception as e:
+    except subprocess.CalledProcessError as e:
         Logger.e("[Instill Builder] Build failed")
+    except Exception as e:
+        Logger.e("[Instill Builder] Prepare failed")
         Logger.e(e)
     finally:
         Logger.i("[Instill Builder] Done")
