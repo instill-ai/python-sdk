@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.8.0](https://github.com/instill-ai/python-sdk/compare/v0.7.1...v0.8.0) (2024-04-25)
+
+
+### Features
+
+* **deps:** upgrade ray version ([cc61b85](https://github.com/instill-ai/python-sdk/commit/cc61b8541c9545ca2b6768c519242af6f6b9df93))
+* **ray:** adapt to native docker client instead of docker sdk ([#138](https://github.com/instill-ai/python-sdk/issues/138)) ([7d19ccb](https://github.com/instill-ai/python-sdk/commit/7d19ccbfe24eebe29e4a2e1729b2c82503ad4782))
+* **ray:** add accelerator and custom resource support ([#118](https://github.com/instill-ai/python-sdk/issues/118)) ([f974f98](https://github.com/instill-ai/python-sdk/commit/f974f9826d28e4a54c89aa917ec37c5b3eac3c68))
+* **ray:** add llava 13b to predeploy list ([3fd5914](https://github.com/instill-ai/python-sdk/commit/3fd591419c940f1635472b25b5bf8f6a522bfd15))
+* **ray:** add metadata and infer constructor for llm tasks ([#137](https://github.com/instill-ai/python-sdk/issues/137)) ([be122d1](https://github.com/instill-ai/python-sdk/commit/be122d1b19516fa789c183f5e7128cb34a8c01e1))
+* **ray:** generate sha256 as tag if not presented ([#120](https://github.com/instill-ai/python-sdk/issues/120)) ([6abb538](https://github.com/instill-ai/python-sdk/commit/6abb5380ace6df7e0eefff56d19b34559daf8982))
+* **ray:** inject accelerator type at runtime ([#121](https://github.com/instill-ai/python-sdk/issues/121)) ([f78a2d0](https://github.com/instill-ai/python-sdk/commit/f78a2d0a604107d208a9783f89e54f68cb68e196))
+* **ray:** support containerized model serving ([#116](https://github.com/instill-ai/python-sdk/issues/116)) ([ad0f250](https://github.com/instill-ai/python-sdk/commit/ad0f2505d49dec675558e65cc62e3901311a7673))
+* **ray:** support custom accelerator type ([#134](https://github.com/instill-ai/python-sdk/issues/134)) ([ae6c139](https://github.com/instill-ai/python-sdk/commit/ae6c139d3c7eafa3015ec779628321185f76d381))
+* **ray:** use env for resource and deprecate deploy/undeploy ([#124](https://github.com/instill-ai/python-sdk/issues/124)) ([a58bc50](https://github.com/instill-ai/python-sdk/commit/a58bc50f97ed8747da961b6cfbf416ea51361c95))
+* **ray:** use tmp folder for image building ([#122](https://github.com/instill-ai/python-sdk/issues/122)) ([9512cec](https://github.com/instill-ai/python-sdk/commit/9512cecc47299b5542b6045fead4c70bab07628e))
+
+
+### Bug Fixes
+
+* **deps:** downgrade ray to avoid grpc servicer issue ([#128](https://github.com/instill-ai/python-sdk/issues/128)) ([9ead421](https://github.com/instill-ai/python-sdk/commit/9ead42178d606827e7f747f5e4150f6c6d12437a))
+* **dockerfile:** avoid build hang at ARG statement ([#130](https://github.com/instill-ai/python-sdk/issues/130)) ([f02a27c](https://github.com/instill-ai/python-sdk/commit/f02a27c2f82c7ebe902b01037b2cdd01ddb6e231))
+* **ray:** fix etrypoint module not found ([#126](https://github.com/instill-ai/python-sdk/issues/126)) ([f1ed83d](https://github.com/instill-ai/python-sdk/commit/f1ed83de1f7a8e190d3152ba9e3e9b02df5d3617))
+* **ray:** fix missing default resource value ([#129](https://github.com/instill-ai/python-sdk/issues/129)) ([b2f564a](https://github.com/instill-ai/python-sdk/commit/b2f564ae2a0cb933497c49653d6707c7275a0226))
+* **ray:** fix multi-platform build stage ([6f358fd](https://github.com/instill-ai/python-sdk/commit/6f358fd4b20dd33e09fdc453c9ddac1f515f3260))
+* **ray:** support target platform for image building ([#127](https://github.com/instill-ai/python-sdk/issues/127)) ([f4825fc](https://github.com/instill-ai/python-sdk/commit/f4825fce259946072a71f2892a9686914c81ff55))
+
 ## [0.7.1](https://github.com/instill-ai/python-sdk/compare/v0.7.0...v0.7.1) (2024-02-22)
 
 
