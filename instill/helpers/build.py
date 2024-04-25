@@ -3,8 +3,8 @@ import hashlib
 import os
 import platform
 import shutil
-import tempfile
 import subprocess
+import tempfile
 
 import ray
 import yaml

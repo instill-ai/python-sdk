@@ -1,6 +1,6 @@
 import argparse
-import types
 import subprocess
+
 import yaml
 
 from instill.utils.logger import Logger
