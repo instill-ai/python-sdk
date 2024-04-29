@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/instill-ai/python-sdk/compare/v0.8.0...v0.8.1) (2024-04-29)
+
+
+### Bug Fixes
+
+* **ray:** fix missing imports ([#139](https://github.com/instill-ai/python-sdk/issues/139)) ([02199b1](https://github.com/instill-ai/python-sdk/commit/02199b1a2f1e2d544a1cf8a740cce66edf8f5cd9))
+
 ## [0.8.0](https://github.com/instill-ai/python-sdk/compare/v0.7.1...v0.8.0) (2024-04-25)
 
 
