@@ -1,5 +1,15 @@
 from instill.helpers.protobufs.parse import (
     Metadata,
+    construct_image_to_image_infer_response,
+    construct_image_to_image_metadata_response,
     construct_infer_response,
     construct_metadata_response,
+    construct_text_generation_chat_infer_response,
+    construct_text_generation_chat_metadata_response,
+    construct_text_generation_infer_response,
+    construct_text_generation_metadata_response,
+    construct_text_to_image_infer_response,
+    construct_text_to_image_metadata_response,
+    construct_visual_question_answering_infer_response,
+    construct_visual_question_answering_metadata_response,
 )
