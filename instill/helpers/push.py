@@ -5,9 +5,8 @@ import yaml
 
 from instill.utils.logger import Logger
 
-if __name__ == "__main__":
-    Logger.i("[Instill Builder] Setup docker...")
 
+def push_image():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-u",
@@ -15,6 +14,12 @@ if __name__ == "__main__":
         help="image registry url, in the format of host:port, default to docker.io",
         default="docker.io",
         required=False,
+    )
+    parser.add_argument(
+        "-t",
+        "--tag",
+        help="tag for the model image",
+        required=True,
     )
 
     try:
@@ -27,18 +32,22 @@ if __name__ == "__main__":
 
         registry = args.url
         repo = config["repo"]
-        tag = config["tag"]
 
         subprocess.run(
-            ["docker", "tag", f"{repo}:{tag}", f"{registry}/{repo}:{tag}"], check=True
+            ["docker", "tag", f"{repo}:{args.tag}", f"{registry}/{repo}:{args.tag}"],
+            check=True,
         )
         Logger.i("[Instill Builder] Pushing model image...")
-        subprocess.run(["docker", "push", f"{registry}/{repo}:{tag}"], check=True)
-        Logger.i(f"[Instill Builder] {registry}/{repo}:{tag} pushed")
-    except subprocess.CalledProcessError as e:
+        subprocess.run(["docker", "push", f"{registry}/{repo}:{args.tag}"], check=True)
+        Logger.i(f"[Instill Builder] {registry}/{repo}:{args.tag} pushed")
+    except subprocess.CalledProcessError:
         Logger.e("[Instill Builder] Push failed")
     except Exception as e:
         Logger.e("[Instill Builder] Prepare failed")
         Logger.e(e)
     finally:
         Logger.i("[Instill Builder] Done")
+
+
+if __name__ == "__main__":
+    push_image()

@@ -11,15 +11,34 @@ import yaml
 
 import instill
 from instill.helpers.const import DEFAULT_DEPENDENCIES
+from instill.helpers.errors import ModelConfigException
 from instill.utils.logger import Logger
 
-if __name__ == "__main__":
-    Logger.i("[Instill Builder] Setup docker...")
+
+def config_check_required_fields(c):
+    if "build" not in c or c["build"] is None:
+        raise ModelConfigException("build")
+    if "gpu" not in c["build"] or c["build"]["gpu"] is None:
+        raise ModelConfigException("gpu")
+    if "python_version" not in c["build"] or c["build"]["python_version"] is None:
+        raise ModelConfigException("python_version")
+    if "repo" not in c or c["repo"] is None:
+        raise ModelConfigException("repo")
+
+
+def build_image():
     if platform.machine() in ("i386", "AMD64", "x86_64"):
         default_platform = "amd64"
     else:
         default_platform = platform.machine()
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-t",
+        "--tag",
+        help="tag for the model image",
+        default="",
+        required=False,
+    )
     parser.add_argument(
         "--no-cache",
         help="build the image without cache",
@@ -34,21 +53,18 @@ if __name__ == "__main__":
         required=False,
     )
 
+    args = parser.parse_args()
     try:
-        args = parser.parse_args()
-
         Logger.i("[Instill Builder] Loading config file...")
         with open("instill.yaml", "r", encoding="utf8") as f:
             Logger.i("[Instill Builder] Parsing config file...")
             config = yaml.safe_load(f)
 
+        config_check_required_fields(config)
+
         build = config["build"]
         repo = config["repo"]
-        tag = (
-            config["tag"]
-            if config["tag"] is not None and config["tag"] != ""
-            else hashlib.sha256().hexdigest()
-        )
+        tag = args.tag if args.tag != "" else hashlib.sha256().hexdigest()
 
         python_version = build["python_version"].replace(".", "")
         ray_version = ray.__version__
@@ -56,8 +72,13 @@ if __name__ == "__main__":
 
         cuda_suffix = "" if not build["gpu"] else "-cu121"
 
+        system_str = ""
+        if "system_packages" in build and not build["system_packages"] is None:
+            for p in build["system_packages"]:
+                system_str += p + " "
+
         packages_str = ""
-        if not build["python_packages"] is None:
+        if "python_packages" in build and not build["python_packages"] is None:
             for p in build["python_packages"]:
                 packages_str += p + " "
         for p in DEFAULT_DEPENDENCIES:
@@ -90,6 +111,8 @@ if __name__ == "__main__":
                 f"CUDA_SUFFIX={cuda_suffix}",
                 "--build-arg",
                 f"PACKAGES={packages_str}",
+                "--build-arg",
+                f"SYSTEM_PACKAGES={system_str}",
                 "--platform",
                 f"linux/{args.target_arch}",
                 "-t",
@@ -104,10 +127,14 @@ if __name__ == "__main__":
                 check=True,
             )
             Logger.i(f"[Instill Builder] {repo}:{tag} built")
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError:
         Logger.e("[Instill Builder] Build failed")
     except Exception as e:
         Logger.e("[Instill Builder] Prepare failed")
         Logger.e(e)
     finally:
         Logger.i("[Instill Builder] Done")
+
+
+if __name__ == "__main__":
+    build_image()
