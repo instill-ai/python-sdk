@@ -14,6 +14,8 @@ homepage = "https://pypi.org/project/instill-sdk"
 documentation = "https://instill-sdk.readthedocs.io"
 repository = "https://github.com/instill-ai/python-sdk"
 
+maintainers = ["Heiru Wu <heiru.wu@instill.tech>"]
+
 keywords = []
 classifiers = [
   "Development Status :: 1 - Planning",
@@ -37,7 +39,7 @@ googleapis-common-protos = "^1.60.0"
 protoc-gen-openapiv2 = "^0.0.1"
 pydantic = ">=1.10.13"
 pillow = "^10.1.0"
-ray = {version = "2.9.3", extras = ["serve"]}
+ray = { version = "2.9.3", extras = ["serve"] }
 jsonschema = "^4.20.0"
 
 [tool.poetry.dev-dependencies]
@@ -84,8 +86,8 @@ jsonref = "^1.1.0"
 twine = "^4.0.2"
 
 [tool.poetry.scripts]
-
-# python-sdk = "instill.cli:main"
+instill_build = "instill.helpers.build:build_image"
+instill_push = "instill.helpers.push:push_image"
 
 [tool.black]
 
@@ -118,9 +120,7 @@ profile = "black"
 skip_glob = ["**/protogen/*", "**/protobufs/*"]
 
 [tool.mypy]
-exclude = [
-    'instill/resources/schema',
-]
+exclude = ['instill/resources/schema']
 ignore_missing_imports = true
 no_implicit_optional = true
 check_untyped_defs = true
