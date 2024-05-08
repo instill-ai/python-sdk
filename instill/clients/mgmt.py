@@ -560,6 +560,25 @@ class MgmtClient(Client):
         ).send_sync()
 
     @grpc_handler
+    def get_remaining_credit(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> mgmt_interface.GetRemainingCreditResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.GetRemainingCredit,
+                request=mgmt_interface.GetRemainingCreditRequest(owner=f"users/{name}"),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetRemainingCredit,
+            request=mgmt_interface.GetRemainingCreditRequest(owner=f"users/{name}"),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
     def get_org(
         self,
         org_name: str,
@@ -635,65 +654,5 @@ class MgmtClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.ListPipelineTriggerChartRecords,
             request=metric_interface.ListPipelineTriggerChartRecordsRequest(),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def list_connector_execute_records(
-        self,
-        async_enabled: bool = False,
-    ) -> metric_interface.ListConnectorExecuteRecordsResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.ListConnectorExecuteRecords,
-                request=metric_interface.ListConnectorExecuteRecordsRequest(),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.ListConnectorExecuteRecords,
-            request=metric_interface.ListConnectorExecuteRecordsRequest(),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def list_connector_execute_table_records(
-        self,
-        async_enabled: bool = False,
-    ) -> metric_interface.ListConnectorExecuteTableRecordsResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.ListConnectorExecuteTableRecords,
-                request=metric_interface.ListConnectorExecuteTableRecordsRequest(),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.ListConnectorExecuteTableRecords,
-            request=metric_interface.ListConnectorExecuteTableRecordsRequest(),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def list_connector_execute_chart_records(
-        self,
-        async_enabled: bool = False,
-    ) -> metric_interface.ListConnectorExecuteChartRecordsResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.ListConnectorExecuteChartRecords,
-                request=metric_interface.ListConnectorExecuteChartRecordsRequest(),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.ListConnectorExecuteChartRecords,
-            request=metric_interface.ListConnectorExecuteChartRecordsRequest(),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
