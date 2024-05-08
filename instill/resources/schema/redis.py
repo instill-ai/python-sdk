@@ -14,7 +14,7 @@ class DisableSSL(Enum):
 
 @dataclass
 class DisableSSLMode:
-    mode: DisableSSL
+    mode: DisableSSL = DisableSSL.disable
 
 
 class Enable(Enum):
@@ -26,7 +26,7 @@ class VerifyFullSSLMode:
     ca_cert: str
     client_cert: str
     client_key: str
-    mode: Enable
+    mode: Enable = Enable.verify_full
 
 
 @dataclass

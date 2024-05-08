@@ -10,14 +10,14 @@ from typing import Union
 
 @dataclass
 class NoAuth:
-    auth_type: str
+    auth_type: str = 'NO_AUTH'
 
 
 @dataclass
 class BasicAuth:
-    auth_type: str
     password: str
     username: str
+    auth_type: str = 'BASIC_AUTH'
 
 
 class WhereToAddAPIKeyTo(Enum):
@@ -28,15 +28,15 @@ class WhereToAddAPIKeyTo(Enum):
 @dataclass
 class APIKey:
     auth_location: WhereToAddAPIKeyTo
-    auth_type: str
     key: str
     value: str
+    auth_type: str = 'API_KEY'
 
 
 @dataclass
 class BearerToken:
-    auth_type: str
     token: str
+    auth_type: str = 'BEARER_TOKEN'
 
 
 @dataclass

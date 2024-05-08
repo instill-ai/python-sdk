@@ -16,6 +16,6 @@ class AuthType(Enum):
 class Field0:
     access_token: str
     refresh_token: str
-    auth_type: Optional[AuthType] = AuthType.OAuth2_0
+    auth_type: AuthType = OAuth2.AuthType.OAuth2_0
     client_id: Optional[str] = None
     client_secret: Optional[str] = None

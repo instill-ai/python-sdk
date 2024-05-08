@@ -4,19 +4,19 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Optional, Union
+from typing import Union
 
 
 @dataclass
 class InstillModelConnectorInternalMode:
-    mode: Optional[Any] = None
+    mode: str = 'Internal Mode'
 
 
 @dataclass
 class InstillModelConnectorExternalMode:
     api_token: str
     server_url: str
-    mode: Optional[Any] = None
+    mode: str = 'External Mode'
 
 
 InstillModelConnector = Union[

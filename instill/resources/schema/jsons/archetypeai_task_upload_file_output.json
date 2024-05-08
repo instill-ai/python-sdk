@@ -1,0 +1,1 @@
+{"instillUIOrder":0,"properties":{"file_id":{"instillFormat":"string","instillUIOrder":0,"title":"File ID","description":"The ID to reference the file in queries","type":"string"}},"required":["file_id"],"title":"Output","type":"object"}

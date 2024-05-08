@@ -1,10 +1,11 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module
 import re
 from dataclasses import fields, is_dataclass
+
 from instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 import (
     ConnectorComponent,
-    OperatorComponent,
     IteratorComponent,
+    OperatorComponent,
 )
 
 

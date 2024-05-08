@@ -38,9 +38,9 @@ class Input:
     headline: Optional[str] = None
     caption: Optional[str] = None
     asset_creator: Optional[str] = None
-    digital_source_type: Optional[
-        DigitalSourceType
-    ] = DigitalSourceType.trainedAlgorithmicMedia
+    digital_source_type: Optional[DigitalSourceType] = (
+        DigitalSourceType.trainedAlgorithmicMedia
+    )
     generated_by: Optional[str] = None
     license: Optional[License] = None
     mining_preference: Optional[MiningPreference] = MiningPreference.notAllowed

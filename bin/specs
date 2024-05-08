@@ -3,7 +3,7 @@
 echo "Downloading component/schema.json..."
 curl https://raw.githubusercontent.com/instill-ai/component/88cf79188084a6f4afd87f715e13f334d3674013/schema.json -L -s -o ./instill/resources/schema/jsons/component.json
 
-connector_schemas=("airbyte" "bigquery" "googlecloudstorage" "stabilityai" "googlesearch" "huggingface" "instill" "numbers" "openai" "pinecone" "redis" "restapi" "website")
+connector_schemas=("archetypeai" "airbyte" "bigquery" "googlecloudstorage" "stabilityai" "googlesearch" "huggingface" "instill" "numbers" "openai" "pinecone" "redis" "restapi" "website")
 
 for connector in ${connector_schemas[@]}; do
     echo "=====================@@@ Fetching and processing $connector @@@====================="
