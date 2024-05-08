@@ -1,8 +1,7 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module
 import json
 
-from instill.resources import Component
-from instill.resources import const
+from instill.resources import Component, const
 from instill.resources.schema import helper, numbers_task_commit_input
 
 
@@ -21,4 +20,4 @@ class NumbersConnector(Component):
             component_type, definition_name, inp
         )
 
-        super().__init__(name, component_type, component)
+        super().__init__(name, component)

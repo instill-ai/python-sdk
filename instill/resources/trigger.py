@@ -1,6 +1,6 @@
 # pylint: disable=no-member,wrong-import-position
-from typing import List
 from dataclasses import dataclass
+from typing import List
 
 import instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 as pipeline_pb
 
@@ -27,23 +27,28 @@ class Trigger:
         request_fields: List[TriggerByRequestRequestFields],
         response_fields: List[TriggerByRequestResponseFields],
     ) -> None:
-        t = pipeline_pb.TriggerByRequest
+
         req = {}
-        for f in request_fields:
-            req[f.key] = pipeline_pb.TriggerByRequest.RequestField(
-                title=f.title,
-                description=f.description,
-                instill_format=f.format,
+        for req_f in request_fields:
+            req[req_f.key] = pipeline_pb.TriggerByRequest.RequestField(
+                title=req_f.title,
+                description=req_f.description,
+                instill_format=req_f.format,
             )
         resp = {}
-        for f in response_fields:
-            resp[f.key] = pipeline_pb.TriggerByRequest.ResponseField(
-                title=f.title,
-                description=f.description,
-                value=f.value,
+        for resp_f in response_fields:
+            resp[resp_f.key] = pipeline_pb.TriggerByRequest.ResponseField(
+                title=resp_f.title,
+                description=resp_f.description,
+                value=resp_f.value,
             )
-        t.request_fields = req
-        t.response_fields = resp
+
+        t = pipeline_pb.Trigger(
+            trigger_by_request=pipeline_pb.TriggerByRequest(
+                request_fields=req,
+                response_fields=resp,
+            )
+        )
 
         self.t = t
 

@@ -8,8 +8,8 @@ import instill.protogen.common.healthcheck.v1beta.healthcheck_pb2 as healthcheck
 
 # pipeline
 import instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 as pipeline_interface
-import instill.protogen.vdp.pipeline.v1beta.secret_pb2 as secret_interface
 import instill.protogen.vdp.pipeline.v1beta.pipeline_public_service_pb2_grpc as pipeline_service
+import instill.protogen.vdp.pipeline.v1beta.secret_pb2 as secret_interface
 from instill.clients.base import Client, RequestFactory
 from instill.clients.constant import DEFAULT_INSTANCE
 from instill.clients.instance import InstillInstance

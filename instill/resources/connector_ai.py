@@ -39,6 +39,9 @@ from instill.resources.schema import (
     openai_task_text_to_speech_input,
     stabilityai_task_image_to_image_input,
     stabilityai_task_text_to_image_input,
+    archetypeai_task_describe_input,
+    archetypeai_task_summarize_input,
+    archetypeai_task_upload_file_input,
 )
 
 
@@ -76,7 +79,7 @@ class HuggingfaceConnector(Component):
             component_type, definition_name, inp
         )
 
-        super().__init__(name, component_type, component)
+        super().__init__(name, component)
 
 
 class InstillModelConnector(Component):
@@ -105,7 +108,7 @@ class InstillModelConnector(Component):
             component_type, definition_name, inp
         )
 
-        super().__init__(name, component_type, component)
+        super().__init__(name, component)
 
 
 class StabilityAIConnector(Component):
@@ -126,7 +129,7 @@ class StabilityAIConnector(Component):
             component_type, definition_name, inp
         )
 
-        super().__init__(name, component_type, component)
+        super().__init__(name, component)
 
 
 class OpenAIConnector(Component):
@@ -150,4 +153,26 @@ class OpenAIConnector(Component):
             component_type, definition_name, inp
         )
 
-        super().__init__(name, component_type, component)
+        super().__init__(name, component)
+
+
+class ArchetypeAIConnector(Component):
+    """ArchetypeAI Connector"""
+
+    def __init__(
+        self,
+        name: str,
+        inp: Union[
+            archetypeai_task_upload_file_input.Input,
+            archetypeai_task_describe_input.Input,
+            archetypeai_task_summarize_input.Input,
+        ],
+    ) -> None:
+        definition_name = "connector-definitions/archetype-ai"
+        component_type = "connector"
+
+        component = helper.construct_component_config(
+            component_type, definition_name, inp
+        )
+
+        super().__init__(name, component)

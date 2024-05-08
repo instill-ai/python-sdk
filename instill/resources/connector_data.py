@@ -38,7 +38,7 @@ class BigQueryConnector(Component):
             component_type, definition_name, inp
         )
 
-        super().__init__(name, component_type, component)
+        super().__init__(name, component)
 
 
 class PineconeConnector(Component):
@@ -59,7 +59,7 @@ class PineconeConnector(Component):
             component_type, definition_name, inp
         )
 
-        super().__init__(name, component_type, component)
+        super().__init__(name, component)
 
 
 class GoogleCloudStorageConnector(Component):
@@ -77,7 +77,7 @@ class GoogleCloudStorageConnector(Component):
             component_type, definition_name, inp
         )
 
-        super().__init__(name, component_type, component)
+        super().__init__(name, component)
 
 
 class GoogleSearchConnector(Component):
@@ -95,7 +95,7 @@ class GoogleSearchConnector(Component):
             component_type, definition_name, inp
         )
 
-        super().__init__(name, component_type, component)
+        super().__init__(name, component)
 
 
 class RedisConnector(Component):
@@ -117,7 +117,7 @@ class RedisConnector(Component):
             component_type, definition_name, inp
         )
 
-        super().__init__(name, component_type, component)
+        super().__init__(name, component)
 
 
 class RestAPIConnector(Component):
@@ -144,7 +144,7 @@ class RestAPIConnector(Component):
             component_type, definition_name, inp
         )
 
-        super().__init__(name, component_type, component)
+        super().__init__(name, component)
 
 
 class WebsiteConnector(Component):
@@ -162,4 +162,4 @@ class WebsiteConnector(Component):
             component_type, definition_name, inp
         )
 
-        super().__init__(name, component_type, component)
+        super().__init__(name, component)

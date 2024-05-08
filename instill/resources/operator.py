@@ -1,20 +1,21 @@
 # pylint: disable=no-member,wrong-import-position
 from typing import Union
+
 from instill.resources import Component
 from instill.resources.schema import (
     base64_task_decode_input,
     base64_task_encode_input,
-    json_task_marshal_input,
-    json_task_unmarshal_input,
+    helper,
     image_task_draw_classification_input,
     image_task_draw_detection_input,
     image_task_draw_instance_segmentation_input,
-    image_task_draw_semantic_segmentation_input,
-    image_task_draw_ocr_input,
     image_task_draw_keypoint_input,
-    text_task_split_by_token_input,
+    image_task_draw_ocr_input,
+    image_task_draw_semantic_segmentation_input,
+    json_task_marshal_input,
+    json_task_unmarshal_input,
     text_task_convert_to_text_input,
-    helper,
+    text_task_split_by_token_input,
 )
 
 
@@ -36,7 +37,7 @@ class Base64Operator(Component):
             component_type, definition_name, inp
         )
 
-        super().__init__(name, component_type, component)
+        super().__init__(name, component)
 
 
 class JSONOperator(Component):
@@ -57,7 +58,7 @@ class JSONOperator(Component):
             component_type, definition_name, inp
         )
 
-        super().__init__(name, component_type, component)
+        super().__init__(name, component)
 
 
 class ImageOperator(Component):
@@ -82,7 +83,7 @@ class ImageOperator(Component):
             component_type, definition_name, inp
         )
 
-        super().__init__(name, component_type, component)
+        super().__init__(name, component)
 
 
 class TextOperator(Component):
@@ -103,4 +104,4 @@ class TextOperator(Component):
             component_type, definition_name, inp
         )
 
-        super().__init__(name, component_type, component)
+        super().__init__(name, component)

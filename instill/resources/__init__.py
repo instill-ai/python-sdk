@@ -12,11 +12,24 @@ from instill.resources.connector_ai import (
     InstillModelConnector,
     OpenAIConnector,
     StabilityAIConnector,
+    HuggingfaceConnector,
 )
 from instill.resources.connector_blockchain import NumbersConnector
-from instill.resources.connector_data import PineconeConnector
+from instill.resources.connector_data import (
+    PineconeConnector,
+    RedisConnector,
+    WebsiteConnector,
+    BigQueryConnector,
+    GoogleSearchConnector,
+    GoogleCloudStorageConnector,
+)
+from instill.resources.operator import (
+    Base64Operator,
+    ImageOperator,
+    TextOperator,
+    JSONOperator,
+)
 from instill.resources.model import GithubModel, HugginfaceModel, Model
-from instill.resources.operator import create_end_operator, create_start_operator
 from instill.resources.pipeline import Pipeline
 from instill.resources.recipe import create_recipe
 from instill.resources.schema.helper import populate_default_value
