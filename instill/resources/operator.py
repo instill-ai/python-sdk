@@ -1,43 +1,106 @@
 # pylint: disable=no-member,wrong-import-position
-import instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 as pipeline_pb
+from typing import Union
+from instill.resources import Component
 from instill.resources.schema import (
-    end_task_end_input,
-    end_task_end_metadata,
+    base64_task_decode_input,
+    base64_task_encode_input,
+    json_task_marshal_input,
+    json_task_unmarshal_input,
+    image_task_draw_classification_input,
+    image_task_draw_detection_input,
+    image_task_draw_instance_segmentation_input,
+    image_task_draw_semantic_segmentation_input,
+    image_task_draw_ocr_input,
+    image_task_draw_keypoint_input,
+    text_task_split_by_token_input,
+    text_task_convert_to_text_input,
     helper,
-    start_task_start_metadata,
 )
 
 
-def create_start_operator(
-    metadata_fields: start_task_start_metadata.Metadata,
-) -> pipeline_pb.Component:
-    start_operator_component = pipeline_pb.Component()
-    start_operator_component.id = "start"
-    start_operator_component.resource_name = ""
-    start_operator_component.definition_name = "operator-definitions/start"
+class Base64Operator(Component):
+    """Base64 Operator"""
 
-    for metadata_key, metadata_val in metadata_fields.items():
-        metadata_fields[metadata_key] = helper.pop_default_and_to_dict(metadata_val)  # type: ignore
-    metadata = {"metadata": metadata_fields}
-    start_operator_component.configuration.update(metadata)  # type: ignore
+    def __init__(
+        self,
+        name: str,
+        inp: Union[
+            base64_task_encode_input.Input,
+            base64_task_decode_input.Input,
+        ],
+    ) -> None:
+        definition_name = "operator-definitions/base64"
+        component_type = "operator"
 
-    return start_operator_component
+        component = helper.construct_component_config(
+            component_type, definition_name, inp
+        )
+
+        super().__init__(name, component_type, component)
 
 
-def create_end_operator(
-    inp_fields: end_task_end_input.Input,
-    metadata_fields: end_task_end_metadata.Metadata,
-) -> pipeline_pb.Component:
-    end_operator_component = pipeline_pb.Component()
-    end_operator_component.id = "end"
-    end_operator_component.resource_name = ""
-    end_operator_component.definition_name = "operator-definitions/end"
+class JSONOperator(Component):
+    """JSON Operator"""
 
-    for metadata_key, metadata_val in metadata_fields.items():
-        metadata_fields[metadata_key] = helper.pop_default_and_to_dict(metadata_val)  # type: ignore
-    inp = {"input": inp_fields}
-    metadata = {"metadata": metadata_fields}
-    end_operator_component.configuration.update(inp)
-    end_operator_component.configuration.update(metadata)  # type: ignore
+    def __init__(
+        self,
+        name: str,
+        inp: Union[
+            json_task_marshal_input.Input,
+            json_task_unmarshal_input.Input,
+        ],
+    ) -> None:
+        definition_name = "operator-definitions/json"
+        component_type = "operator"
 
-    return end_operator_component
+        component = helper.construct_component_config(
+            component_type, definition_name, inp
+        )
+
+        super().__init__(name, component_type, component)
+
+
+class ImageOperator(Component):
+    """Image Operator"""
+
+    def __init__(
+        self,
+        name: str,
+        inp: Union[
+            image_task_draw_classification_input.Input,
+            image_task_draw_detection_input.Input,
+            image_task_draw_instance_segmentation_input.Input,
+            image_task_draw_semantic_segmentation_input.Input,
+            image_task_draw_keypoint_input.Input,
+            image_task_draw_ocr_input.Input,
+        ],
+    ) -> None:
+        definition_name = "operator-definitions/image"
+        component_type = "operator"
+
+        component = helper.construct_component_config(
+            component_type, definition_name, inp
+        )
+
+        super().__init__(name, component_type, component)
+
+
+class TextOperator(Component):
+    """Text Operator"""
+
+    def __init__(
+        self,
+        name: str,
+        inp: Union[
+            text_task_convert_to_text_input.Input,
+            text_task_split_by_token_input.Input,
+        ],
+    ) -> None:
+        definition_name = "operator-definitions/text"
+        component_type = "operator"
+
+        component = helper.construct_component_config(
+            component_type, definition_name, inp
+        )
+
+        super().__init__(name, component_type, component)

@@ -1,5 +1,11 @@
+# pylint: disable=no-member,wrong-import-position,no-name-in-module
 import re
 from dataclasses import fields, is_dataclass
+from instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 import (
+    ConnectorComponent,
+    OperatorComponent,
+    IteratorComponent,
+)
 
 
 def populate_default_value(dc):
@@ -37,19 +43,37 @@ def pop_default_and_to_dict(dc) -> dict:
     return output_dict
 
 
-def construct_component_config(inp):
+def construct_component_config(
+    component_type: str,
+    definition_name: str,
+    inp,
+):
     task_name = str(inp.__class__).split(".")[3]
     prefix = task_name.split("_")[0] + "_"
     suffix = "_" + task_name.split("_")[-1]
-    config = {
-        "input": pop_default_and_to_dict(inp),
-        "task": remove_prefix_and_suffix(
-            task_name,
-            prefix,
-            suffix,
-        ).upper(),
-    }
-    return config
+    inp = pop_default_and_to_dict(inp)
+    task = remove_prefix_and_suffix(
+        task_name,
+        prefix,
+        suffix,
+    ).upper()
+
+    if component_type == "connector":
+        component = ConnectorComponent(
+            definition_name=definition_name,
+            task=task,
+            input=inp,
+        )
+    elif component_type == "operator":
+        component = OperatorComponent(
+            definition_name=definition_name,
+            task=task,
+            input=inp,
+        )
+    elif component_type == "iterator":
+        component = IteratorComponent()
+
+    return component
 
 
 def remove_prefix(text: str, prefix: str) -> str:
