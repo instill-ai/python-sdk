@@ -6,6 +6,8 @@ import instill.protogen.core.mgmt.v1beta.mgmt_public_service_pb2_grpc as mgmt_se
 import instill.protogen.model.model.v1alpha.model_public_service_pb2_grpc as model_service
 import instill.protogen.vdp.pipeline.v1beta.pipeline_public_service_pb2_grpc as pipeline_service
 
+MB = 1024**2
+
 
 class InstillInstance:
     def __init__(self, stub, url: str, token: str, secure: bool, async_enabled: bool):
@@ -13,8 +15,16 @@ class InstillInstance:
         self.token: str = token
         self.async_enabled: bool = async_enabled
         self.metadata: Union[str, tuple] = ""
+
+        channel_options = (
+            [
+                ("grpc.max_send_message_length", 10 * MB),
+                ("grpc.max_receive_message_length", 10 * MB),
+            ],
+        )
+
         if not secure:
-            channel = grpc.insecure_channel(url)
+            channel = grpc.insecure_channel(url, options=channel_options)
             self.metadata = (
                 (
                     "authorization",
@@ -22,14 +32,18 @@ class InstillInstance:
                 ),
             )
             if async_enabled:
-                async_channel = grpc.aio.insecure_channel(url)
+                async_channel = grpc.aio.insecure_channel(url, options=channel_options)
         else:
             ssl_creds = grpc.ssl_channel_credentials()
             call_creds = grpc.access_token_call_credentials(token)
             creds = grpc.composite_channel_credentials(ssl_creds, call_creds)
-            channel = grpc.secure_channel(target=url, credentials=creds)
+            channel = grpc.secure_channel(
+                target=url, credentials=creds, options=channel_options
+            )
             if async_enabled:
-                async_channel = grpc.aio.secure_channel(target=url, credentials=creds)
+                async_channel = grpc.aio.secure_channel(
+                    target=url, credentials=creds, options=channel_options
+                )
         self.channel: grpc.Channel = channel
         self.client: Union[
             model_service.ModelPublicServiceStub,
