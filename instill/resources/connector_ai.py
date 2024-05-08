@@ -1,14 +1,11 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module,arguments-renamed
-import json
 from typing import Union
 
-import jsonschema
-
-from instill.clients import InstillClient
-from instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 import Component
-from instill.resources import const
-from instill.resources.connector import Connector
+from instill.resources import Component
 from instill.resources.schema import (
+    archetypeai_task_describe_input,
+    archetypeai_task_summarize_input,
+    archetypeai_task_upload_file_input,
     helper,
     huggingface_task_audio_classification_input,
     huggingface_task_conversational_input,
@@ -46,35 +43,12 @@ from instill.resources.schema import (
     stabilityai_task_image_to_image_input,
     stabilityai_task_text_to_image_input,
 )
-from instill.resources.schema.huggingface import HuggingFaceConnectorSpec
-from instill.resources.schema.instill import (
-    InstillModelConnector as InstillModelConnectorConfig,
-)
-from instill.resources.schema.openai import OpenAIConnectorResource
-from instill.resources.schema.stabilityai import StabilityAIConnectorResource
 
 
-class HuggingfaceConnector(Connector):
+class HuggingfaceConnector(Component):
     """Huggingface Connector"""
 
-    with open(
-        f"{const.SPEC_PATH}/huggingface_definitions.json", "r", encoding="utf8"
-    ) as f:
-        definitions_jsonschema = json.loads(f.read())
-
     def __init__(
-        self,
-        client: InstillClient,
-        name: str,
-        config: HuggingFaceConnectorSpec,
-    ) -> None:
-        definition = "connector-definitions/hugging-face"
-
-        config_dict = helper.pop_default_and_to_dict(config)
-        jsonschema.validate(config_dict, StabilityAIConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, config_dict)
-
-    def create_component(
         self,
         name: str,
         inp: Union[
@@ -97,30 +71,21 @@ class HuggingfaceConnector(Connector):
             huggingface_task_zero_shot_classification_input.Input,
             huggingface_task_token_classification_input.Input,
         ],
-    ) -> Component:
-        config = helper.construct_component_config(inp)
-        return super()._create_component(name, config)
+    ) -> None:
+        definition_name = "connector-definitions/hugging-face"
+        component_type = "connector"
+
+        component = helper.construct_component_config(
+            component_type, definition_name, inp
+        )
+
+        super().__init__(name, component)
 
 
-class InstillModelConnector(Connector):
+class InstillModelConnector(Component):
     """Instill Model Connector"""
 
-    with open(f"{const.SPEC_PATH}/instill_definitions.json", "r", encoding="utf8") as f:
-        definitions_jsonschema = json.loads(f.read())
-
     def __init__(
-        self,
-        client: InstillClient,
-        config: InstillModelConnectorConfig,
-        name: str = "model-connector",
-    ) -> None:
-        definition = "connector-definitions/instill-model"
-
-        config_dict = helper.pop_default_and_to_dict(config)
-        jsonschema.validate(config_dict, InstillModelConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, config_dict)
-
-    def create_component(
         self,
         name: str,
         inp: Union[
@@ -135,62 +100,42 @@ class InstillModelConnector(Connector):
             instill_task_text_to_image_input.Input,
             instill_task_visual_question_answering_input.Input,
         ],
-    ) -> Component:
-        config = helper.construct_component_config(inp)
-        return super()._create_component(name, config)
+    ) -> None:
+        definition_name = "connector-definitions/instill-model"
+        component_type = "connector"
+
+        component = helper.construct_component_config(
+            component_type, definition_name, inp
+        )
+
+        super().__init__(name, component)
 
 
-class StabilityAIConnector(Connector):
+class StabilityAIConnector(Component):
     """Stability AI Connector"""
 
-    with open(
-        f"{const.SPEC_PATH}/stabilityai_definitions.json", "r", encoding="utf8"
-    ) as f:
-        definitions_jsonschema = json.loads(f.read())
-
     def __init__(
-        self,
-        client: InstillClient,
-        name: str,
-        config: StabilityAIConnectorResource,
-    ) -> None:
-        definition = "connector-definitions/stability-ai"
-
-        config_dict = helper.pop_default_and_to_dict(config)
-        jsonschema.validate(config_dict, StabilityAIConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, config_dict)
-
-    def create_component(
         self,
         name: str,
         inp: Union[
             stabilityai_task_image_to_image_input.Input,
             stabilityai_task_text_to_image_input.Input,
         ],
-    ) -> Component:
-        config = helper.construct_component_config(inp)
-        return super()._create_component(name, config)
+    ) -> None:
+        definition_name = "connector-definitions/stability-ai"
+        component_type = "connector"
+
+        component = helper.construct_component_config(
+            component_type, definition_name, inp
+        )
+
+        super().__init__(name, component)
 
 
-class OpenAIConnector(Connector):
+class OpenAIConnector(Component):
     """OpenAI Connector"""
 
-    with open(f"{const.SPEC_PATH}/openai_definitions.json", "r", encoding="utf8") as f:
-        definitions_jsonschema = json.loads(f.read())
-
     def __init__(
-        self,
-        client: InstillClient,
-        name: str,
-        config: OpenAIConnectorResource,
-    ) -> None:
-        definition = "connector-definitions/openai"
-
-        config_dict = helper.pop_default_and_to_dict(config)
-        jsonschema.validate(config_dict, OpenAIConnector.definitions_jsonschema)
-        super().__init__(client, name, definition, config_dict)
-
-    def create_component(
         self,
         name: str,
         inp: Union[
@@ -200,6 +145,34 @@ class OpenAIConnector(Connector):
             openai_task_text_generation_input.Input,
             openai_task_text_to_speech_input.Input,
         ],
-    ) -> Component:
-        config = helper.construct_component_config(inp)
-        return super()._create_component(name, config)
+    ) -> None:
+        definition_name = "connector-definitions/openai"
+        component_type = "connector"
+
+        component = helper.construct_component_config(
+            component_type, definition_name, inp
+        )
+
+        super().__init__(name, component)
+
+
+class ArchetypeAIConnector(Component):
+    """ArchetypeAI Connector"""
+
+    def __init__(
+        self,
+        name: str,
+        inp: Union[
+            archetypeai_task_upload_file_input.Input,
+            archetypeai_task_describe_input.Input,
+            archetypeai_task_summarize_input.Input,
+        ],
+    ) -> None:
+        definition_name = "connector-definitions/archetype-ai"
+        component_type = "connector"
+
+        component = helper.construct_component_config(
+            component_type, definition_name, inp
+        )
+
+        super().__init__(name, component)

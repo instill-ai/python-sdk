@@ -6,7 +6,7 @@ import grpc
 
 
 class Client(ABC):
-    """Base interface class for creating mgmt/pipeline/connector/model clients.
+    """Base interface class for creating mgmt/pipeline/model clients.
 
     Args:
         ABC (abc.ABCMeta): std abstract class

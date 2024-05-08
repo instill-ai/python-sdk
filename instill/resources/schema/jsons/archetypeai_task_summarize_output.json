@@ -1,0 +1,1 @@
+{"instillUIOrder":0,"properties":{"response":{"description":"A text responding to the query","instillFormat":"string","instillUIOrder":0,"title":"Response","type":"string"}},"required":["response"],"title":"Output","type":"object"}

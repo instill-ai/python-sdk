@@ -1,0 +1,1 @@
+{"instillUIOrder":0,"properties":{"file":{"title":"File","description":"The file to upload. Accepted formats are JPEG and PNG for images or MP4 for videos","type":"string","instillAcceptFormats":["video/*","image/*"],"instillUIOrder":0,"instillUpstreamTypes":["reference"]}},"required":["file"],"title":"Input","type":"object"}

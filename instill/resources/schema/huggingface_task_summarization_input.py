@@ -19,7 +19,7 @@ class Parameters:
     max_time: Optional[float] = None
     min_length: Optional[int] = None
     repetition_penalty: Optional[float] = None
-    temperature: Optional[float] = 1.0
+    temperature: Optional[float] = 1
     top_k: Optional[int] = None
     top_p: Optional[float] = None
 

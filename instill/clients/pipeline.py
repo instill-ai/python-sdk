@@ -7,10 +7,9 @@ from google.protobuf import field_mask_pb2
 import instill.protogen.common.healthcheck.v1beta.healthcheck_pb2 as healthcheck
 
 # pipeline
-import instill.protogen.vdp.pipeline.v1beta.connector_pb2 as connector_interface
-import instill.protogen.vdp.pipeline.v1beta.operator_definition_pb2 as operator_interface
 import instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 as pipeline_interface
 import instill.protogen.vdp.pipeline.v1beta.pipeline_public_service_pb2_grpc as pipeline_service
+import instill.protogen.vdp.pipeline.v1beta.secret_pb2 as secret_interface
 from instill.clients.base import Client, RequestFactory
 from instill.clients.constant import DEFAULT_INSTANCE
 from instill.clients.instance import InstillInstance
@@ -110,60 +109,6 @@ class PipelineClient(Client):
             )
         except Exception:
             return False
-
-    @grpc_handler
-    def list_operator_definitions(
-        self,
-        filter_str: str = "",
-        next_page_token: str = "",
-        total_size: int = 100,
-        async_enabled: bool = False,
-    ) -> operator_interface.ListOperatorDefinitionsResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.ListOperatorDefinitions,
-                request=operator_interface.ListOperatorDefinitionsRequest(
-                    filter=filter_str,
-                    page_size=total_size,
-                    page_token=next_page_token,
-                    view=operator_interface.OperatorDefinition.VIEW_FULL,
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.ListOperatorDefinitions,
-            request=operator_interface.ListOperatorDefinitionsRequest(
-                filter=filter_str,
-                page_size=total_size,
-                page_token=next_page_token,
-                view=operator_interface.OperatorDefinition.VIEW_FULL,
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def get_operator_definition(
-        self, name: str, async_enabled: bool = False
-    ) -> operator_interface.GetOperatorDefinitionResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.GetOperatorDefinition,
-                request=operator_interface.GetOperatorDefinitionRequest(
-                    name=f"operator-definitions/{name}",
-                    view=operator_interface.OperatorDefinition.VIEW_FULL,
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.GetOperatorDefinition,
-            request=operator_interface.GetOperatorDefinitionRequest(
-                name=f"operator-definitions/{name}",
-                view=operator_interface.OperatorDefinition.VIEW_FULL,
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
 
     @grpc_handler
     def create_pipeline(
@@ -314,6 +259,32 @@ class PipelineClient(Client):
             method=self.hosts[self.instance].client.ValidateUserPipeline,
             request=pipeline_interface.ValidateUserPipelineRequest(
                 name=f"{self.target_namespace}/pipelines/{name}"
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def clone_pipeline(
+        self,
+        name: str,
+        target: str,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.CloneUserPipelineResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.CloneUserPipeline,
+                request=pipeline_interface.CloneUserPipelineRequest(
+                    name=f"{self.target_namespace}/pipelines/{name}",
+                    target=f"{self.target_namespace}/pipelines/{target}",
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.CloneUserPipeline,
+            request=pipeline_interface.CloneUserPipelineRequest(
+                name=f"{self.target_namespace}/pipelines/{name}",
+                target=f"{self.target_namespace}/pipelines/{target}",
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -692,29 +663,6 @@ class PipelineClient(Client):
         ).send_sync()
 
     @grpc_handler
-    def watch_pipeline_release(
-        self,
-        name: str,
-        async_enabled: bool = False,
-    ) -> pipeline_interface.WatchUserPipelineReleaseResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.WatchUserPipelineRelease,
-                request=pipeline_interface.WatchUserPipelineReleaseRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}",
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.WatchUserPipelineRelease,
-            request=pipeline_interface.WatchUserPipelineReleaseRequest(
-                name=f"{self.target_namespace}/pipelines/{name}",
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
     def trigger_pipeline_release(
         self,
         name: str,
@@ -765,6 +713,134 @@ class PipelineClient(Client):
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
+
+    @grpc_handler
+    def create_secret(
+        self,
+        name: str,
+        value: str,
+        async_enabled: bool = False,
+    ) -> secret_interface.CreateUserSecretResponse:
+        secret = secret_interface.Secret(id=name, value=value)
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.CreateUserSecret,
+                request=secret_interface.CreateUserSecretRequest(
+                    secret=secret,
+                    parent=self.target_namespace,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.CreateUserSecret,
+            request=secret_interface.CreateUserSecretRequest(
+                secret=secret,
+                parent=self.target_namespace,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def get_secret(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> secret_interface.GetUserSecretResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.GetUserSecret,
+                request=secret_interface.GetUserSecretRequest(
+                    name=f"{self.target_namespace}/secrets/{name}",
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetUserSecret,
+            request=secret_interface.GetUserSecretRequest(
+                name=f"{self.target_namespace}/secrets/{name}",
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def update_secrets(
+        self,
+        secret: secret_interface.Secret,
+        mask: field_mask_pb2.FieldMask,
+        async_enabled: bool = False,
+    ) -> secret_interface.UpdateUserSecretResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.UpdateUserSecret,
+                request=secret_interface.UpdateUserSecretRequest(
+                    secret=secret,
+                    update_mask=mask,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.UpdateUserSecret,
+            request=secret_interface.UpdateUserSecretRequest(
+                secret=secret,
+                update_mask=mask,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def delete_secret(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> secret_interface.DeleteUserSecretResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.DeleteUserSecret,
+                request=secret_interface.DeleteUserSecretRequest(
+                    name=f"{self.target_namespace}/secrets/{name}",
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.DeleteUserSecret,
+            request=secret_interface.DeleteUserSecretRequest(
+                name=f"{self.target_namespace}/secrets/{name}",
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def list_secrets(
+        self,
+        next_page_token: str = "",
+        total_size: int = 100,
+        async_enabled: bool = False,
+    ) -> secret_interface.ListUserSecretsResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.ListUserSecrets,
+                request=secret_interface.ListUserSecretsRequest(
+                    parent=self.target_namespace,
+                    page_size=total_size,
+                    page_token=next_page_token,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+        return RequestFactory(
+            method=self.hosts[self.instance].client.ListUserSecrets,
+            request=secret_interface.ListUserSecretsRequest(
+                parent=self.target_namespace,
+                page_size=total_size,
+                page_token=next_page_token,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    ######## organization endpoints
 
     @grpc_handler
     def create_org_pipeline(
@@ -880,7 +956,7 @@ class PipelineClient(Client):
         self,
         name: str,
         async_enabled: bool = False,
-    ) -> pipeline_interface.ValidateUserPipelineResponse:
+    ) -> pipeline_interface.ValidateOrganizationPipelineResponse:
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[
@@ -896,6 +972,32 @@ class PipelineClient(Client):
             method=self.hosts[self.instance].client.ValidateOrganizationPipeline,
             request=pipeline_interface.ValidateOrganizationPipelineRequest(
                 name=f"{self.target_namespace}/pipelines/{name}"
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def clone_org_pipeline(
+        self,
+        name: str,
+        target: str,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.CloneOrganizationPipelineResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.CloneOrganizationPipeline,
+                request=pipeline_interface.CloneOrganizationPipelineRequest(
+                    name=f"{self.target_namespace}/pipelines/{name}",
+                    target=f"{self.target_namespace}/pipelines/{target}",
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.CloneOrganizationPipeline,
+            request=pipeline_interface.CloneOrganizationPipelineRequest(
+                name=f"{self.target_namespace}/pipelines/{name}",
+                target=f"{self.target_namespace}/pipelines/{target}",
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -1237,31 +1339,6 @@ class PipelineClient(Client):
         ).send_sync()
 
     @grpc_handler
-    def watch_org_pipeline_release(
-        self,
-        name: str,
-        async_enabled: bool = False,
-    ) -> pipeline_interface.WatchOrganizationPipelineReleaseResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.WatchOrganizationPipelineRelease,
-                request=pipeline_interface.WatchOrganizationPipelineReleaseRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}",
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.WatchOrganizationPipelineRelease,
-            request=pipeline_interface.WatchOrganizationPipelineReleaseRequest(
-                name=f"{self.target_namespace}/pipelines/{name}",
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
     def trigger_org_pipeline_release(
         self,
         name: str,
@@ -1316,404 +1393,127 @@ class PipelineClient(Client):
         ).send_sync()
 
     @grpc_handler
-    def create_connector(
+    def create_org_secret(
         self,
         name: str,
-        definition: str,
-        configuration: dict,
+        value: str,
         async_enabled: bool = False,
-    ) -> connector_interface.CreateUserConnectorResponse:
-        connector = connector_interface.Connector()
-        connector.id = name
-        connector.connector_definition_name = definition
-        connector.configuration.update(configuration)
+    ) -> secret_interface.CreateOrganizationSecretResponse:
+        secret = secret_interface.Secret(id=name, value=value)
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.CreateUserConnector,
-                request=connector_interface.CreateUserConnectorRequest(
-                    connector=connector, parent=self.target_namespace
+                method=self.hosts[self.instance].async_client.CreateOrganizationSecret,
+                request=secret_interface.CreateUserSecretRequest(
+                    secret=secret,
+                    parent=self.target_namespace,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.CreateUserConnector,
-            request=connector_interface.CreateUserConnectorRequest(
-                connector=connector, parent=self.target_namespace
+            method=self.hosts[self.instance].client.CreateOrganizationSecret,
+            request=secret_interface.CreateUserSecretRequest(
+                secret=secret,
+                parent=self.target_namespace,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
     @grpc_handler
-    def get_connector(
+    def get_org_secret(
         self,
         name: str,
         async_enabled: bool = False,
-    ) -> connector_interface.GetUserConnectorResponse:
+    ) -> secret_interface.GetOrganizationSecretResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.GetUserConnector,
-                request=connector_interface.GetUserConnectorRequest(
-                    name=f"{self.target_namespace}/connectors/{name}",
-                    view=connector_interface.Connector.VIEW_FULL,
+                method=self.hosts[self.instance].async_client.GetOrganizationSecret,
+                request=secret_interface.GetOrganizationSecretRequest(
+                    name=f"{self.target_namespace}/secrets/{name}",
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.GetUserConnector,
-            request=connector_interface.GetUserConnectorRequest(
-                name=f"{self.target_namespace}/connectors/{name}",
-                view=connector_interface.Connector.VIEW_FULL,
+            method=self.hosts[self.instance].client.GetOrganizationSecret,
+            request=secret_interface.GetOrganizationSecretRequest(
+                name=f"{self.target_namespace}/secrets/{name}",
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
     @grpc_handler
-    def test_connector(
+    def update_org_secrets(
         self,
-        name: str,
+        secret: secret_interface.Secret,
+        mask: field_mask_pb2.FieldMask,
         async_enabled: bool = False,
-    ) -> connector_interface.TestUserConnectorResponse:
+    ) -> secret_interface.UpdateOrganizationSecretResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.TestUserConnector,
-                request=connector_interface.TestUserConnectorRequest(
-                    name=f"{self.target_namespace}/connectors/{name}"
+                method=self.hosts[self.instance].async_client.UpdateOrganizationSecret,
+                request=secret_interface.UpdateOrganizationSecretRequest(
+                    secret=secret,
+                    update_mask=mask,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.TestUserConnector,
-            request=connector_interface.TestUserConnectorRequest(
-                name=f"{self.target_namespace}/connectors/{name}"
+            method=self.hosts[self.instance].client.UpdateOrganizationSecret,
+            request=secret_interface.UpdateOrganizationSecretRequest(
+                secret=secret,
+                update_mask=mask,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
     @grpc_handler
-    def execute_connector(
+    def delete_org_secret(
         self,
         name: str,
-        inputs: list,
         async_enabled: bool = False,
-    ) -> connector_interface.ExecuteUserConnectorResponse:
+    ) -> secret_interface.DeleteOrganizationSecretResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.ExecuteUserConnector,
-                request=connector_interface.ExecuteUserConnectorRequest(
-                    name=f"{self.target_namespace}/connectors/{name}", inputs=inputs
+                method=self.hosts[self.instance].async_client.DeleteOrganizationSecret,
+                request=secret_interface.DeleteOrganizationSecretRequest(
+                    name=f"{self.target_namespace}/secrets/{name}",
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.ExecuteUserConnector,
-            request=connector_interface.ExecuteUserConnectorRequest(
-                name=f"{self.target_namespace}/connectors/{name}", inputs=inputs
+            method=self.hosts[self.instance].client.DeleteOrganizationSecret,
+            request=secret_interface.DeleteOrganizationSecretRequest(
+                name=f"{self.target_namespace}/secrets/{name}",
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
     @grpc_handler
-    def watch_connector(
+    def list_org_secrets(
         self,
-        name: str,
-        async_enabled: bool = False,
-    ) -> connector_interface.WatchUserConnectorResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.WatchUserConnector,
-                request=connector_interface.WatchUserConnectorRequest(
-                    name=f"{self.target_namespace}/connectors/{name}"
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.WatchUserConnector,
-            request=connector_interface.WatchUserConnectorRequest(
-                name=f"{self.target_namespace}/connectors/{name}"
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def delete_connector(
-        self,
-        name: str,
-        async_enabled: bool = False,
-    ) -> connector_interface.DeleteUserConnectorResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.DeleteUserConnector,
-                request=connector_interface.DeleteUserConnectorRequest(
-                    name=f"{self.target_namespace}/connectors/{name}"
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.DeleteUserConnector,
-            request=connector_interface.DeleteUserConnectorRequest(
-                name=f"{self.target_namespace}/connectors/{name}"
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def list_connectors(
-        self,
-        filer_str: str = "",
         next_page_token: str = "",
         total_size: int = 100,
-        show_deleted: bool = False,
-        public=False,
         async_enabled: bool = False,
-    ) -> connector_interface.ListUserConnectorsResponse:
+    ) -> secret_interface.ListOrganizationSecretsResponse:
         if async_enabled:
-            if public:
-                method = self.hosts[self.instance].async_client.ListConnectors
-                return RequestFactory(
-                    method=method,
-                    request=connector_interface.ListConnectorsRequest(
-                        filter=filer_str,
-                        page_size=total_size,
-                        page_token=next_page_token,
-                        show_deleted=show_deleted,
-                        view=connector_interface.Connector.VIEW_FULL,
-                    ),
-                    metadata=self.hosts[self.instance].metadata,
-                ).send_async()
-            method = self.hosts[self.instance].async_client.ListUserConnectors
             return RequestFactory(
-                method=method,
-                request=connector_interface.ListUserConnectorsRequest(
+                method=self.hosts[self.instance].async_client.ListOrganizationSecrets,
+                request=secret_interface.ListOrganizationSecretsRequest(
                     parent=self.target_namespace,
-                    filter=filer_str,
                     page_size=total_size,
                     page_token=next_page_token,
-                    show_deleted=show_deleted,
-                    view=connector_interface.Connector.VIEW_FULL,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
-        if public:
-            method = self.hosts[self.instance].client.ListConnectors
-            return RequestFactory(
-                method=method,
-                request=connector_interface.ListConnectorsRequest(
-                    filter=filer_str,
-                    page_size=total_size,
-                    page_token=next_page_token,
-                    show_deleted=show_deleted,
-                    view=connector_interface.Connector.VIEW_FULL,
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_sync()
-        method = self.hosts[self.instance].client.ListUserConnectors
         return RequestFactory(
-            method=method,
-            request=connector_interface.ListUserConnectorsRequest(
+            method=self.hosts[self.instance].client.ListOrganizationSecrets,
+            request=secret_interface.ListOrganizationSecretsRequest(
                 parent=self.target_namespace,
-                filter=filer_str,
                 page_size=total_size,
                 page_token=next_page_token,
-                show_deleted=show_deleted,
-                view=connector_interface.Connector.VIEW_FULL,
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def create_org_connector(
-        self,
-        name: str,
-        definition: str,
-        configuration: dict,
-        async_enabled: bool = False,
-    ) -> connector_interface.CreateOrganizationConnectorResponse:
-        connector = connector_interface.Connector()
-        connector.id = name
-        connector.connector_definition_name = definition
-        connector.configuration.update(configuration)
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.CreateOrganizationConnector,
-                request=connector_interface.CreateOrganizationConnectorRequest(
-                    connector=connector, parent=self.target_namespace
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.CreateOrganizationConnector,
-            request=connector_interface.CreateOrganizationConnectorRequest(
-                connector=connector, parent=self.target_namespace
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def get_org_connector(
-        self,
-        name: str,
-        async_enabled: bool = False,
-    ) -> connector_interface.GetOrganizationConnectorResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.GetOrganizationConnector,
-                request=connector_interface.GetOrganizationConnectorRequest(
-                    name=f"{self.target_namespace}/connectors/{name}",
-                    view=connector_interface.Connector.VIEW_FULL,
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.GetOrganizationConnector,
-            request=connector_interface.GetOrganizationConnectorRequest(
-                name=f"{self.target_namespace}/connectors/{name}",
-                view=connector_interface.Connector.VIEW_FULL,
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def test_org_connector(
-        self,
-        name: str,
-        async_enabled: bool = False,
-    ) -> connector_interface.TestOrganizationConnectorResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.TestOrganizationConnector,
-                request=connector_interface.TestOrganizationConnectorRequest(
-                    name=f"{self.target_namespace}/connectors/{name}"
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.TestOrganizationConnector,
-            request=connector_interface.TestOrganizationConnectorRequest(
-                name=f"{self.target_namespace}/connectors/{name}"
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def execute_org_connector(
-        self,
-        name: str,
-        inputs: list,
-        async_enabled: bool = False,
-    ) -> connector_interface.ExecuteOrganizationConnectorResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.ExecuteOrganizationConnector,
-                request=connector_interface.ExecuteOrganizationConnectorRequest(
-                    name=f"{self.target_namespace}/connectors/{name}", inputs=inputs
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.ExecuteOrganizationConnector,
-            request=connector_interface.ExecuteOrganizationConnectorRequest(
-                name=f"{self.target_namespace}/connectors/{name}", inputs=inputs
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def watch_org_connector(
-        self,
-        name: str,
-        async_enabled: bool = False,
-    ) -> connector_interface.WatchOrganizationConnectorResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.WatchOrganizationConnector,
-                request=connector_interface.WatchOrganizationConnectorRequest(
-                    name=f"{self.target_namespace}/connectors/{name}"
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.WatchOrganizationConnector,
-            request=connector_interface.WatchOrganizationConnectorRequest(
-                name=f"{self.target_namespace}/connectors/{name}"
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def delete_org_connector(
-        self,
-        name: str,
-        async_enabled: bool = False,
-    ) -> connector_interface.DeleteOrganizationConnectorResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.DeleteOrganizationConnector,
-                request=connector_interface.DeleteOrganizationConnectorRequest(
-                    name=f"{self.target_namespace}/connectors/{name}"
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.DeleteOrganizationConnector,
-            request=connector_interface.DeleteOrganizationConnectorRequest(
-                name=f"{self.target_namespace}/connectors/{name}"
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def list_org_connectors(
-        self,
-        filer_str: str = "",
-        next_page_token: str = "",
-        total_size: int = 100,
-        show_deleted: bool = False,
-        async_enabled: bool = False,
-    ) -> connector_interface.ListOrganizationConnectorsResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.ListOrganizationConnectors,
-                request=connector_interface.ListOrganizationConnectorsRequest(
-                    parent=self.target_namespace,
-                    filter=filer_str,
-                    page_size=total_size,
-                    page_token=next_page_token,
-                    show_deleted=show_deleted,
-                    view=connector_interface.Connector.VIEW_FULL,
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-        return RequestFactory(
-            method=self.hosts[self.instance].client.ListOrganizationConnectors,
-            request=connector_interface.ListOrganizationConnectorsRequest(
-                parent=self.target_namespace,
-                filter=filer_str,
-                page_size=total_size,
-                page_token=next_page_token,
-                show_deleted=show_deleted,
-                view=connector_interface.Connector.VIEW_FULL,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()

@@ -40,10 +40,10 @@ class AWSRegion(Enum):
 
 @dataclass
 class Amazonsqs:
-    destination: str
     queue_url: str
     region: AWSRegion
     access_key: Optional[str] = None
+    destination: str = 'airbyte-destination-amazon-sqs'
     message_body_key: Optional[str] = None
     message_delay: Optional[int] = None
     message_group_id: Optional[str] = None
@@ -56,8 +56,8 @@ class CredentialsTitle(Enum):
 
 @dataclass
 class IAMRole:
-    credentials_title: CredentialsTitle
     role_arn: str
+    credentials_title: CredentialsTitle = CredentialsTitle.IAM_Role
 
 
 class CredentialsTitle1(Enum):
@@ -68,7 +68,7 @@ class CredentialsTitle1(Enum):
 class IAMUser:
     aws_access_key_id: str
     aws_secret_access_key: str
-    credentials_title: CredentialsTitle1
+    credentials_title: CredentialsTitle1 = CredentialsTitle1.IAM_User
 
 
 class CompressionCodecOptional(Enum):
@@ -83,9 +83,9 @@ class FormatType(Enum):
 @dataclass
 class JSONLinesNewlineDelimitedJSON:
     format_type: FormatType
-    compression_codec: Optional[
-        CompressionCodecOptional
-    ] = CompressionCodecOptional.UNCOMPRESSED
+    compression_codec: Optional[CompressionCodecOptional] = (
+        CompressionCodecOptional.UNCOMPRESSED
+    )
 
 
 class CompressionCodecOptional1(Enum):
@@ -102,9 +102,9 @@ class FormatType1(Enum):
 @dataclass
 class ParquetColumnarStorage:
     format_type: FormatType1
-    compression_codec: Optional[
-        CompressionCodecOptional1
-    ] = CompressionCodecOptional1.SNAPPY
+    compression_codec: Optional[CompressionCodecOptional1] = (
+        CompressionCodecOptional1.SNAPPY
+    )
 
 
 class ChooseHowToPartitionData(Enum):
@@ -150,21 +150,21 @@ class S3BucketRegion(Enum):
 class Awsdatalake:
     bucket_name: str
     credentials: Union[IAMRole, IAMUser]
-    destination: str
     lakeformation_database_name: str
     region: S3BucketRegion
     aws_account_id: Optional[str] = None
     bucket_prefix: Optional[str] = None
-    format: Optional[
-        Union[JSONLinesNewlineDelimitedJSON, ParquetColumnarStorage]
-    ] = None
+    destination: str = 'airbyte-destination-aws-datalake'
+    format: Optional[Union[JSONLinesNewlineDelimitedJSON, ParquetColumnarStorage]] = (
+        None
+    )
     glue_catalog_float_as_decimal: Optional[bool] = False
     lakeformation_database_default_tag_key: Optional[str] = None
     lakeformation_database_default_tag_values: Optional[str] = None
     lakeformation_governed_tables: Optional[bool] = False
-    partitioning: Optional[
-        ChooseHowToPartitionData
-    ] = ChooseHowToPartitionData.NO_PARTITIONING
+    partitioning: Optional[ChooseHowToPartitionData] = (
+        ChooseHowToPartitionData.NO_PARTITIONING
+    )
 
 
 class NormalizationFlattening(Enum):
@@ -175,24 +175,24 @@ class NormalizationFlattening(Enum):
 @dataclass
 class CSVCommaSeparatedValues:
     flattening: NormalizationFlattening
-    format_type: str
+    format_type: str = 'CSV'
 
 
 @dataclass
 class JSONLinesNewlineDelimitedJSON1:
-    format_type: str
+    format_type: str = 'JSONL'
 
 
 @dataclass
 class Azureblobstorage:
     azure_blob_storage_account_key: str
     azure_blob_storage_account_name: str
-    destination: str
     format: Union[CSVCommaSeparatedValues, JSONLinesNewlineDelimitedJSON1]
     azure_blob_storage_container_name: Optional[str] = None
     azure_blob_storage_endpoint_domain_name: Optional[str] = 'blob.core.windows.net'
     azure_blob_storage_output_buffer_size: Optional[int] = 5
     azure_blob_storage_spill_size: Optional[int] = 500
+    destination: str = 'airbyte-destination-azure-blob-storage'
 
 
 class DatasetLocation(Enum):
@@ -244,9 +244,9 @@ class DatasetLocation(Enum):
 
 @dataclass
 class HMACKey:
-    credential_type: str
     hmac_key_access_id: str
     hmac_key_secret: str
+    credential_type: str = 'HMAC_KEY'
 
 
 class GCSTmpFilesAfterwardProcessing(Enum):
@@ -259,15 +259,15 @@ class GCSStaging:
     credential: HMACKey
     gcs_bucket_name: str
     gcs_bucket_path: str
-    method: str
-    keep_files_in_gcs_bucket: Optional[
-        GCSTmpFilesAfterwardProcessing
-    ] = GCSTmpFilesAfterwardProcessing.Delete_all_tmp_files_from_GCS
+    keep_files_in_gcs_bucket: Optional[GCSTmpFilesAfterwardProcessing] = (
+        GCSTmpFilesAfterwardProcessing.Delete_all_tmp_files_from_GCS
+    )
+    method: str = 'GCS Staging'
 
 
 @dataclass
 class StandardInserts:
-    method: str
+    method: str = 'Standard'
 
 
 class TransformationQueryRunType(Enum):
@@ -279,27 +279,27 @@ class TransformationQueryRunType(Enum):
 class Bigquery:
     dataset_id: str
     dataset_location: DatasetLocation
-    destination: str
     project_id: str
     big_query_client_buffer_size_mb: Optional[int] = 15
     credentials_json: Optional[str] = None
+    destination: str = 'airbyte-destination-bigquery'
     disable_type_dedupe: Optional[bool] = False
     loading_method: Optional[Union[GCSStaging, StandardInserts]] = None
     raw_data_dataset: Optional[str] = None
-    transformation_priority: Optional[
-        TransformationQueryRunType
-    ] = TransformationQueryRunType.interactive
+    transformation_priority: Optional[TransformationQueryRunType] = (
+        TransformationQueryRunType.interactive
+    )
 
 
 @dataclass
 class Cassandra:
     address: str
-    destination: str
     keyspace: str
     password: str
     port: int
     username: str
     datacenter: Optional[str] = 'datacenter1'
+    destination: str = 'airbyte-destination-cassandra'
     replication: Optional[int] = 1
 
 
@@ -311,8 +311,8 @@ class Mode(Enum):
 class AzureOpenAI:
     api_base: str
     deployment: str
-    mode: Mode
     openai_key: str
+    mode: Mode = Mode.azure_openai
 
 
 class Mode1(Enum):
@@ -321,8 +321,8 @@ class Mode1(Enum):
 
 @dataclass
 class OpenAI:
-    mode: Mode1
     openai_key: str
+    mode: Mode1 = Mode1.openai
 
 
 class Mode2(Enum):
@@ -332,7 +332,7 @@ class Mode2(Enum):
 @dataclass
 class Cohere:
     cohere_key: str
-    mode: Mode2
+    mode: Mode2 = Mode2.cohere
 
 
 class Mode3(Enum):
@@ -343,7 +343,7 @@ class Mode3(Enum):
 class FromField:
     dimensions: int
     field_name: str
-    mode: Mode3
+    mode: Mode3 = Mode3.from_field
 
 
 class Mode4(Enum):
@@ -352,7 +352,7 @@ class Mode4(Enum):
 
 @dataclass
 class Fake:
-    mode: Mode4
+    mode: Mode4 = Mode4.fake
 
 
 class Mode5(Enum):
@@ -363,8 +363,8 @@ class Mode5(Enum):
 class OpenAICompatible:
     base_url: str
     dimensions: int
-    mode: Mode5
     api_key: Optional[str] = ''
+    mode: Mode5 = Mode5.openai_compatible
     model_name: Optional[str] = 'text-embedding-ada-002'
 
 
@@ -374,7 +374,7 @@ class Mode6(Enum):
 
 @dataclass
 class ChromaDefaultEmbeddingFunction:
-    mode: Optional[Mode6] = Mode6.no_embedding
+    mode: Mode6 = Mode6.no_embedding
 
 
 class Mode7(Enum):
@@ -384,7 +384,7 @@ class Mode7(Enum):
 @dataclass
 class PersistentClientMode:
     path: str
-    mode: Optional[Mode7] = Mode7.persistent_client
+    mode: Mode7 = Mode7.persistent_client
 
 
 class Mode8(Enum):
@@ -396,7 +396,7 @@ class ClientServerMode:
     host: str
     port: int
     ssl: bool
-    mode: Optional[Mode8] = Mode8.http_client
+    mode: Mode8 = Mode8.http_client
     password: Optional[str] = ''
     username: Optional[str] = ''
 
@@ -419,8 +419,8 @@ class Mode9(Enum):
 
 @dataclass
 class BySeparator:
-    mode: Mode9
     keep_separator: Optional[bool] = False
+    mode: Mode9 = Mode9.separator
     separators: Optional[List[str]] = field(
         default_factory=lambda: ['"\\n\\n"', '"\\n"', '" "', '""']
     )
@@ -432,7 +432,7 @@ class Mode10(Enum):
 
 @dataclass
 class ByMarkdownHeader:
-    mode: Mode10
+    mode: Mode10 = Mode10.markdown
     split_level: Optional[int] = 1
 
 
@@ -462,7 +462,7 @@ class Mode11(Enum):
 @dataclass
 class ByProgrammingLanguage:
     language: Language
-    mode: Mode11
+    mode: Mode11 = Mode11.code
 
 
 @dataclass
@@ -481,7 +481,6 @@ class ProcessingConfigModel:
 
 @dataclass
 class Chroma:
-    destination: str
     embedding: Union[
         AzureOpenAI,
         OpenAI,
@@ -493,39 +492,40 @@ class Chroma:
     ]
     indexing: Indexing
     processing: ProcessingConfigModel
+    destination: str = 'airbyte-destination-chroma'
     omit_raw_text: Optional[bool] = False
 
 
 @dataclass
 class NoTunnel:
-    tunnel_method: str
+    tunnel_method: str = 'NO_TUNNEL'
 
 
 @dataclass
 class SSHKeyAuthentication:
     ssh_key: str
     tunnel_host: str
-    tunnel_method: str
     tunnel_port: int
     tunnel_user: str
+    tunnel_method: str = 'SSH_KEY_AUTH'
 
 
 @dataclass
 class PasswordAuthentication:
     tunnel_host: str
-    tunnel_method: str
     tunnel_port: int
     tunnel_user: str
     tunnel_user_password: str
+    tunnel_method: str = 'SSH_PASSWORD_AUTH'
 
 
 @dataclass
 class Clickhouse:
     database: str
-    destination: str
     host: str
     port: int
     username: str
+    destination: str = 'airbyte-destination-clickhouse'
     jdbc_url_params: Optional[str] = None
     password: Optional[str] = None
     ssl: Optional[bool] = False
@@ -538,39 +538,39 @@ class Clickhouse:
 class Convex:
     access_key: str
     deployment_url: str
-    destination: str
+    destination: str = 'airbyte-destination-convex'
 
 
 @dataclass
 class Comma:
-    delimiter: str
+    delimiter: str = '\\u002c'
 
 
 @dataclass
 class Semicolon:
-    delimiter: str
+    delimiter: str = '\\u003b'
 
 
 @dataclass
 class Pipe:
-    delimiter: str
+    delimiter: str = '\\u007c'
 
 
 @dataclass
 class Tab:
-    delimiter: str
+    delimiter: str = '\\u0009'
 
 
 @dataclass
 class Space:
-    delimiter: str
+    delimiter: str = '\\u0020'
 
 
 @dataclass
 class Csv:
-    destination: str
     destination_path: str
     delimiter_type: Optional[Union[Comma, Semicolon, Pipe, Tab, Space]] = None
+    destination: str = 'airbyte-destination-csv'
 
 
 @dataclass
@@ -578,15 +578,15 @@ class Cumulio:
     api_host: str
     api_key: str
     api_token: str
-    destination: str
+    destination: str = 'airbyte-destination-cumulio'
 
 
 @dataclass
 class Databend:
     database: str
-    destination: str
     host: str
     username: str
+    destination: str = 'airbyte-destination-databend'
     password: Optional[str] = None
     port: Optional[int] = 443
     table: Optional[str] = 'default'
@@ -594,17 +594,17 @@ class Databend:
 
 @dataclass
 class FieldRecommendedManagedTables:
-    data_source_type: str
+    data_source_type: str = 'MANAGED_TABLES_STORAGE'
 
 
 @dataclass
 class AmazonS3:
-    data_source_type: str
     s3_access_key_id: str
     s3_bucket_name: str
     s3_bucket_path: str
     s3_bucket_region: S3BucketRegion
     s3_secret_access_key: str
+    data_source_type: str = 'S3_STORAGE'
     file_name_pattern: Optional[str] = None
 
 
@@ -613,8 +613,8 @@ class AzureBlobStorage:
     azure_blob_storage_account_name: str
     azure_blob_storage_container_name: str
     azure_blob_storage_sas_token: str
-    data_source_type: str
     azure_blob_storage_endpoint_domain_name: Optional[str] = 'blob.core.windows.net'
+    data_source_type: str = 'AZURE_BLOB_STORAGE'
 
 
 @dataclass
@@ -624,9 +624,9 @@ class Databricks:
     databricks_http_path: str
     databricks_personal_access_token: str
     databricks_server_hostname: str
-    destination: str
     database: Optional[str] = None
     databricks_port: Optional[str] = '443'
+    destination: str = 'airbyte-destination-databricks'
     enable_schema_evolution: Optional[bool] = False
     purge_staging_data: Optional[bool] = True
     schema_: Optional[str] = 'default'
@@ -635,18 +635,18 @@ class Databricks:
 @dataclass
 class Doris:
     database: str
-    destination: str
     host: str
     httpport: int
     queryport: int
     username: str
+    destination: str = 'airbyte-destination-doris'
     password: Optional[str] = None
 
 
 @dataclass
 class Duckdb:
-    destination: str
     destination_path: str
+    destination: str = 'airbyte-destination-duckdb'
     motherduck_api_key: Optional[str] = None
     schema_: Optional[str] = None
 
@@ -683,10 +683,10 @@ class DynamoDBRegion(Enum):
 @dataclass
 class Dynamodb:
     access_key_id: str
-    destination: str
     dynamodb_region: DynamoDBRegion
     dynamodb_table_name_prefix: str
     secret_access_key: str
+    destination: str = 'airbyte-destination-dynamodb'
     dynamodb_endpoint: Optional[str] = ''
 
 
@@ -726,57 +726,57 @@ class RandomSampling:
 @dataclass
 class Logging:
     logging_config: Union[FirstNEntries, EveryNThEntry, RandomSampling]
-    test_destination_type: str
+    test_destination_type: str = 'LOGGING'
 
 
 @dataclass
 class Silent:
-    test_destination_type: str
+    test_destination_type: str = 'SILENT'
 
 
 @dataclass
 class Throttled:
     millis_per_record: int
-    test_destination_type: str
+    test_destination_type: str = 'THROTTLED'
 
 
 @dataclass
 class Failing:
     num_messages: int
-    test_destination_type: str
+    test_destination_type: str = 'FAILING'
 
 
 @dataclass
 class E2etest:
-    destination: str
     test_destination: Union[Logging, Silent, Throttled, Failing]
+    destination: str = 'airbyte-destination-e2e-test'
 
 
 @dataclass
 class None1:
-    method: str
+    method: str = 'none'
 
 
 @dataclass
 class ApiKeySecret:
     apiKeyId: str
     apiKeySecret: str
-    method: str
+    method: str = 'secret'
 
 
 @dataclass
 class UsernamePassword:
-    method: str
     password: str
     username: str
+    method: str = 'basic'
 
 
 @dataclass
 class Elasticsearch:
-    destination: str
     endpoint: str
     authenticationMethod: Optional[Union[None1, ApiKeySecret, UsernamePassword]] = None
     ca_certificate: Optional[str] = None
+    destination: str = 'airbyte-destination-elasticsearch'
     tunnel_method: Optional[
         Union[NoTunnel, SSHKeyAuthentication, PasswordAuthentication]
     ] = None
@@ -785,37 +785,37 @@ class Elasticsearch:
 
 @dataclass
 class Exasol:
-    destination: str
     host: str
     port: int
     schema_: str
     username: str
     certificateFingerprint: Optional[str] = None
+    destination: str = 'airbyte-destination-exasol'
     jdbc_url_params: Optional[str] = None
     password: Optional[str] = None
 
 
 @dataclass
 class SQLInserts:
-    method: str
+    method: str = 'SQL'
 
 
 @dataclass
 class ExternalTableViaS3:
     aws_key_id: str
     aws_key_secret: str
-    method: str
     s3_bucket: str
     s3_region: str
+    method: str = 'S3'
 
 
 @dataclass
 class Firebolt:
     database: str
-    destination: str
     password: str
     username: str
     account: Optional[str] = None
+    destination: str = 'airbyte-destination-firebolt'
     engine: Optional[str] = None
     host: Optional[str] = None
     loading_method: Optional[Union[SQLInserts, ExternalTableViaS3]] = None
@@ -823,9 +823,9 @@ class Firebolt:
 
 @dataclass
 class Firestore:
-    destination: str
     project_id: str
     credentials_json: Optional[str] = None
+    destination: str = 'airbyte-destination-firestore'
 
 
 class CredentialType(Enum):
@@ -1035,7 +1035,6 @@ class GCSBucketRegion(Enum):
 @dataclass
 class Gcs:
     credential: HMACKey1
-    destination: str
     format: Union[
         AvroApacheAvro,
         CSVCommaSeparatedValues1,
@@ -1044,6 +1043,7 @@ class Gcs:
     ]
     gcs_bucket_name: str
     gcs_bucket_path: str
+    destination: str = 'airbyte-destination-gcs'
     gcs_bucket_region: Optional[GCSBucketRegion] = GCSBucketRegion.us
 
 
@@ -1057,8 +1057,8 @@ class AuthenticationViaGoogleOAuth:
 @dataclass
 class Googlesheets:
     credentials: AuthenticationViaGoogleOAuth
-    destination: str
     spreadsheet_id: str
+    destination: str = 'airbyte-destination-google-sheets'
 
 
 class CatalogType(Enum):
@@ -1155,9 +1155,9 @@ class Iceberg:
         JdbcCatalogUseRelationalDatabase,
         RESTCatalog,
     ]
-    destination: str
     format_config: FileFormat
     storage_config: Union[S3, ServerManaged]
+    destination: str = 'airbyte-destination-iceberg'
 
 
 class ACKs(Enum):
@@ -1235,7 +1235,6 @@ class Kafka:
     client_dns_lookup: ClientDNSLookup
     compression_type: CompressionType4
     delivery_timeout_ms: int
-    destination: str
     enable_idempotence: bool
     linger_ms: str
     max_block_ms: str
@@ -1250,6 +1249,7 @@ class Kafka:
     socket_connection_setup_timeout_ms: str
     topic_pattern: str
     client_id: Optional[str] = None
+    destination: str = 'airbyte-destination-kafka'
     sync_producer: Optional[bool] = False
     test_topic: Optional[str] = None
 
@@ -1257,8 +1257,8 @@ class Kafka:
 @dataclass
 class Keen:
     api_key: str
-    destination: str
     project_id: str
+    destination: str = 'airbyte-destination-keen'
     infer_timestamp: Optional[bool] = True
 
 
@@ -1266,11 +1266,11 @@ class Keen:
 class Kinesis:
     accessKey: str
     bufferSize: int
-    destination: str
     endpoint: str
     privateKey: str
     region: str
     shardCount: int
+    destination: str = 'airbyte-destination-kinesis'
 
 
 class Mode12(Enum):
@@ -1280,7 +1280,7 @@ class Mode12(Enum):
 @dataclass
 class OpenAI1:
     openai_key: str
-    mode: Optional[Mode12] = Mode12.openai
+    mode: Mode12 = Mode12.openai
 
 
 class Mode13(Enum):
@@ -1289,7 +1289,7 @@ class Mode13(Enum):
 
 @dataclass
 class Fake1:
-    mode: Optional[Mode13] = Mode13.fake
+    mode: Mode13 = Mode13.fake
 
 
 class Mode14(Enum):
@@ -1301,7 +1301,7 @@ class Pinecone:
     index: str
     pinecone_environment: str
     pinecone_key: str
-    mode: Optional[Mode14] = Mode14.pinecone
+    mode: Mode14 = Mode14.pinecone
 
 
 class Mode15(Enum):
@@ -1311,7 +1311,7 @@ class Mode15(Enum):
 @dataclass
 class DocArrayHnswSearch:
     destination_path: str
-    mode: Optional[Mode15] = Mode15.DocArrayHnswSearch
+    mode: Mode15 = Mode15.DocArrayHnswSearch
 
 
 class Mode16(Enum):
@@ -1322,7 +1322,7 @@ class Mode16(Enum):
 class ChromaLocalPersistance:
     destination_path: str
     collection_name: Optional[str] = 'langchain'
-    mode: Optional[Mode16] = Mode16.chroma_local
+    mode: Mode16 = Mode16.chroma_local
 
 
 @dataclass
@@ -1334,25 +1334,25 @@ class ProcessingConfigModel1:
 
 @dataclass
 class Langchain:
-    destination: str
     embedding: Union[OpenAI1, Fake1]
     indexing: Union[Pinecone, DocArrayHnswSearch, ChromaLocalPersistance]
     processing: ProcessingConfigModel1
+    destination: str = 'airbyte-destination-langchain'
 
 
 @dataclass
 class Localjson:
-    destination: str
     destination_path: str
+    destination: str = 'airbyte-destination-local-json'
 
 
 @dataclass
 class Mariadbcolumnstore:
     database: str
-    destination: str
     host: str
     port: int
     username: str
+    destination: str = 'airbyte-destination-mariadb-columnstore'
     jdbc_url_params: Optional[str] = None
     password: Optional[str] = None
     tunnel_method: Optional[
@@ -1362,9 +1362,9 @@ class Mariadbcolumnstore:
 
 @dataclass
 class Meilisearch:
-    destination: str
     host: str
     api_key: Optional[str] = None
+    destination: str = 'airbyte-destination-meilisearch'
 
 
 class Mode17(Enum):
@@ -1373,8 +1373,8 @@ class Mode17(Enum):
 
 @dataclass
 class OpenAI2:
-    mode: Mode17
     openai_key: str
+    mode: Mode17 = Mode17.openai
 
 
 class Mode18(Enum):
@@ -1384,7 +1384,7 @@ class Mode18(Enum):
 @dataclass
 class Cohere1:
     cohere_key: str
-    mode: Mode18
+    mode: Mode18 = Mode18.cohere
 
 
 class Mode19(Enum):
@@ -1393,7 +1393,7 @@ class Mode19(Enum):
 
 @dataclass
 class Fake2:
-    mode: Mode19
+    mode: Mode19 = Mode19.fake
 
 
 class Mode20(Enum):
@@ -1404,8 +1404,8 @@ class Mode20(Enum):
 class AzureOpenAI1:
     api_base: str
     deployment: str
-    mode: Mode20
     openai_key: str
+    mode: Mode20 = Mode20.azure_openai
 
 
 class Mode21(Enum):
@@ -1416,8 +1416,8 @@ class Mode21(Enum):
 class OpenAICompatible1:
     base_url: str
     dimensions: int
-    mode: Mode21
     api_key: Optional[str] = ''
+    mode: Mode21 = Mode21.openai_compatible
     model_name: Optional[str] = 'text-embedding-ada-002'
 
 
@@ -1427,8 +1427,8 @@ class Mode22(Enum):
 
 @dataclass
 class APIToken:
-    mode: Mode22
     token: str
+    mode: Mode22 = Mode22.token
 
 
 class Mode23(Enum):
@@ -1437,9 +1437,9 @@ class Mode23(Enum):
 
 @dataclass
 class UsernamePassword1:
-    mode: Mode23
     password: str
     username: str
+    mode: Mode23 = Mode23.username_password
 
 
 class Mode24(Enum):
@@ -1448,7 +1448,7 @@ class Mode24(Enum):
 
 @dataclass
 class NoAuth:
-    mode: Mode24
+    mode: Mode24 = Mode24.no_auth
 
 
 @dataclass
@@ -1467,8 +1467,8 @@ class Mode25(Enum):
 
 @dataclass
 class BySeparator1:
-    mode: Mode25
     keep_separator: Optional[bool] = False
+    mode: Mode25 = Mode25.separator
     separators: Optional[List[str]] = field(
         default_factory=lambda: ['"\\n\\n"', '"\\n"', '" "', '""']
     )
@@ -1480,7 +1480,7 @@ class Mode26(Enum):
 
 @dataclass
 class ByMarkdownHeader1:
-    mode: Mode26
+    mode: Mode26 = Mode26.markdown
     split_level: Optional[int] = 1
 
 
@@ -1491,7 +1491,7 @@ class Mode27(Enum):
 @dataclass
 class ByProgrammingLanguage1:
     language: Language
-    mode: Mode27
+    mode: Mode27 = Mode27.code
 
 
 @dataclass
@@ -1510,23 +1510,23 @@ class ProcessingConfigModel2:
 
 @dataclass
 class Milvus:
-    destination: str
     embedding: Union[OpenAI2, Cohere1, Fake2, AzureOpenAI1, OpenAICompatible1]
     indexing: Indexing1
     processing: ProcessingConfigModel2
+    destination: str = 'airbyte-destination-milvus'
     omit_raw_text: Optional[bool] = False
 
 
 @dataclass
 class None_1:
-    authorization: str
+    authorization: str = 'none'
 
 
 @dataclass
 class LoginPassword:
-    authorization: str
     password: str
     username: str
+    authorization: str = 'login/password'
 
 
 class Instance(Enum):
@@ -1566,7 +1566,7 @@ class MongoDBAtlas:
 class Mongodb:
     auth_type: Union[None_1, LoginPassword]
     database: str
-    destination: str
+    destination: str = 'airbyte-destination-mongodb'
     instance_type: Optional[
         Union[StandaloneMongoDbInstance, ReplicaSet, MongoDBAtlas]
     ] = None
@@ -1588,13 +1588,13 @@ class Mqtt:
     broker_port: int
     clean_session: bool
     connect_timeout: int
-    destination: str
     message_qos: MessageQoS
     message_retained: bool
     publisher_sync: bool
     topic_pattern: str
     use_tls: bool
     client: Optional[str] = None
+    destination: str = 'airbyte-destination-mqtt'
     password: Optional[str] = None
     topic_test: Optional[str] = None
     username: Optional[str] = None
@@ -1606,7 +1606,7 @@ class SslMethod(Enum):
 
 @dataclass
 class Unencrypted:
-    ssl_method: SslMethod
+    ssl_method: SslMethod = SslMethod.unencrypted
 
 
 class SslMethod1(Enum):
@@ -1615,7 +1615,7 @@ class SslMethod1(Enum):
 
 @dataclass
 class EncryptedTrustServerCertificate:
-    ssl_method: SslMethod1
+    ssl_method: SslMethod1 = SslMethod1.encrypted_trust_server_certificate
 
 
 class SslMethod2(Enum):
@@ -1624,18 +1624,18 @@ class SslMethod2(Enum):
 
 @dataclass
 class EncryptedVerifyCertificate:
-    ssl_method: SslMethod2
     hostNameInCertificate: Optional[str] = None
+    ssl_method: SslMethod2 = SslMethod2.encrypted_verify_certificate
 
 
 @dataclass
 class Mssql:
     database: str
-    destination: str
     host: str
     port: int
     schema_: str
     username: str
+    destination: str = 'airbyte-destination-mssql'
     jdbc_url_params: Optional[str] = None
     password: Optional[str] = None
     ssl_method: Optional[
@@ -1649,10 +1649,10 @@ class Mssql:
 @dataclass
 class Mysql:
     database: str
-    destination: str
     host: str
     port: int
     username: str
+    destination: str = 'airbyte-destination-mysql'
     jdbc_url_params: Optional[str] = None
     password: Optional[str] = None
     ssl: Optional[bool] = True
@@ -1667,7 +1667,7 @@ class EncryptionMethod(Enum):
 
 @dataclass
 class Unencrypted1:
-    encryption_method: EncryptionMethod
+    encryption_method: EncryptionMethod = EncryptionMethod.unencrypted
 
 
 class EncryptionAlgorithm(Enum):
@@ -1682,8 +1682,8 @@ class EncryptionMethod1(Enum):
 
 @dataclass
 class NativeNetworkEncryptionNNE:
-    encryption_method: EncryptionMethod1
     encryption_algorithm: Optional[EncryptionAlgorithm] = EncryptionAlgorithm.AES256
+    encryption_method: EncryptionMethod1 = EncryptionMethod1.client_nne
 
 
 class EncryptionMethod2(Enum):
@@ -1692,17 +1692,19 @@ class EncryptionMethod2(Enum):
 
 @dataclass
 class TLSEncryptedVerifyCertificate:
-    encryption_method: EncryptionMethod2
     ssl_certificate: str
+    encryption_method: EncryptionMethod2 = (
+        EncryptionMethod2.encrypted_verify_certificate
+    )
 
 
 @dataclass
 class Oracle:
-    destination: str
     host: str
     port: int
     sid: str
     username: str
+    destination: str = 'airbyte-destination-oracle'
     encryption: Optional[
         Union[Unencrypted1, NativeNetworkEncryptionNNE, TLSEncryptedVerifyCertificate]
     ] = None
@@ -1720,8 +1722,8 @@ class Mode28(Enum):
 
 @dataclass
 class OpenAI3:
-    mode: Mode28
     openai_key: str
+    mode: Mode28 = Mode28.openai
 
 
 class Mode29(Enum):
@@ -1731,7 +1733,7 @@ class Mode29(Enum):
 @dataclass
 class Cohere2:
     cohere_key: str
-    mode: Mode29
+    mode: Mode29 = Mode29.cohere
 
 
 class Mode30(Enum):
@@ -1740,7 +1742,7 @@ class Mode30(Enum):
 
 @dataclass
 class Fake3:
-    mode: Mode30
+    mode: Mode30 = Mode30.fake
 
 
 class Mode31(Enum):
@@ -1751,8 +1753,8 @@ class Mode31(Enum):
 class AzureOpenAI2:
     api_base: str
     deployment: str
-    mode: Mode31
     openai_key: str
+    mode: Mode31 = Mode31.azure_openai
 
 
 class Mode32(Enum):
@@ -1763,8 +1765,8 @@ class Mode32(Enum):
 class OpenAICompatible2:
     base_url: str
     dimensions: int
-    mode: Mode32
     api_key: Optional[str] = ''
+    mode: Mode32 = Mode32.openai_compatible
     model_name: Optional[str] = 'text-embedding-ada-002'
 
 
@@ -1781,8 +1783,8 @@ class Mode33(Enum):
 
 @dataclass
 class BySeparator2:
-    mode: Mode33
     keep_separator: Optional[bool] = False
+    mode: Mode33 = Mode33.separator
     separators: Optional[List[str]] = field(
         default_factory=lambda: ['"\\n\\n"', '"\\n"', '" "', '""']
     )
@@ -1794,7 +1796,7 @@ class Mode34(Enum):
 
 @dataclass
 class ByMarkdownHeader2:
-    mode: Mode34
+    mode: Mode34 = Mode34.markdown
     split_level: Optional[int] = 1
 
 
@@ -1805,7 +1807,7 @@ class Mode35(Enum):
 @dataclass
 class ByProgrammingLanguage2:
     language: Language
-    mode: Mode35
+    mode: Mode35 = Mode35.code
 
 
 @dataclass
@@ -1824,10 +1826,10 @@ class ProcessingConfigModel3:
 
 @dataclass
 class Pinecone1:
-    destination: str
     embedding: Union[OpenAI3, Cohere2, Fake3, AzureOpenAI2, OpenAICompatible2]
     indexing: Indexing2
     processing: ProcessingConfigModel3
+    destination: str = 'airbyte-destination-pinecone'
     omit_raw_text: Optional[bool] = False
 
 
@@ -1837,7 +1839,7 @@ class Mode36(Enum):
 
 @dataclass
 class Disable:
-    mode: Mode36
+    mode: Mode36 = Mode36.disable
 
 
 class Mode37(Enum):
@@ -1846,7 +1848,7 @@ class Mode37(Enum):
 
 @dataclass
 class Allow:
-    mode: Mode37
+    mode: Mode37 = Mode37.allow
 
 
 class Mode38(Enum):
@@ -1855,7 +1857,7 @@ class Mode38(Enum):
 
 @dataclass
 class Prefer:
-    mode: Mode38
+    mode: Mode38 = Mode38.prefer
 
 
 class Mode39(Enum):
@@ -1864,7 +1866,7 @@ class Mode39(Enum):
 
 @dataclass
 class Require:
-    mode: Mode39
+    mode: Mode39 = Mode39.require
 
 
 class Mode40(Enum):
@@ -1874,8 +1876,8 @@ class Mode40(Enum):
 @dataclass
 class VerifyCa:
     ca_certificate: str
-    mode: Mode40
     client_key_password: Optional[str] = None
+    mode: Mode40 = Mode40.verify_ca
 
 
 class Mode41(Enum):
@@ -1887,24 +1889,24 @@ class VerifyFull:
     ca_certificate: str
     client_certificate: str
     client_key: str
-    mode: Mode41
     client_key_password: Optional[str] = None
+    mode: Mode41 = Mode41.verify_full
 
 
 @dataclass
 class Postgres:
     database: str
-    destination: str
     host: str
     port: int
     schema_: str
     username: str
+    destination: str = 'airbyte-destination-postgres'
     jdbc_url_params: Optional[str] = None
     password: Optional[str] = None
     ssl: Optional[bool] = False
-    ssl_mode: Optional[
-        Union[Disable, Allow, Prefer, Require, VerifyCa, VerifyFull]
-    ] = None
+    ssl_mode: Optional[Union[Disable, Allow, Prefer, Require, VerifyCa, VerifyFull]] = (
+        None
+    )
     tunnel_method: Optional[
         Union[NoTunnel, SSHKeyAuthentication, PasswordAuthentication]
     ] = None
@@ -1914,13 +1916,13 @@ class Postgres:
 class Pubsub:
     batching_enabled: bool
     credentials_json: str
-    destination: str
     ordering_enabled: bool
     project_id: str
     topic_id: str
     batching_delay_threshold: Optional[int] = 1
     batching_element_count_threshold: Optional[int] = 1
     batching_request_bytes_threshold: Optional[int] = 1
+    destination: str = 'airbyte-destination-pubsub'
 
 
 class CompressionType5(Enum):
@@ -1944,7 +1946,6 @@ class Pulsar:
     block_if_queue_full: bool
     brokers: str
     compression_type: CompressionType5
-    destination: str
     max_pending_messages: int
     max_pending_messages_across_partitions: int
     send_timeout_ms: int
@@ -1953,6 +1954,7 @@ class Pulsar:
     topic_tenant: str
     topic_type: TopicType
     use_tls: bool
+    destination: str = 'airbyte-destination-pulsar'
     producer_name: Optional[str] = None
     producer_sync: Optional[bool] = False
     topic_test: Optional[str] = None
@@ -1964,8 +1966,8 @@ class Mode42(Enum):
 
 @dataclass
 class OpenAI4:
-    mode: Mode42
     openai_key: str
+    mode: Mode42 = Mode42.openai
 
 
 class Mode43(Enum):
@@ -1975,7 +1977,7 @@ class Mode43(Enum):
 @dataclass
 class Cohere3:
     cohere_key: str
-    mode: Mode43
+    mode: Mode43 = Mode43.cohere
 
 
 class Mode44(Enum):
@@ -1984,7 +1986,7 @@ class Mode44(Enum):
 
 @dataclass
 class Fake4:
-    mode: Mode44
+    mode: Mode44 = Mode44.fake
 
 
 class Mode45(Enum):
@@ -1995,8 +1997,8 @@ class Mode45(Enum):
 class AzureOpenAI3:
     api_base: str
     deployment: str
-    mode: Mode45
     openai_key: str
+    mode: Mode45 = Mode45.azure_openai
 
 
 class Mode46(Enum):
@@ -2007,8 +2009,8 @@ class Mode46(Enum):
 class OpenAICompatible3:
     base_url: str
     dimensions: int
-    mode: Mode46
     api_key: Optional[str] = ''
+    mode: Mode46 = Mode46.openai_compatible
     model_name: Optional[str] = 'text-embedding-ada-002'
 
 
@@ -2019,7 +2021,7 @@ class Mode47(Enum):
 @dataclass
 class ApiKeyAuth:
     api_key: str
-    mode: Optional[Mode47] = Mode47.api_key_auth
+    mode: Mode47 = Mode47.api_key_auth
 
 
 class Mode48(Enum):
@@ -2028,7 +2030,7 @@ class Mode48(Enum):
 
 @dataclass
 class NoAuth1:
-    mode: Optional[Mode48] = Mode48.no_auth
+    mode: Mode48 = Mode48.no_auth
 
 
 class DistanceMetric(Enum):
@@ -2053,8 +2055,8 @@ class Mode49(Enum):
 
 @dataclass
 class BySeparator3:
-    mode: Mode49
     keep_separator: Optional[bool] = False
+    mode: Mode49 = Mode49.separator
     separators: Optional[List[str]] = field(
         default_factory=lambda: ['"\\n\\n"', '"\\n"', '" "', '""']
     )
@@ -2066,7 +2068,7 @@ class Mode50(Enum):
 
 @dataclass
 class ByMarkdownHeader3:
-    mode: Mode50
+    mode: Mode50 = Mode50.markdown
     split_level: Optional[int] = 1
 
 
@@ -2077,7 +2079,7 @@ class Mode51(Enum):
 @dataclass
 class ByProgrammingLanguage3:
     language: Language
-    mode: Mode51
+    mode: Mode51 = Mode51.code
 
 
 @dataclass
@@ -2096,10 +2098,10 @@ class ProcessingConfigModel4:
 
 @dataclass
 class Qdrant:
-    destination: str
     embedding: Union[OpenAI4, Cohere3, Fake4, AzureOpenAI3, OpenAICompatible3]
     indexing: Indexing3
     processing: ProcessingConfigModel4
+    destination: str = 'airbyte-destination-qdrant'
     omit_raw_text: Optional[bool] = False
 
 
@@ -2232,22 +2234,22 @@ class JSONLinesNewlineDelimitedJSON3:
 class R2:
     access_key_id: str
     account_id: str
-    destination: str
     format: Union[
         AvroApacheAvro1, CSVCommaSeparatedValues2, JSONLinesNewlineDelimitedJSON3
     ]
     s3_bucket_name: str
     s3_bucket_path: str
     secret_access_key: str
+    destination: str = 'airbyte-destination-r2'
     file_name_pattern: Optional[str] = None
     s3_path_format: Optional[str] = None
 
 
 @dataclass
 class Rabbitmq:
-    destination: str
     host: str
     routing_key: str
+    destination: str = 'airbyte-destination-rabbitmq'
     exchange: Optional[str] = None
     password: Optional[str] = None
     port: Optional[int] = None
@@ -2266,7 +2268,7 @@ class Mode52(Enum):
 
 @dataclass
 class Disable1:
-    mode: Mode52
+    mode: Mode52 = Mode52.disable
 
 
 class Mode53(Enum):
@@ -2278,17 +2280,17 @@ class VerifyFull1:
     ca_certificate: str
     client_certificate: str
     client_key: str
-    mode: Mode53
     client_key_password: Optional[str] = None
+    mode: Mode53 = Mode53.verify_full
 
 
 @dataclass
 class Redis:
     cache_type: CacheType
-    destination: str
     host: str
     port: int
     username: str
+    destination: str = 'airbyte-destination-redis'
     password: Optional[str] = None
     ssl: Optional[bool] = False
     ssl_mode: Optional[Union[Disable1, VerifyFull1]] = None
@@ -2311,8 +2313,8 @@ class Redpanda:
     bootstrap_servers: str
     buffer_memory: str
     compression_type: CompressionType10
-    destination: str
     retries: int
+    destination: str = 'airbyte-destination-redpanda'
     socket_connection_setup_timeout_max_ms: Optional[int] = None
     socket_connection_setup_timeout_ms: Optional[int] = None
     topic_num_partitions: Optional[int] = None
@@ -2325,7 +2327,7 @@ class EncryptionType(Enum):
 
 @dataclass
 class NoEncryption:
-    encryption_type: EncryptionType
+    encryption_type: EncryptionType = EncryptionType.none
 
 
 class EncryptionType1(Enum):
@@ -2334,7 +2336,7 @@ class EncryptionType1(Enum):
 
 @dataclass
 class AESCBCEnvelopeEncryption:
-    encryption_type: EncryptionType1
+    encryption_type: EncryptionType1 = EncryptionType1.aes_cbc_envelope
     key_encrypting_key: Optional[str] = None
 
 
@@ -2368,7 +2370,6 @@ class S3BucketRegion3(Enum):
 @dataclass
 class AWSS3Staging:
     access_key_id: str
-    method: str
     s3_bucket_name: str
     s3_bucket_region: S3BucketRegion3
     secret_access_key: str
@@ -2377,24 +2378,25 @@ class AWSS3Staging:
     )
     file_buffer_count: Optional[int] = 10
     file_name_pattern: Optional[str] = None
+    method: str = 'S3 Staging'
     purge_staging_data: Optional[bool] = True
     s3_bucket_path: Optional[str] = None
 
 
 @dataclass
 class Standard:
-    method: str
+    method: str = 'Standard'
 
 
 @dataclass
 class Redshift:
     database: str
-    destination: str
     host: str
     password: str
     port: int
     schema_: str
     username: str
+    destination: str = 'airbyte-destination-redshift'
     jdbc_url_params: Optional[str] = None
     raw_data_schema: Optional[str] = None
     tunnel_method: Optional[
@@ -2407,9 +2409,9 @@ class Redshift:
 @dataclass
 class Rockset:
     api_key: str
-    destination: str
     workspace: str
     api_server: Optional[str] = 'https://api.rs2.usw2.rockset.com'
+    destination: str = 'airbyte-destination-rockset'
 
 
 class CompressionType11(Enum):
@@ -2478,7 +2480,6 @@ class S3BucketRegion4(Enum):
 
 @dataclass
 class S3glue:
-    destination: str
     format: JSONLinesNewlineDelimitedJSON4
     glue_database: str
     glue_serialization_library: SerializationLibrary
@@ -2486,6 +2487,7 @@ class S3glue:
     s3_bucket_path: str
     s3_bucket_region: S3BucketRegion4
     access_key_id: Optional[str] = None
+    destination: str = 'airbyte-destination-s3-glue'
     file_name_pattern: Optional[str] = None
     s3_endpoint: Optional[str] = ''
     s3_path_format: Optional[str] = None
@@ -2635,7 +2637,6 @@ class ParquetColumnarStorage2:
 
 @dataclass
 class S31:
-    destination: str
     format: Union[
         AvroApacheAvro2,
         CSVCommaSeparatedValues3,
@@ -2646,6 +2647,7 @@ class S31:
     s3_bucket_path: str
     s3_bucket_region: S3BucketRegion4
     access_key_id: Optional[str] = None
+    destination: str = 'airbyte-destination-s3'
     file_name_pattern: Optional[str] = None
     s3_endpoint: Optional[str] = ''
     s3_path_format: Optional[str] = None
@@ -2655,11 +2657,11 @@ class S31:
 @dataclass
 class Scylla:
     address: str
-    destination: str
     keyspace: str
     password: str
     port: int
     username: str
+    destination: str = 'airbyte-destination-scylla'
     replication: Optional[int] = 1
 
 
@@ -2667,20 +2669,20 @@ class Scylla:
 class Selectdb:
     cluster_name: str
     database: str
-    destination: str
     jdbc_url: str
     load_url: str
     password: str
     user_name: str
+    destination: str = 'airbyte-destination-selectdb'
 
 
 @dataclass
 class Sftpjson:
-    destination: str
     destination_path: str
     host: str
     password: str
     username: str
+    destination: str = 'airbyte-destination-sftp-json'
     port: Optional[int] = 22
 
 
@@ -2691,7 +2693,7 @@ class AuthType(Enum):
 @dataclass
 class KeyPairAuthentication:
     private_key: str
-    auth_type: Optional[AuthType] = AuthType.Key_Pair_Authentication
+    auth_type: AuthType = AuthType.Key_Pair_Authentication
     private_key_password: Optional[str] = None
 
 
@@ -2702,13 +2704,12 @@ class AuthType1(Enum):
 @dataclass
 class UsernameAndPassword:
     password: str
-    auth_type: Optional[AuthType1] = AuthType1.Username_and_Password
+    auth_type: AuthType1 = AuthType1.Username_and_Password
 
 
 @dataclass
 class Snowflake:
     database: str
-    destination: str
     host: str
     role: str
     schema_: str
@@ -2717,6 +2718,7 @@ class Snowflake:
     credentials: Optional[
         Union[OAuth2.Field0, KeyPairAuthentication, UsernameAndPassword]
     ] = None
+    destination: str = 'airbyte-destination-snowflake'
     disable_type_dedupe: Optional[bool] = False
     jdbc_url_params: Optional[str] = None
     raw_data_schema: Optional[str] = None
@@ -2724,8 +2726,8 @@ class Snowflake:
 
 @dataclass
 class Sqlite:
-    destination: str
     destination_path: str
+    destination: str = 'airbyte-destination-sqlite'
 
 
 class ObjectStoreType(Enum):
@@ -2761,12 +2763,12 @@ class AmazonS31:
 class Starburstgalaxy:
     accept_terms: bool
     catalog: str
-    destination: str
     password: str
     server_hostname: str
     staging_object_store: AmazonS31
     username: str
     catalog_schema: Optional[str] = 'public'
+    destination: str = 'airbyte-destination-starburst-galaxy'
     port: Optional[str] = '443'
     purge_staging_table: Optional[bool] = True
 
@@ -2777,7 +2779,7 @@ class Mode54(Enum):
 
 @dataclass
 class Disable2:
-    mode: Mode54
+    mode: Mode54 = Mode54.disable
 
 
 class Mode55(Enum):
@@ -2786,7 +2788,7 @@ class Mode55(Enum):
 
 @dataclass
 class Allow1:
-    mode: Mode55
+    mode: Mode55 = Mode55.allow
 
 
 class Mode56(Enum):
@@ -2795,7 +2797,7 @@ class Mode56(Enum):
 
 @dataclass
 class Prefer1:
-    mode: Mode56
+    mode: Mode56 = Mode56.prefer
 
 
 class Mode57(Enum):
@@ -2804,7 +2806,7 @@ class Mode57(Enum):
 
 @dataclass
 class Require1:
-    mode: Mode57
+    mode: Mode57 = Mode57.require
 
 
 class Mode58(Enum):
@@ -2813,8 +2815,8 @@ class Mode58(Enum):
 
 @dataclass
 class VerifyCa1:
-    mode: Mode58
     ssl_ca_certificate: str
+    mode: Mode58 = Mode58.verify_ca
 
 
 class Mode59(Enum):
@@ -2823,15 +2825,15 @@ class Mode59(Enum):
 
 @dataclass
 class VerifyFull2:
-    mode: Mode59
     ssl_ca_certificate: str
+    mode: Mode59 = Mode59.verify_full
 
 
 @dataclass
 class Teradata:
-    destination: str
     host: str
     username: str
+    destination: str = 'airbyte-destination-teradata'
     jdbc_url_params: Optional[str] = None
     password: Optional[str] = None
     schema_: Optional[str] = 'airbyte_td'
@@ -2844,10 +2846,10 @@ class Teradata:
 @dataclass
 class Tidb:
     database: str
-    destination: str
     host: str
     port: int
     username: str
+    destination: str = 'airbyte-destination-tidb'
     jdbc_url_params: Optional[str] = None
     password: Optional[str] = ''
     ssl: Optional[bool] = False
@@ -2859,16 +2861,16 @@ class Tidb:
 @dataclass
 class Timeplus:
     apikey: str
-    destination: str
     endpoint: str
+    destination: str = 'airbyte-destination-timeplus'
 
 
 @dataclass
 class Typesense:
     api_key: str
-    destination: str
     host: str
     batch_size: Optional[int] = None
+    destination: str = 'airbyte-destination-typesense'
     port: Optional[str] = None
     protocol: Optional[str] = None
 
@@ -2876,11 +2878,11 @@ class Typesense:
 @dataclass
 class Vertica:
     database: str
-    destination: str
     host: str
     port: int
     schema_: str
     username: str
+    destination: str = 'airbyte-destination-vertica'
     jdbc_url_params: Optional[str] = None
     password: Optional[str] = None
     tunnel_method: Optional[
@@ -2894,7 +2896,7 @@ class Mode60(Enum):
 
 @dataclass
 class NoExternalEmbedding:
-    mode: Mode60
+    mode: Mode60 = Mode60.no_embedding
 
 
 class Mode61(Enum):
@@ -2905,8 +2907,8 @@ class Mode61(Enum):
 class AzureOpenAI4:
     api_base: str
     deployment: str
-    mode: Mode61
     openai_key: str
+    mode: Mode61 = Mode61.azure_openai
 
 
 class Mode62(Enum):
@@ -2915,8 +2917,8 @@ class Mode62(Enum):
 
 @dataclass
 class OpenAI5:
-    mode: Mode62
     openai_key: str
+    mode: Mode62 = Mode62.openai
 
 
 class Mode63(Enum):
@@ -2926,7 +2928,7 @@ class Mode63(Enum):
 @dataclass
 class Cohere4:
     cohere_key: str
-    mode: Mode63
+    mode: Mode63 = Mode63.cohere
 
 
 class Mode64(Enum):
@@ -2937,7 +2939,7 @@ class Mode64(Enum):
 class FromField1:
     dimensions: int
     field_name: str
-    mode: Mode64
+    mode: Mode64 = Mode64.from_field
 
 
 class Mode65(Enum):
@@ -2946,7 +2948,7 @@ class Mode65(Enum):
 
 @dataclass
 class Fake5:
-    mode: Mode65
+    mode: Mode65 = Mode65.fake
 
 
 class Mode66(Enum):
@@ -2957,8 +2959,8 @@ class Mode66(Enum):
 class OpenAICompatible4:
     base_url: str
     dimensions: int
-    mode: Mode66
     api_key: Optional[str] = ''
+    mode: Mode66 = Mode66.openai_compatible
     model_name: Optional[str] = 'text-embedding-ada-002'
 
 
@@ -2974,8 +2976,8 @@ class Mode67(Enum):
 
 @dataclass
 class APIToken1:
-    mode: Mode67
     token: str
+    mode: Mode67 = Mode67.token
 
 
 class Mode68(Enum):
@@ -2984,9 +2986,9 @@ class Mode68(Enum):
 
 @dataclass
 class UsernamePassword2:
-    mode: Mode68
     password: str
     username: str
+    mode: Mode68 = Mode68.username_password
 
 
 class Mode69(Enum):
@@ -2995,7 +2997,7 @@ class Mode69(Enum):
 
 @dataclass
 class NoAuthentication:
-    mode: Mode69
+    mode: Mode69 = Mode69.no_auth
 
 
 class DefaultVectorizer(Enum):
@@ -3025,8 +3027,8 @@ class Mode70(Enum):
 
 @dataclass
 class BySeparator4:
-    mode: Mode70
     keep_separator: Optional[bool] = False
+    mode: Mode70 = Mode70.separator
     separators: Optional[List[str]] = field(
         default_factory=lambda: ['"\\n\\n"', '"\\n"', '" "', '""']
     )
@@ -3038,7 +3040,7 @@ class Mode71(Enum):
 
 @dataclass
 class ByMarkdownHeader4:
-    mode: Mode71
+    mode: Mode71 = Mode71.markdown
     split_level: Optional[int] = 1
 
 
@@ -3049,7 +3051,7 @@ class Mode72(Enum):
 @dataclass
 class ByProgrammingLanguage4:
     language: Language
-    mode: Mode72
+    mode: Mode72 = Mode72.code
 
 
 @dataclass
@@ -3068,7 +3070,6 @@ class ProcessingConfigModel5:
 
 @dataclass
 class Weaviate:
-    destination: str
     embedding: Union[
         NoExternalEmbedding,
         AzureOpenAI4,
@@ -3080,6 +3081,7 @@ class Weaviate:
     ]
     indexing: Indexing4
     processing: ProcessingConfigModel5
+    destination: str = 'airbyte-destination-weaviate'
     omit_raw_text: Optional[bool] = False
 
 
@@ -3087,26 +3089,26 @@ class Weaviate:
 class Xata:
     api_key: str
     db_url: str
-    destination: str
+    destination: str = 'airbyte-destination-xata'
 
 
 @dataclass
 class Yugabytedb:
     database: str
-    destination: str
     host: str
     port: int
     schema_: str
     username: str
+    destination: str = 'airbyte-destination-yugabytedb'
     jdbc_url_params: Optional[str] = None
     password: Optional[str] = None
 
 
 @dataclass
 class Airbytedevmatecloud:
-    destination: str
     privateKey: str
     streamId: str
+    destination: str = 'airbyte-devmate-cloud'
 
 
 Destination = Union[
