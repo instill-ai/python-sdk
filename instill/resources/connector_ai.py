@@ -3,6 +3,9 @@ from typing import Union
 
 from instill.resources import Component
 from instill.resources.schema import (
+    archetypeai_task_describe_input,
+    archetypeai_task_summarize_input,
+    archetypeai_task_upload_file_input,
     helper,
     huggingface_task_audio_classification_input,
     huggingface_task_conversational_input,
@@ -39,9 +42,6 @@ from instill.resources.schema import (
     openai_task_text_to_speech_input,
     stabilityai_task_image_to_image_input,
     stabilityai_task_text_to_image_input,
-    archetypeai_task_describe_input,
-    archetypeai_task_summarize_input,
-    archetypeai_task_upload_file_input,
 )
 
 

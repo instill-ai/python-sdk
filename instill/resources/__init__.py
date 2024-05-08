@@ -9,27 +9,27 @@ import instill.protogen.model.model.v1alpha.task_text_to_image_pb2 as task_text_
 import instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 as pipeline_pb
 from instill.resources.component import Component
 from instill.resources.connector_ai import (
+    HuggingfaceConnector,
     InstillModelConnector,
     OpenAIConnector,
     StabilityAIConnector,
-    HuggingfaceConnector,
 )
 from instill.resources.connector_blockchain import NumbersConnector
 from instill.resources.connector_data import (
+    BigQueryConnector,
+    GoogleCloudStorageConnector,
+    GoogleSearchConnector,
     PineconeConnector,
     RedisConnector,
     WebsiteConnector,
-    BigQueryConnector,
-    GoogleSearchConnector,
-    GoogleCloudStorageConnector,
 )
+from instill.resources.model import GithubModel, HugginfaceModel, Model
 from instill.resources.operator import (
     Base64Operator,
     ImageOperator,
-    TextOperator,
     JSONOperator,
+    TextOperator,
 )
-from instill.resources.model import GithubModel, HugginfaceModel, Model
 from instill.resources.pipeline import Pipeline
 from instill.resources.recipe import create_recipe
 from instill.resources.schema.helper import populate_default_value

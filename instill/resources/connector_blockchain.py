@@ -1,7 +1,5 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module
-import json
-
-from instill.resources import Component, const
+from instill.resources import Component
 from instill.resources.schema import helper, numbers_task_commit_input
 
 
