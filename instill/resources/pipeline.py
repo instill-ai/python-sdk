@@ -40,7 +40,7 @@ class Pipeline(Resource):
         resp = self.client.pipeline_service.trigger_pipeline(
             self.resource.id,
             task_inputs,
-            silent,
+            silent=silent,
         )
         return resp.outputs, resp.metadata
 
@@ -65,7 +65,8 @@ class Pipeline(Resource):
 
     def get_operation(self, operation: operations_pb2.Operation, silent: bool = False):
         return self.client.pipeline_service.get_operation(
-            operation.name, silent
+            operation.name,
+            silent=silent,
         ).operation
 
     def trigger_async(
@@ -76,7 +77,7 @@ class Pipeline(Resource):
         return self.client.pipeline_service.trigger_async_pipeline(
             self.resource.id,
             task_inputs,
-            silent,
+            silent=silent,
         ).operation
 
     def get_recipe(self) -> pipeline_interface.Recipe:
@@ -88,7 +89,7 @@ class Pipeline(Resource):
         self.client.pipeline_service.update_pipeline(
             pipeline,
             FieldMask(paths=["recipe"]),
-            silent,
+            silent=silent,
         )
         self._update()
 
@@ -105,4 +106,6 @@ class Pipeline(Resource):
 
     def delete(self, silent: bool = False):
         if self.resource is not None:
-            self.client.pipeline_service.delete_pipeline(self.resource.id, silent)
+            self.client.pipeline_service.delete_pipeline(
+                self.resource.id, silent=silent
+            )

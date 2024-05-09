@@ -49,7 +49,9 @@ class Model(Resource):
 
     def __call__(self, task_inputs: list, silent: bool = False) -> list:
         return self.client.model_service.trigger_model(
-            self.resource.id, task_inputs
+            self.resource.id,
+            task_inputs,
+            silent=silent,
         ).task_outputs
 
     @property
@@ -77,15 +79,25 @@ class Model(Resource):
         return self.resource.model_definition
 
     def get_readme(self, silent: bool = False) -> str:
-        return self.client.model_service.get_model_card(self.resource.id, silent).readme
+        return self.client.model_service.get_model_card(
+            self.resource.id,
+            silent=silent,
+        ).readme
 
     def get_state(self, silent: bool = False) -> model_interface.Model.State:
-        return self.client.model_service.watch_model(self.resource.id, silent).state
+        return self.client.model_service.watch_model(
+            self.resource.id,
+            silent=silent,
+        ).state
 
     def deploy(self, silent: bool = False) -> model_interface.Model.State:
-        self.client.model_service.deploy_model(self.resource.id, silent)
+        self.client.model_service.deploy_model(
+            self.resource.id,
+            silent=silent,
+        )
         state = self.client.model_service.watch_model(
-            model_name=self.resource.id, silent=silent
+            model_name=self.resource.id,
+            silent=silent,
         ).state
         while state not in (2, 3):
             time.sleep(1)
@@ -110,7 +122,10 @@ class Model(Resource):
 
     def delete(self, silent: bool = False):
         if self.resource is not None:
-            self.client.model_service.delete_model(self.resource.id, silent)
+            self.client.model_service.delete_model(
+                self.resource.id,
+                silent=silent,
+            )
 
 
 class GithubModel(Model):
