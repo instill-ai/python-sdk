@@ -33,10 +33,14 @@ class Pipeline(Resource):
         self.resource = pipeline
 
     def __call__(
-        self, task_inputs: list
+        self,
+        task_inputs: list,
+        silent: bool,
     ) -> Tuple[list, pipeline_interface.TriggerMetadata]:
         resp = self.client.pipeline_service.trigger_pipeline(
-            self.resource.id, task_inputs
+            self.resource.id,
+            task_inputs,
+            silent,
         )
         return resp.outputs, resp.metadata
 
@@ -59,29 +63,39 @@ class Pipeline(Resource):
     def _update(self):
         self.resource = self.client.pipeline_service.get_pipeline(name=self.resource.id)
 
-    def get_operation(self, operation: operations_pb2.Operation):
-        return self.client.pipeline_service.get_operation(operation.name).operation
+    def get_operation(self, operation: operations_pb2.Operation, silent: bool = False):
+        return self.client.pipeline_service.get_operation(
+            operation.name, silent
+        ).operation
 
-    def trigger_async(self, task_inputs: list) -> operations_pb2.Operation:
+    def trigger_async(
+        self,
+        task_inputs: list,
+        silent: bool = False,
+    ) -> operations_pb2.Operation:
         return self.client.pipeline_service.trigger_async_pipeline(
-            self.resource.id, task_inputs
+            self.resource.id,
+            task_inputs,
+            silent,
         ).operation
 
     def get_recipe(self) -> pipeline_interface.Recipe:
         return self.resource.recipe
 
-    def update_recipe(self, recipe: pipeline_interface.Recipe):
+    def update_recipe(self, recipe: pipeline_interface.Recipe, silent: bool = False):
         pipeline = self.resource
         pipeline.recipe.CopyFrom(recipe)
         self.client.pipeline_service.update_pipeline(
-            pipeline, FieldMask(paths=["recipe"])
+            pipeline,
+            FieldMask(paths=["recipe"]),
+            silent,
         )
         self._update()
 
-    def validate_pipeline(self) -> bool:
+    def validate_pipeline(self, silent: bool = True) -> bool:
         try:
             self.client.pipeline_service.validate_pipeline(
-                name=self.resource.id, silent=True
+                name=self.resource.id, silent=silent
             )
             return True
         except grpc.RpcError as rpc_error:
@@ -89,6 +103,6 @@ class Pipeline(Resource):
             Logger.w(rpc_error.details())
             return False
 
-    def delete(self):
+    def delete(self, silent: bool = False):
         if self.resource is not None:
-            self.client.pipeline_service.delete_pipeline(self.resource.id)
+            self.client.pipeline_service.delete_pipeline(self.resource.id, silent)

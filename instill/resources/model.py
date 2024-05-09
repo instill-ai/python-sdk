@@ -47,7 +47,7 @@ class Model(Resource):
 
         self.resource = model
 
-    def __call__(self, task_inputs: list) -> list:
+    def __call__(self, task_inputs: list, silent: bool = False) -> list:
         return self.client.model_service.trigger_model(
             self.resource.id, task_inputs
         ).task_outputs
@@ -76,15 +76,17 @@ class Model(Resource):
     def get_definition(self) -> model_definition_interface.ModelDefinition:
         return self.resource.model_definition
 
-    def get_readme(self) -> str:
-        return self.client.model_service.get_model_card(self.resource.id).readme
+    def get_readme(self, silent: bool = False) -> str:
+        return self.client.model_service.get_model_card(self.resource.id, silent).readme
 
-    def get_state(self) -> model_interface.Model.State:
-        return self.client.model_service.watch_model(self.resource.id).state
+    def get_state(self, silent: bool = False) -> model_interface.Model.State:
+        return self.client.model_service.watch_model(self.resource.id, silent).state
 
-    def deploy(self) -> model_interface.Model.State:
-        self.client.model_service.deploy_model(self.resource.id)
-        state = self.client.model_service.watch_model(model_name=self.resource.id).state
+    def deploy(self, silent: bool = False) -> model_interface.Model.State:
+        self.client.model_service.deploy_model(self.resource.id, silent)
+        state = self.client.model_service.watch_model(
+            model_name=self.resource.id, silent=silent
+        ).state
         while state not in (2, 3):
             time.sleep(1)
             state = self.client.model_service.watch_model(
@@ -93,9 +95,11 @@ class Model(Resource):
         self._update()
         return state
 
-    def undeploy(self) -> model_interface.Model.State:
-        self.client.model_service.undeploy_model(self.resource.id)
-        state = self.client.model_service.watch_model(model_name=self.resource.id).state
+    def undeploy(self, silent: bool = False) -> model_interface.Model.State:
+        self.client.model_service.undeploy_model(self.resource.id, silent)
+        state = self.client.model_service.watch_model(
+            model_name=self.resource.id, silent=silent
+        ).state
         while state not in (1, 3):
             time.sleep(1)
             state = self.client.model_service.watch_model(
@@ -104,9 +108,9 @@ class Model(Resource):
         self._update()
         return state
 
-    def delete(self):
+    def delete(self, silent: bool = False):
         if self.resource is not None:
-            self.client.model_service.delete_model(self.resource.id)
+            self.client.model_service.delete_model(self.resource.id, silent)
 
 
 class GithubModel(Model):
