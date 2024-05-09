@@ -1,5 +1,6 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module
 import time
+from typing import Optional
 
 import instill.protogen.model.model.v1alpha.model_definition_pb2 as model_definition_interface
 import instill.protogen.model.model.v1alpha.model_pb2 as model_interface
@@ -47,12 +48,15 @@ class Model(Resource):
 
         self.resource = model
 
-    def __call__(self, task_inputs: list, silent: bool = False) -> list:
-        return self.client.model_service.trigger_model(
+    def __call__(self, task_inputs: list, silent: bool = False) -> Optional[list]:
+        response = self.client.model_service.trigger_model(
             self.resource.id,
             task_inputs,
             silent=silent,
-        ).task_outputs
+        )
+        if response is not None:
+            return response.task_outputs
+        return response
 
     @property
     def client(self):
@@ -78,17 +82,23 @@ class Model(Resource):
     def get_definition(self) -> model_definition_interface.ModelDefinition:
         return self.resource.model_definition
 
-    def get_readme(self, silent: bool = False) -> str:
-        return self.client.model_service.get_model_card(
+    def get_readme(self, silent: bool = False) -> Optional[str]:
+        response = self.client.model_service.get_model_card(
             self.resource.id,
             silent=silent,
-        ).readme
+        )
+        if response is not None:
+            return response.readme
+        return response
 
-    def get_state(self, silent: bool = False) -> model_interface.Model.State:
-        return self.client.model_service.watch_model(
+    def get_state(self, silent: bool = False):
+        response = self.client.model_service.watch_model(
             self.resource.id,
             silent=silent,
-        ).state
+        )
+        if response is not None:
+            return response.state
+        return response
 
     def deploy(self, silent: bool = False) -> model_interface.Model.State:
         self.client.model_service.deploy_model(

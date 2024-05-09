@@ -1,5 +1,5 @@
 # pylint: disable=no-member,wrong-import-position,no-name-in-module
-from typing import Tuple, Union
+from typing import Optional, Tuple, Union
 
 import grpc
 from google.longrunning import operations_pb2
@@ -36,13 +36,15 @@ class Pipeline(Resource):
         self,
         task_inputs: list,
         silent: bool,
-    ) -> Tuple[list, pipeline_interface.TriggerMetadata]:
+    ) -> Optional[Tuple[list, pipeline_interface.TriggerMetadata]]:
         resp = self.client.pipeline_service.trigger_pipeline(
             self.resource.id,
             task_inputs,
             silent=silent,
         )
-        return resp.outputs, resp.metadata
+        if resp is not None:
+            return resp.outputs, resp.metadata
+        return resp
 
     @property
     def client(self):
@@ -64,21 +66,27 @@ class Pipeline(Resource):
         self.resource = self.client.pipeline_service.get_pipeline(name=self.resource.id)
 
     def get_operation(self, operation: operations_pb2.Operation, silent: bool = False):
-        return self.client.pipeline_service.get_operation(
+        response = self.client.pipeline_service.get_operation(
             operation.name,
             silent=silent,
-        ).operation
+        )
+        if response is not None:
+            return response.operation
+        return response
 
     def trigger_async(
         self,
         task_inputs: list,
         silent: bool = False,
     ) -> operations_pb2.Operation:
-        return self.client.pipeline_service.trigger_async_pipeline(
+        response = self.client.pipeline_service.trigger_async_pipeline(
             self.resource.id,
             task_inputs,
             silent=silent,
-        ).operation
+        )
+        if response is not None:
+            return response.operation
+        return response
 
     def get_recipe(self) -> pipeline_interface.Recipe:
         return self.resource.recipe
