@@ -17,8 +17,8 @@ class InstillInstance:
         self.metadata: Union[str, tuple] = ""
 
         channel_options = (
-            ("grpc.max_send_message_length", 10 * MB),
-            ("grpc.max_receive_message_length", 10 * MB),
+            ("grpc.max_send_message_length", 32 * MB),
+            ("grpc.max_receive_message_length", 32 * MB),
         )
 
         if not secure:
