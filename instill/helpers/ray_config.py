@@ -7,7 +7,8 @@ from ray.serve import deployment as ray_deployment
 
 from instill.helpers.const import (
     DEFAULT_AUTOSCALING_CONFIG,
-    DEFAULT_MAX_CONCURRENT_QUERIES,
+    DEFAULT_MAX_ONGOING_REQUESTS,
+    DEFAULT_MAX_QUEUED_REQUESTS,
     DEFAULT_RAY_ACTOR_OPTIONS,
     ENV_MEMORY,
     ENV_NUM_OF_CPUS,
@@ -174,5 +175,6 @@ def instill_deployment(
         _func_or_class=_func_or_class,
         ray_actor_options=DEFAULT_RAY_ACTOR_OPTIONS,
         autoscaling_config=DEFAULT_AUTOSCALING_CONFIG,
-        max_concurrent_queries=DEFAULT_MAX_CONCURRENT_QUERIES,
+        max_ongoing_requests=DEFAULT_MAX_ONGOING_REQUESTS,
+        max_queued_requests=DEFAULT_MAX_QUEUED_REQUESTS,
     )
