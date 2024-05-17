@@ -46,13 +46,17 @@ class InstillDeployable:
         elif num_of_gpus is not None and num_of_gpus != "":
             self._update_num_gpus(float(num_of_gpus))
 
+        num_of_gpus = self._deployment.ray_actor_options.get(  # type: ignore
+            "num_gpus", 0.001
+        )
+
         accelerator_type = os.getenv(ENV_RAY_ACCELERATOR_TYPE)
         if accelerator_type is not None and accelerator_type != "":
             self._update_accelerator_type(accelerator_type)
 
         custom_resource = os.getenv(ENV_RAY_CUSTOM_RESOURCE)
         if custom_resource is not None and custom_resource != "":
-            self._update_custom_resource(custom_resource)
+            self._update_custom_resource(custom_resource, num_of_gpus)
 
         num_of_min_replicas = os.getenv(ENV_NUM_OF_MIN_REPLICAS)
         if num_of_min_replicas is not None and num_of_min_replicas != "":
@@ -138,10 +142,10 @@ class InstillDeployable:
 
         return self
 
-    def _update_custom_resource(self, resource_name: str):
+    def _update_custom_resource(self, resource_name: str, ratio=0.001):
         if self._deployment.ray_actor_options is not None:
             self._deployment.ray_actor_options.update(
-                {"resources": {resource_name: 0.001}}
+                {"resources": {resource_name: ratio}}
             )
 
         return self
