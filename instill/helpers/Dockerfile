@@ -19,6 +19,5 @@ RUN for package in ${PACKAGES}; do \
     done;
 
 WORKDIR /home/ray
-COPY --link --exclude=instill.yaml --exclude=model.py . .
+COPY --link --exclude=model.py . .
 COPY model.py model.py
-COPY instill.yaml instill.yaml
