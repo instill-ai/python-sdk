@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.7-labs
 ARG RAY_VERSION
 ARG PYTHON_VERSION
 ARG CUDA_SUFFIX
@@ -18,4 +19,6 @@ RUN for package in ${PACKAGES}; do \
     done;
 
 WORKDIR /home/ray
-COPY . .
+COPY --link --exclude=instill.yaml --exclude=model.py . .
+COPY model.py model.py
+COPY instill.yaml instill.yaml
