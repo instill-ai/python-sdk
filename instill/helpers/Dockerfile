@@ -19,5 +19,5 @@ RUN for package in ${PACKAGES}; do \
     done;
 
 WORKDIR /home/ray
-COPY --link --exclude=model.py . .
-COPY model.py model.py
+COPY --chown=ray:users --exclude=model.py . .
+COPY --chown=ray:users model.py model.py
