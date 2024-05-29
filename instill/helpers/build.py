@@ -36,7 +36,7 @@ def build_image():
         "-t",
         "--tag",
         help="tag for the model image",
-        default="",
+        default=hashlib.sha256().hexdigest(),
         required=False,
     )
     parser.add_argument(
@@ -64,13 +64,17 @@ def build_image():
 
         build = config["build"]
         repo = config["repo"]
-        tag = args.tag if args.tag != "" else hashlib.sha256().hexdigest()
 
         python_version = build["python_version"].replace(".", "")
         ray_version = ray.__version__
         instill_version = instill.__version__
 
-        cuda_suffix = "" if not build["gpu"] else "-cu121"
+        if not build["gpu"]:
+            cuda_suffix = ""
+        elif "cuda_version" in build and not build["cuda_version"] is None:
+            cuda_suffix = f'-cu{build["cuda_version"].replace(".", "")}'
+        else:
+            cuda_suffix = "-gpu"
 
         system_str = ""
         if "system_packages" in build and not build["system_packages"] is None:
@@ -116,7 +120,7 @@ def build_image():
                 "--platform",
                 f"linux/{args.target_arch}",
                 "-t",
-                f"{repo}:{tag}",
+                f"{repo}:{args.tag}",
                 tmpdir,
                 "--load",
             ]
@@ -126,7 +130,7 @@ def build_image():
                 command,
                 check=True,
             )
-            Logger.i(f"[Instill Builder] {repo}:{tag} built")
+            Logger.i(f"[Instill Builder] {repo}:{args.tag} built")
     except subprocess.CalledProcessError:
         Logger.e("[Instill Builder] Build failed")
     except Exception as e:
