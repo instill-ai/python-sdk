@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.10.0](https://github.com/instill-ai/python-sdk/compare/v0.9.0...v0.10.0) (2024-06-05)
+
+
+### Features
+
+* **client, resources:** adopt latest api spec ([#145](https://github.com/instill-ai/python-sdk/issues/145)) ([bafa292](https://github.com/instill-ai/python-sdk/commit/bafa2922b0a0b316cd3e454cc34b522b55640b85))
+* **dockerfile:** separate config and weights into different layers ([#156](https://github.com/instill-ai/python-sdk/issues/156)) ([8d25fc3](https://github.com/instill-ai/python-sdk/commit/8d25fc325b49c64839f0460fc4f883ab012944a3))
+* **ray:** support cuda version and fix user root permission ([#158](https://github.com/instill-ai/python-sdk/issues/158)) ([cd1fa69](https://github.com/instill-ai/python-sdk/commit/cd1fa69bc929f25f705dd4504506050b186ba61c))
+
+
+### Bug Fixes
+
+* **clients:** fix message length ([#147](https://github.com/instill-ai/python-sdk/issues/147)) ([8083761](https://github.com/instill-ai/python-sdk/commit/80837619ea9b1f8c535debd764a0a944c5dc088c))
+* **resources:** fix nil response handling ([#151](https://github.com/instill-ai/python-sdk/issues/151)) ([c6df35c](https://github.com/instill-ai/python-sdk/commit/c6df35c8ca3c3ee16bbcddb180188a681f63371f))
+
+
+### Documentation
+
+* **readme:** update workflow name ([ba36a91](https://github.com/instill-ai/python-sdk/commit/ba36a9181dbfe679be7c92c5ff3dcd3541f88f6a))
+
 ## [0.9.0](https://github.com/instill-ai/python-sdk/compare/v0.8.1...v0.9.0) (2024-04-30)
 
 
