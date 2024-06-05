@@ -23,7 +23,7 @@ from instill.helpers.const import (
     VRAM_MINIMUM_RESERVE,
     VRAM_UPSCALE_FACTOR,
 )
-from instill.helpers.errors import ModelPathException, ModelVramException
+from instill.helpers.errors import ModelPathException
 from instill.helpers.utils import get_dir_size
 
 
@@ -86,7 +86,11 @@ class InstillDeployable:
             )
             ratio = min_vram_usage / float(total_vram)
             if ratio > 1:
-                raise ModelVramException
+                warn(
+                    "model projected vram usage is more than the GPU can handle, \
+                    deployment might result in error state"
+                )
+                ratio = 1
             return ratio
         if os.path.isdir(model_path):
             min_vram_usage = max(
@@ -95,7 +99,11 @@ class InstillDeployable:
             )
             ratio = min_vram_usage / float(total_vram)
             if ratio > 1:
-                raise ModelVramException
+                warn(
+                    "model projected vram usage is more than the GPU can handle, \
+                    deployment might result in error state"
+                )
+                ratio = 1
             return ratio
         raise ModelPathException
 
