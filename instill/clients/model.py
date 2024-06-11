@@ -125,29 +125,6 @@ class ModelClient(Client):
         ).send_sync()
 
     @grpc_handler
-    def create_model_local(
-        self,
-        model_name: str,
-        model_description: str,
-        model_path: str,
-    ) -> model_interface.CreateUserModelBinaryFileUploadResponse:
-        model = model_interface.Model()
-        model.id = model_name
-        model.description = model_description
-        model.model_definition = "model-definitions/local"
-
-        with open(model_path, "rb") as f:
-            data = f.read()
-            req = model_interface.CreateUserModelBinaryFileUploadRequest(
-                parent=self.namespace, model=model, content=data
-            )
-        return RequestFactory(
-            method=self.hosts[self.instance].client.CreateUserModelBinaryFileUpload,
-            request=req,
-            metadata=self.hosts[self.instance].metadata,
-        ).send_stream()
-
-    @grpc_handler
     def create_model(
         self,
         name: str,
@@ -172,52 +149,6 @@ class ModelClient(Client):
             method=self.hosts[self.instance].client.CreateUserModel,
             request=model_interface.CreateUserModelRequest(
                 model=model, parent=self.namespace
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def deploy_model(
-        self,
-        model_name: str,
-        async_enabled: bool = False,
-    ) -> model_interface.DeployUserModelResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.DeployUserModel,
-                request=model_interface.DeployUserModelRequest(
-                    name=f"{self.namespace}/models/{model_name}"
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.DeployUserModel,
-            request=model_interface.DeployUserModelRequest(
-                name=f"{self.namespace}/models/{model_name}"
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def undeploy_model(
-        self,
-        model_name: str,
-        async_enabled: bool = False,
-    ) -> model_interface.UndeployUserModelResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.UndeployUserModel,
-                request=model_interface.UndeployUserModelRequest(
-                    name=f"{self.namespace}/models/{model_name}"
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.UndeployUserModel,
-            request=model_interface.UndeployUserModelRequest(
-                name=f"{self.namespace}/models/{model_name}"
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
