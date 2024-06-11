@@ -23,7 +23,7 @@ from instill.resources.connector_data import (
     RedisConnector,
     WebsiteConnector,
 )
-from instill.resources.model import GithubModel, HugginfaceModel, Model
+from instill.resources.model import Model
 from instill.resources.operator import (
     Base64Operator,
     ImageOperator,
