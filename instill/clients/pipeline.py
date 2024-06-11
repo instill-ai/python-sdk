@@ -877,19 +877,19 @@ class PipelineClient(Client):
         self,
         name: str,
         async_enabled: bool = False,
-    ) -> pipeline_interface.GetUserPipelineResponse:
+    ) -> pipeline_interface.GetOrganizationPipelineResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.GetUserPipeline,
-                request=pipeline_interface.GetUserPipelineRequest(
+                method=self.hosts[self.instance].async_client.GetOrganizationPipeline,
+                request=pipeline_interface.GetOrganizationPipelineRequest(
                     name=f"{self.target_namespace}/pipelines/{name}"
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.GetUserPipeline,
-            request=pipeline_interface.GetUserPipelineRequest(
+            method=self.hosts[self.instance].client.GetOrganizationPipeline,
+            request=pipeline_interface.GetOrganizationPipelineRequest(
                 name=f"{self.target_namespace}/pipelines/{name}"
             ),
             metadata=self.hosts[self.instance].metadata,
