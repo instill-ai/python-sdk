@@ -1,7 +1,8 @@
-# pylint: disable=no-member,wrong-import-position,too-many-lines
+# pylint: disable=no-member,wrong-import-position,too-many-lines,no-name-in-module
 from typing import Dict, Union
 
 from google.protobuf import field_mask_pb2
+from google.protobuf.struct_pb2 import Struct
 
 # common
 import instill.protogen.common.healthcheck.v1beta.healthcheck_pb2 as healthcheck
@@ -114,7 +115,7 @@ class PipelineClient(Client):
     def create_pipeline(
         self,
         name: str,
-        recipe: pipeline_interface.Recipe,
+        recipe: Struct,
         async_enabled: bool = False,
     ) -> pipeline_interface.CreateUserPipelineResponse:
         pipeline = pipeline_interface.Pipeline(
@@ -846,7 +847,7 @@ class PipelineClient(Client):
     def create_org_pipeline(
         self,
         name: str,
-        recipe: pipeline_interface.Recipe,
+        recipe: Struct,
         async_enabled: bool = False,
     ) -> pipeline_interface.CreateOrganizationPipelineResponse:
         pipeline = pipeline_interface.Pipeline(

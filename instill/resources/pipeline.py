@@ -4,6 +4,7 @@ from typing import Optional, Tuple, Union
 import grpc
 from google.longrunning import operations_pb2
 from google.protobuf.field_mask_pb2 import FieldMask
+from google.protobuf.struct_pb2 import Struct
 
 import instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 as pipeline_interface
 from instill.clients import InstillClient
@@ -16,7 +17,7 @@ class Pipeline(Resource):
         self,
         client: InstillClient,
         name: str,
-        recipe: Union[pipeline_interface.Recipe, None] = None,
+        recipe: Union[Struct, None] = None,
     ) -> None:
         super().__init__()
         self.client = client
@@ -101,10 +102,10 @@ class Pipeline(Resource):
             return response.operation
         return response
 
-    def get_recipe(self) -> pipeline_interface.Recipe:
+    def get_recipe(self) -> Struct:
         return self.resource.recipe
 
-    def update_recipe(self, recipe: pipeline_interface.Recipe, silent: bool = False):
+    def update_recipe(self, recipe: Struct, silent: bool = False):
         pipeline = self.resource
         pipeline.recipe.CopyFrom(recipe)
         self.client.pipeline_service.update_pipeline(
