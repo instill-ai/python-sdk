@@ -150,7 +150,7 @@ class PipelineClient(Client):
                 method=self.hosts[self.instance].async_client.GetUserPipeline,
                 request=pipeline_interface.GetUserPipelineRequest(
                     name=f"{self.target_namespace}/pipelines/{name}",
-                    view=pipeline_interface.Pipeline.VIEW_FULL,
+                    view=pipeline_interface.Pipeline.VIEW_RECIPE,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -159,7 +159,7 @@ class PipelineClient(Client):
             method=self.hosts[self.instance].client.GetUserPipeline,
             request=pipeline_interface.GetUserPipelineRequest(
                 name=f"{self.target_namespace}/pipelines/{name}",
-                view=pipeline_interface.Pipeline.VIEW_FULL,
+                view=pipeline_interface.Pipeline.VIEW_RECIPE,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -175,7 +175,7 @@ class PipelineClient(Client):
                 method=self.hosts[self.instance].async_client.LookUpPipeline,
                 request=pipeline_interface.LookUpPipelineRequest(
                     permalink=f"pipelines/{pipeline_uid}",
-                    view=pipeline_interface.Pipeline.VIEW_FULL,
+                    view=pipeline_interface.Pipeline.VIEW_RECIPE,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -184,7 +184,7 @@ class PipelineClient(Client):
             method=self.hosts[self.instance].client.LookUpPipeline,
             request=pipeline_interface.LookUpPipelineRequest(
                 permalink=f"pipelines/{pipeline_uid}",
-                view=pipeline_interface.Pipeline.VIEW_FULL,
+                view=pipeline_interface.Pipeline.VIEW_RECIPE,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -301,7 +301,8 @@ class PipelineClient(Client):
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.TriggerUserPipeline,
                 request=pipeline_interface.TriggerUserPipelineRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}", inputs=inputs
+                    name=f"{self.target_namespace}/pipelines/{name}",
+                    inputs=inputs,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -309,7 +310,8 @@ class PipelineClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerUserPipeline,
             request=pipeline_interface.TriggerUserPipelineRequest(
-                name=f"{self.target_namespace}/pipelines/{name}", inputs=inputs
+                name=f"{self.target_namespace}/pipelines/{name}",
+                inputs=inputs,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -325,7 +327,8 @@ class PipelineClient(Client):
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.TriggerAsyncUserPipeline,
                 request=pipeline_interface.TriggerAsyncUserPipelineRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}", inputs=inputs
+                    name=f"{self.target_namespace}/pipelines/{name}",
+                    inputs=inputs,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -333,7 +336,8 @@ class PipelineClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerAsyncUserPipeline,
             request=pipeline_interface.TriggerAsyncUserPipelineRequest(
-                name=f"{self.target_namespace}/pipelines/{name}", inputs=inputs
+                name=f"{self.target_namespace}/pipelines/{name}",
+                inputs=inputs,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -384,7 +388,7 @@ class PipelineClient(Client):
                         page_size=total_size,
                         page_token=next_page_token,
                         show_deleted=show_deleted,
-                        view=pipeline_interface.Pipeline.VIEW_FULL,
+                        view=pipeline_interface.Pipeline.VIEW_RECIPE,
                     ),
                     metadata=self.hosts[self.instance].metadata,
                 ).send_async()
@@ -397,7 +401,7 @@ class PipelineClient(Client):
                     page_size=total_size,
                     page_token=next_page_token,
                     show_deleted=show_deleted,
-                    view=pipeline_interface.Pipeline.VIEW_FULL,
+                    view=pipeline_interface.Pipeline.VIEW_RECIPE,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -410,7 +414,7 @@ class PipelineClient(Client):
                     page_size=total_size,
                     page_token=next_page_token,
                     show_deleted=show_deleted,
-                    view=pipeline_interface.Pipeline.VIEW_FULL,
+                    view=pipeline_interface.Pipeline.VIEW_RECIPE,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_sync()
@@ -423,7 +427,7 @@ class PipelineClient(Client):
                 page_size=total_size,
                 page_token=next_page_token,
                 show_deleted=show_deleted,
-                view=pipeline_interface.Pipeline.VIEW_FULL,
+                view=pipeline_interface.Pipeline.VIEW_RECIPE,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -504,7 +508,7 @@ class PipelineClient(Client):
                 method=self.hosts[self.instance].async_client.GetUserPipelineRelease,
                 request=pipeline_interface.GetUserPipelineReleaseRequest(
                     name=f"{self.target_namespace}/pipelines/{name}",
-                    view=pipeline_interface.Pipeline.VIEW_FULL,
+                    view=pipeline_interface.Pipeline.VIEW_RECIPE,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -513,7 +517,7 @@ class PipelineClient(Client):
             method=self.hosts[self.instance].client.GetUserPipelineRelease,
             request=pipeline_interface.GetUserPipelineReleaseRequest(
                 name=f"{self.target_namespace}/pipelines/{name}",
-                view=pipeline_interface.Pipeline.VIEW_FULL,
+                view=pipeline_interface.Pipeline.VIEW_RECIPE,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -597,7 +601,7 @@ class PipelineClient(Client):
                     page_size=total_size,
                     page_token=next_page_token,
                     show_deleted=show_deleted,
-                    view=pipeline_interface.Pipeline.VIEW_FULL,
+                    view=pipeline_interface.Pipeline.VIEW_RECIPE,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -610,7 +614,7 @@ class PipelineClient(Client):
                 page_size=total_size,
                 page_token=next_page_token,
                 show_deleted=show_deleted,
-                view=pipeline_interface.Pipeline.VIEW_FULL,
+                view=pipeline_interface.Pipeline.VIEW_RECIPE,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -676,7 +680,8 @@ class PipelineClient(Client):
                     self.instance
                 ].async_client.TriggerUserPipelineRelease,
                 request=pipeline_interface.TriggerUserPipelineReleaseRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}", inputs=inputs
+                    name=f"{self.target_namespace}/pipelines/{name}",
+                    inputs=inputs,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -684,7 +689,8 @@ class PipelineClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerUserPipelineRelease,
             request=pipeline_interface.TriggerUserPipelineReleaseRequest(
-                name=f"{self.target_namespace}/pipelines/{name}", inputs=inputs
+                name=f"{self.target_namespace}/pipelines/{name}",
+                inputs=inputs,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -702,7 +708,8 @@ class PipelineClient(Client):
                     self.instance
                 ].async_client.TriggerAsyncUserPipelineRelease,
                 request=pipeline_interface.TriggerAsyncUserPipelineReleaseRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}", inputs=inputs
+                    name=f"{self.target_namespace}/pipelines/{name}",
+                    inputs=inputs,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -710,7 +717,8 @@ class PipelineClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerAsyncUserPipelineRelease,
             request=pipeline_interface.TriggerAsyncUserPipelineReleaseRequest(
-                name=f"{self.target_namespace}/pipelines/{name}", inputs=inputs
+                name=f"{self.target_namespace}/pipelines/{name}",
+                inputs=inputs,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -1016,7 +1024,8 @@ class PipelineClient(Client):
                     self.instance
                 ].async_client.TriggerOrganizationPipeline,
                 request=pipeline_interface.TriggerOrganizationPipelineRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}", inputs=inputs
+                    name=f"{self.target_namespace}/pipelines/{name}",
+                    inputs=inputs,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -1024,7 +1033,8 @@ class PipelineClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerOrganizationPipeline,
             request=pipeline_interface.TriggerOrganizationPipelineRequest(
-                name=f"{self.target_namespace}/pipelines/{name}", inputs=inputs
+                name=f"{self.target_namespace}/pipelines/{name}",
+                inputs=inputs,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -1042,7 +1052,8 @@ class PipelineClient(Client):
                     self.instance
                 ].async_client.TriggerAsyncOrganizationPipeline,
                 request=pipeline_interface.TriggerAsyncOrganizationPipelineRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}", inputs=inputs
+                    name=f"{self.target_namespace}/pipelines/{name}",
+                    inputs=inputs,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -1050,7 +1061,8 @@ class PipelineClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerAsyncOrganizationPipeline,
             request=pipeline_interface.TriggerAsyncOrganizationPipelineRequest(
-                name=f"{self.target_namespace}/pipelines/{name}", inputs=inputs
+                name=f"{self.target_namespace}/pipelines/{name}",
+                inputs=inputs,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -1098,7 +1110,7 @@ class PipelineClient(Client):
                     page_size=total_size,
                     page_token=next_page_token,
                     show_deleted=show_deleted,
-                    view=pipeline_interface.Pipeline.VIEW_FULL,
+                    view=pipeline_interface.Pipeline.VIEW_RECIPE,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -1110,7 +1122,7 @@ class PipelineClient(Client):
                 page_size=total_size,
                 page_token=next_page_token,
                 show_deleted=show_deleted,
-                view=pipeline_interface.Pipeline.VIEW_FULL,
+                view=pipeline_interface.Pipeline.VIEW_RECIPE,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -1172,7 +1184,7 @@ class PipelineClient(Client):
                 ].async_client.GetOrganizationPipelineRelease,
                 request=pipeline_interface.GetOrganizationPipelineReleaseRequest(
                     name=f"{self.target_namespace}/pipelines/{name}",
-                    view=pipeline_interface.Pipeline.VIEW_FULL,
+                    view=pipeline_interface.Pipeline.VIEW_RECIPE,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -1181,7 +1193,7 @@ class PipelineClient(Client):
             method=self.hosts[self.instance].client.GetOrganizationPipelineRelease,
             request=pipeline_interface.GetOrganizationPipelineReleaseRequest(
                 name=f"{self.target_namespace}/pipelines/{name}",
-                view=pipeline_interface.Pipeline.VIEW_FULL,
+                view=pipeline_interface.Pipeline.VIEW_RECIPE,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -1271,7 +1283,7 @@ class PipelineClient(Client):
                     page_size=total_size,
                     page_token=next_page_token,
                     show_deleted=show_deleted,
-                    view=pipeline_interface.Pipeline.VIEW_FULL,
+                    view=pipeline_interface.Pipeline.VIEW_RECIPE,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -1284,7 +1296,7 @@ class PipelineClient(Client):
                 page_size=total_size,
                 page_token=next_page_token,
                 show_deleted=show_deleted,
-                view=pipeline_interface.Pipeline.VIEW_FULL,
+                view=pipeline_interface.Pipeline.VIEW_RECIPE,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -1344,6 +1356,7 @@ class PipelineClient(Client):
         self,
         name: str,
         inputs: list,
+        data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerOrganizationPipelineReleaseResponse:
         if async_enabled:
@@ -1352,7 +1365,9 @@ class PipelineClient(Client):
                     self.instance
                 ].async_client.TriggerOrganizationPipelineRelease,
                 request=pipeline_interface.TriggerOrganizationPipelineReleaseRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}", inputs=inputs
+                    name=f"{self.target_namespace}/pipelines/{name}",
+                    inputs=inputs,
+                    data=data,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -1360,7 +1375,9 @@ class PipelineClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerOrganizationPipelineRelease,
             request=pipeline_interface.TriggerOrganizationPipelineReleaseRequest(
-                name=f"{self.target_namespace}/pipelines/{name}", inputs=inputs
+                name=f"{self.target_namespace}/pipelines/{name}",
+                inputs=inputs,
+                data=data,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -1370,6 +1387,7 @@ class PipelineClient(Client):
         self,
         name: str,
         inputs: list,
+        data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerAsyncOrganizationPipelineReleaseResponse:
         if async_enabled:
@@ -1378,7 +1396,9 @@ class PipelineClient(Client):
                     self.instance
                 ].async_client.TriggerAsyncOrganizationPipelineRelease,
                 request=pipeline_interface.TriggerOrganizationPipelineReleaseRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}", inputs=inputs
+                    name=f"{self.target_namespace}/pipelines/{name}",
+                    inputs=inputs,
+                    data=data,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -1388,7 +1408,9 @@ class PipelineClient(Client):
                 self.instance
             ].client.TriggerAsyncOrganizationPipelineRelease,
             request=pipeline_interface.TriggerOrganizationPipelineReleaseRequest(
-                name=f"{self.target_namespace}/pipelines/{name}", inputs=inputs
+                name=f"{self.target_namespace}/pipelines/{name}",
+                inputs=inputs,
+                data=data,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()

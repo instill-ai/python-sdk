@@ -3,6 +3,7 @@ from typing import Optional, Tuple, Union
 
 import grpc
 from google.longrunning import operations_pb2
+from google.protobuf import json_format
 from google.protobuf.field_mask_pb2 import FieldMask
 from google.protobuf.struct_pb2 import Struct
 
@@ -49,7 +50,7 @@ class Pipeline(Resource):
     def __call__(
         self,
         task_inputs: list,
-        silent: bool,
+        silent: bool = False,
     ) -> Optional[Tuple[list, pipeline_interface.TriggerMetadata]]:
         resp = self.client.pipeline_service.trigger_pipeline(
             self.resource.id,
@@ -102,8 +103,8 @@ class Pipeline(Resource):
             return response.operation
         return response
 
-    def get_recipe(self) -> Struct:
-        return self.resource.recipe
+    def get_recipe(self) -> dict:
+        return json_format.MessageToDict(self.resource.recipe)
 
     def update_recipe(self, recipe: Struct, silent: bool = False):
         pipeline = self.resource
