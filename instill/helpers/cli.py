@@ -106,6 +106,7 @@ def init(_):
         f"{os.getcwd()}/.dockerignore",
     )
 
+
 def build(args):
     try:
         Logger.i("[Instill Builder] Loading config file...")

@@ -1,14 +1,16 @@
-from instill.helpers.const import TextGenerationChatInput
-from instill.helpers.ray_io import StandardTaskIO
-from instill.helpers.ray_config import instill_deployment, InstillDeployable
+# type: ignore
 from instill.helpers import (
     construct_text_generation_chat_infer_response,
     construct_text_generation_chat_metadata_response,
 )
+from instill.helpers.const import TextGenerationChatInput
+from instill.helpers.ray_config import InstillDeployable, instill_deployment
+from instill.helpers.ray_io import StandardTaskIO
 
 
 @instill_deployment
 class Phimini:
+    """Custom model implementation"""
 
     def __init__(self):
         """Load model into memory"""
@@ -73,6 +75,7 @@ class Phimini:
         #     shape=[1, len(sequences)],
         #     raw_outputs=[task_text_generation_chat_output],
         # )
+
 
 # define model deployment entrypoint
 entrypoint = InstillDeployable(Phimini).get_deployment_handle()
