@@ -86,8 +86,7 @@ jsonref = "^1.1.0"
 twine = "^4.0.2"
 
 [tool.poetry.scripts]
-instill-build = "instill.helpers.build:build_image"
-instill-push = "instill.helpers.push:push_image"
+instill = "instill.helpers.cli:cli"
 
 [tool.black]
 
