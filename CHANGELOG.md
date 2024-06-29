@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.10.1](https://github.com/instill-ai/python-sdk/compare/v0.10.0...v0.10.1) (2024-06-29)
+
+
+### Features
+
+* **ray:** unify cli commands ([#167](https://github.com/instill-ai/python-sdk/issues/167)) ([6c31a4c](https://github.com/instill-ai/python-sdk/commit/6c31a4cdf21928af1910a05afe96da496c120a4a))
+
+
+### Miscellaneous Chores
+
+* **release:** release v0.10.1 ([2a88d53](https://github.com/instill-ai/python-sdk/commit/2a88d539f4739db8c74c3468600a2d53387a4b37))
+
 ## [0.10.0](https://github.com/instill-ai/python-sdk/compare/v0.9.0...v0.10.0) (2024-06-05)
 
 
