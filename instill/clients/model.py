@@ -125,16 +125,48 @@ class ModelClient(Client):
         ).send_sync()
 
     @grpc_handler
+    def watch_latest_model(
+        self,
+        model_name: str,
+        async_enabled: bool = False,
+    ) -> model_interface.WatchUserLatestModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.WatchUserLatestModel,
+                request=model_interface.WatchUserLatestModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.WatchUserLatestModel,
+            request=model_interface.WatchUserLatestModelRequest(
+                name=f"{self.namespace}/models/{model_name}",
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
     def create_model(
         self,
         name: str,
+        task: str,
+        region: str,
+        hardware: str,
         definition: str,
+        # type TBD
+        # visibility: str,
         configuration: dict,
         async_enabled: bool = False,
     ) -> model_interface.CreateUserModelResponse:
         model = model_interface.Model()
         model.id = name
+        model.task = task
+        model.region = region
+        model.hardware = hardware
         model.model_definition = definition
+        # model.visibility = visibility
         model.configuration.update(configuration)
         if async_enabled:
             return RequestFactory(
@@ -178,6 +210,120 @@ class ModelClient(Client):
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
+    # @grpc_handler
+    # def trigger_async_model(
+    #     self,
+    #     model_name: str,
+    #     task_inputs: list,
+    #     version: str,
+    #     async_enabled: bool = False,
+    # ) -> model_interface.TriggerAsyncUserModelResponse:
+    #     if async_enabled:
+    #         return RequestFactory(
+    #             method=self.hosts[self.instance].async_client.TriggerAsyncUserModel,
+    #             request=model_interface.TriggerAsyncUserModelRequest(
+    #                 name=f"{self.namespace}/models/{model_name}",
+    #                 task_inputs=task_inputs,
+    #                 version=version,
+    #             ),
+    #             metadata=self.hosts[self.instance].metadata,
+    #         ).send_async()
+
+    #     return RequestFactory(
+    #         method=self.hosts[self.instance].client.TriggerAsyncUserModel,
+    #         request=model_interface.TriggerAsyncUserModelRequest(
+    #             name=f"{self.namespace}/models/{model_name}",
+    #             task_inputs=task_inputs,
+    #             version=version,
+    #         ),
+    #         metadata=self.hosts[self.instance].metadata,
+    #     ).send_sync()
+
+    @grpc_handler
+    def trigger_latest_model(
+        self,
+        model_name: str,
+        task_inputs: list,
+        async_enabled: bool = False,
+    ) -> model_interface.TriggerUserLatestModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.TriggerUserLatestModel,
+                request=model_interface.TriggerUserLatestModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    task_inputs=task_inputs,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TriggerUserLatestModel,
+            request=model_interface.TriggerUserLatestModelRequest(
+                name=f"{self.namespace}/models/{model_name}",
+                task_inputs=task_inputs,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def trigger_async_latest_model(
+        self,
+        model_name: str,
+        task_inputs: list,
+        async_enabled: bool = False,
+    ) -> model_interface.TriggerAsyncUserLatestModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.TriggerAsyncUserLatestModel,
+                request=model_interface.TriggerAsyncUserLatestModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    task_inputs=task_inputs,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TriggerAsyncUserLatestModel,
+            request=model_interface.TriggerAsyncUserLatestModelRequest(
+                name=f"{self.namespace}/models/{model_name}",
+                task_inputs=task_inputs,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def trigger_model_binary_file_upload(
+        self,
+        model_name: str,
+        # task_input: list,
+        version: str,
+        async_enabled: bool = False,
+    ) -> model_interface.TriggerUserModelBinaryFileUploadResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.TriggerUserModelBinaryFileUpload,
+                request=model_interface.TriggerUserModelBinaryFileUploadRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    # task_input=task_input,
+                    version=version,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TriggerUserModelBinaryFileUpload,
+            request=model_interface.TriggerUserModelBinaryFileUploadRequest(
+                name=f"{self.namespace}/models/{model_name}",
+                # task_input=task_input,
+                version=version,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
     @grpc_handler
     def delete_model(
         self,
@@ -197,6 +343,78 @@ class ModelClient(Client):
             method=self.hosts[self.instance].client.DeleteUserModel,
             request=model_interface.DeleteUserModelRequest(
                 name=f"{self.namespace}/models/{model_name}"
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def rename_model(
+        self,
+        model_name: str,
+        new_model_id: str,
+        async_enabled: bool = False,
+    ) -> model_interface.RenameUserModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.RenameUserModel,
+                request=model_interface.RenameUserModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    new_model_id=new_model_id,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.RenameUserModel,
+            request=model_interface.RenameUserModelRequest(
+                name=f"{self.namespace}/models/{model_name}",
+                new_model_id=new_model_id,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def publish_model(
+        self,
+        model_name: str,
+        async_enabled: bool = False,
+    ) -> model_interface.PublishUserModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.PublishUserModel,
+                request=model_interface.PublishUserModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.PublishUserModel,
+            request=model_interface.PublishUserModelRequest(
+                name=f"{self.namespace}/models/{model_name}",
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def unpublish_model(
+        self,
+        model_name: str,
+        async_enabled: bool = False,
+    ) -> model_interface.UnpublishUserModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.UnpublishUserModel,
+                request=model_interface.UnpublishUserModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.UnpublishUserModel,
+            request=model_interface.UnpublishUserModelRequest(
+                name=f"{self.namespace}/models/{model_name}",
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -303,6 +521,8 @@ class ModelClient(Client):
         total_size: int = 100,
         show_deleted: bool = False,
         public=False,
+        # filter: str = "",
+        order_by: str = "",
         async_enabled: bool = False,
     ) -> model_interface.ListUserModelsResponse:
         if async_enabled:
@@ -315,6 +535,9 @@ class ModelClient(Client):
                         page_token=next_page_token,
                         show_deleted=show_deleted,
                         view=model_definition_interface.VIEW_FULL,
+                        # filter=filter,
+                        # visibility=visibility,
+                        order_by=order_by,
                     ),
                     metadata=self.hosts[self.instance].metadata,
                 ).send_async()
@@ -327,6 +550,9 @@ class ModelClient(Client):
                     page_token=next_page_token,
                     show_deleted=show_deleted,
                     view=model_definition_interface.VIEW_FULL,
+                    # filter=filter,
+                    # visibility=visibility,
+                    order_by=order_by,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -339,6 +565,9 @@ class ModelClient(Client):
                     page_token=next_page_token,
                     show_deleted=show_deleted,
                     view=model_definition_interface.VIEW_FULL,
+                    # filter=filter,
+                    # visibility=visibility,
+                    order_by=order_by,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_sync()
@@ -351,6 +580,80 @@ class ModelClient(Client):
                 page_token=next_page_token,
                 show_deleted=show_deleted,
                 view=model_definition_interface.VIEW_FULL,
+                # filter=filter,
+                # visibility=visibility,
+                order_by=order_by,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def list_model_definitions(
+        self,
+        page_size: int = 100,
+        page_token: str = "",
+        async_enabled: bool = False,
+    ) -> model_definition_interface.ListModelDefinitionsResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.ListModelDefinitions,
+                request=model_definition_interface.ListModelDefinitionsRequest(
+                    page_size=page_size,
+                    page_token=page_token,
+                    view=model_definition_interface.VIEW_FULL,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.ListModelDefinitions,
+            request=model_definition_interface.ListModelDefinitionsRequest(
+                page_size=page_size,
+                page_token=page_token,
+                view=model_definition_interface.VIEW_FULL,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def list_available_regions(
+        self,
+        async_enabled: bool = False,
+    ) -> model_interface.ListAvailableRegionsResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.ListAvailableRegions,
+                request=model_interface.ListAvailableRegionsRequest(),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.ListAvailableRegions,
+            request=model_interface.ListAvailableRegionsRequest(),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def get_model_definition(
+        self,
+        model_name: str,
+        async_enabled: bool = False,
+    ) -> model_definition_interface.GetModelDefinitionResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.GetModelDefinition,
+                request=model_definition_interface.GetModelDefinitionRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    view=model_definition_interface.VIEW_FULL,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetModelDefinition,
+            request=model_definition_interface.GetModelDefinitionRequest(
+                name=f"{self.namespace}/models/{model_name}",
+                view=model_definition_interface.VIEW_FULL,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -358,14 +661,15 @@ class ModelClient(Client):
     @grpc_handler
     def get_operation(
         self,
-        name: str,
+        model_name: str,
         async_enabled: bool = False,
     ) -> model_interface.GetModelOperationResponse:
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.GetModelOperation,
                 request=model_interface.GetModelOperationRequest(
-                    name=name,
+                    name=f"{self.namespace}/models/{model_name}",
+                    view=model_definition_interface.VIEW_FULL,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -373,7 +677,622 @@ class ModelClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.GetModelOperation,
             request=model_interface.GetModelOperationRequest(
-                name=name,
+                name=f"{self.namespace}/models/{model_name}",
+                view=model_definition_interface.VIEW_FULL,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def get_latest_model_operation(
+        self,
+        model_name: str,
+        async_enabled: bool = False,
+    ) -> model_interface.GetUserLatestModelOperationResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.GetUserLatestModelOperation,
+                request=model_interface.GetUserLatestModelOperationRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    view=model_definition_interface.VIEW_FULL,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetUserLatestModelOperation,
+            request=model_interface.GetUserLatestModelOperationRequest(
+                name=f"{self.namespace}/models/{model_name}",
+                view=model_definition_interface.VIEW_FULL,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def get_organization_latest_model_operation(
+        self,
+        model_name: str,
+        async_enabled: bool = False,
+    ) -> model_interface.GetOrganizationLatestModelOperationResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.GetOrganizationLatestModelOperation,
+                request=model_interface.GetOrganizationLatestModelOperationRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    view=model_definition_interface.VIEW_FULL,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetOrganizationLatestModelOperation,
+            request=model_interface.GetOrganizationLatestModelOperationRequest(
+                name=f"{self.namespace}/models/{model_name}",
+                view=model_definition_interface.VIEW_FULL,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def list_model_versions(
+        self,
+        page: int,
+        model_name: str,
+        page_size: int = 100,
+        async_enabled: bool = False,
+    ) -> model_interface.ListUserModelVersionsResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.ListUserModelVersions,
+                request=model_interface.ListUserModelVersionsRequest(
+                    page_size=page_size,
+                    page=page,
+                    name=f"{self.namespace}/models/{model_name}",
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.ListUserModelVersions,
+            request=model_interface.ListUserModelVersionsRequest(
+                page_size=page_size,
+                page=page,
+                name=f"{self.namespace}/models/{model_name}",
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def delete_model_version(
+        self,
+        model_name: str,
+        version: str,
+        async_enabled: bool = False,
+    ) -> model_interface.DeleteUserModelVersionResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.DeleteUserModelVersion,
+                request=model_interface.DeleteUserModelVersionRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    version=version,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.DeleteUserModelVersion,
+            request=model_interface.DeleteUserModelVersionRequest(
+                name=f"{self.namespace}/models/{model_name}",
+                version=version,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def list_organization_models(
+        self,
+        page_size: int = 100,
+        page_token: str = "",
+        parent: str = "",
+        show_deleted: bool = False,
+        # filter: str = "",
+        order_by: str = "",
+        async_enabled: bool = False,
+    ) -> model_interface.ListOrganizationModelsResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.ListOrganizationModels,
+                request=model_interface.ListOrganizationModelsRequest(
+                    page_size=page_size,
+                    page_token=page_token,
+                    view=model_definition_interface.VIEW_FULL,
+                    parent=parent,
+                    show_deleted=show_deleted,
+                    # filter=filter,
+                    # visibility=visibility,
+                    order_by=order_by,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.ListOrganizationModels,
+            request=model_interface.ListOrganizationModelsRequest(
+                page_size=page_size,
+                page_token=page_token,
+                view=model_definition_interface.VIEW_FULL,
+                parent=parent,
+                show_deleted=show_deleted,
+                # filter=filter,
+                # visibility=visibility,
+                order_by=order_by,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def create_organization_model(
+        self,
+        name: str,
+        definition: str,
+        configuration: dict,
+        parent: str,
+        async_enabled: bool = False,
+    ) -> model_interface.CreateOrganizationModelResponse:
+        model = model_interface.Model()
+        model.id = name
+        model.model_definition = definition
+        model.configuration.update(configuration)
+
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.CreateOrganizationModel,
+                request=model_interface.CreateOrganizationModelRequest(
+                    model=model,
+                    parent=parent,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.CreateOrganizationModel,
+            request=model_interface.CreateOrganizationModelRequest(
+                model=model,
+                parent=parent,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def get_organization_model(
+        self,
+        model_name: str,
+        async_enabled: bool = False,
+    ) -> model_interface.GetOrganizationModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.GetOrganizationModel,
+                request=model_interface.GetOrganizationModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    view=model_definition_interface.VIEW_FULL,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetOrganizationModel,
+            request=model_interface.GetOrganizationModelRequest(
+                name=f"{self.namespace}/models/{model_name}",
+                view=model_definition_interface.VIEW_FULL,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def update_organization_model(
+        self,
+        model: model_interface.Model,
+        update_mask: field_mask_pb2.FieldMask,
+        async_enabled: bool = False,
+    ) -> model_interface.UpdateOrganizationModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.UpdateOrganizationModel,
+                request=model_interface.UpdateOrganizationModelRequest(
+                    model=model,
+                    update_mask=update_mask,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.UpdateOrganizationModel,
+            request=model_interface.UpdateOrganizationModelRequest(
+                model=model,
+                update_mask=update_mask,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def delete_organization_model(
+        self,
+        model_name: str,
+        async_enabled: bool = False,
+    ) -> model_interface.DeleteOrganizationModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.DeleteOrganizationModel,
+                request=model_interface.DeleteOrganizationModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.DeleteOrganizationModel,
+            request=model_interface.DeleteOrganizationModelRequest(
+                name=f"{self.namespace}/models/{model_name}",
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def rename_organization_model(
+        self,
+        model_name: str,
+        new_model_id: str,
+        async_enabled: bool = False,
+    ) -> model_interface.RenameOrganizationModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.RenameOrganizationModel,
+                request=model_interface.RenameOrganizationModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    new_model_id=new_model_id,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.RenameOrganizationModel,
+            request=model_interface.RenameOrganizationModelRequest(
+                name=f"{self.namespace}/models/{model_name}",
+                new_model_id=new_model_id,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def publish_organization_model(
+        self,
+        model_name: str,
+        async_enabled: bool = False,
+    ) -> model_interface.PublishOrganizationModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.PublishOrganizationModel,
+                request=model_interface.PublishOrganizationModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.PublishOrganizationModel,
+            request=model_interface.PublishOrganizationModelRequest(
+                name=f"{self.namespace}/models/{model_name}",
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def unpublish_organization_model(
+        self,
+        model_name: str,
+        async_enabled: bool = False,
+    ) -> model_interface.UnpublishOrganizationModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.UnpublishOrganizationModel,
+                request=model_interface.UnpublishOrganizationModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.UnpublishOrganizationModel,
+            request=model_interface.UnpublishOrganizationModelRequest(
+                name=f"{self.namespace}/models/{model_name}",
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def get_organization_model_card(
+        self,
+        model_name: str,
+        async_enabled: bool = False,
+    ) -> model_interface.GetOrganizationModelCardResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.GetOrganizationModelCard,
+                request=model_interface.GetOrganizationModelCardRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetOrganizationModelCard,
+            request=model_interface.GetOrganizationModelCardRequest(
+                name=f"{self.namespace}/models/{model_name}",
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def watch_organization_model(
+        self,
+        model_name: str,
+        version: str,
+        async_enabled: bool = False,
+    ) -> model_interface.WatchOrganizationModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.WatchOrganizationModel,
+                request=model_interface.WatchOrganizationModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    version=version,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.WatchOrganizationModel,
+            request=model_interface.WatchOrganizationModelRequest(
+                name=f"{self.namespace}/models/{model_name}",
+                version=version,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def watch_organization_latest_model(
+        self,
+        model_name: str,
+        async_enabled: bool = False,
+    ) -> model_interface.WatchOrganizationLatestModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.WatchOrganizationLatestModel,
+                request=model_interface.WatchOrganizationLatestModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.WatchOrganizationLatestModel,
+            request=model_interface.WatchOrganizationLatestModelRequest(
+                name=f"{self.namespace}/models/{model_name}",
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def list_organization_model_versions(
+        self,
+        page_size: int,
+        page: int,
+        model_name: str,
+        async_enabled: bool = False,
+    ) -> model_interface.ListOrganizationModelVersionsResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.ListOrganizationModelVersions,
+                request=model_interface.ListOrganizationModelVersionsRequest(
+                    page_size=page_size,
+                    page=page,
+                    name=f"{self.namespace}/models/{model_name}",
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.ListOrganizationModelVersions,
+            request=model_interface.ListOrganizationModelVersionsRequest(
+                page_size=page_size,
+                page=page,
+                name=f"{self.namespace}/models/{model_name}",
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def delete_organization_model_version(
+        self,
+        model_name: str,
+        version: str,
+        async_enabled: bool = False,
+    ) -> model_interface.DeleteOrganizationModelVersionResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.DeleteOrganizationModelVersion,
+                request=model_interface.DeleteOrganizationModelVersionRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    version=version,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.DeleteOrganizationModelVersion,
+            request=model_interface.DeleteOrganizationModelVersionRequest(
+                name=f"{self.namespace}/models/{model_name}",
+                version=version,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def trigger_organization_model(
+        self,
+        model_name: str,
+        task_inputs: list,
+        version: str,
+        async_enabled: bool = False,
+    ) -> model_interface.TriggerOrganizationModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.TriggerOrganizationModel,
+                request=model_interface.TriggerOrganizationModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    task_inputs=task_inputs,
+                    version=version,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TriggerOrganizationModel,
+            request=model_interface.TriggerOrganizationModelRequest(
+                name=f"{self.namespace}/models/{model_name}",
+                task_inputs=task_inputs,
+                version=version,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def trigger_async_organization_model(
+        self,
+        model_name: str,
+        task_inputs: list,
+        version: str,
+        async_enabled: bool = False,
+    ) -> model_interface.TriggerAsyncOrganizationModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.TriggerAsyncOrganizationModel,
+                request=model_interface.TriggerAsyncOrganizationModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    task_inputs=task_inputs,
+                    version=version,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TriggerAsyncOrganizationModel,
+            request=model_interface.TriggerAsyncOrganizationModelRequest(
+                name=f"{self.namespace}/models/{model_name}",
+                task_inputs=task_inputs,
+                version=version,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def trigger_organization_latest_model(
+        self,
+        model_name: str,
+        task_inputs: list,
+        async_enabled: bool = False,
+    ) -> model_interface.TriggerOrganizationLatestModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.TriggerOrganizationLatestModel,
+                request=model_interface.TriggerOrganizationLatestModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    task_inputs=task_inputs,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TriggerOrganizationLatestModel,
+            request=model_interface.TriggerOrganizationLatestModelRequest(
+                name=f"{self.namespace}/models/{model_name}",
+                task_inputs=task_inputs,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def trigger_async_organization_latest_model(
+        self,
+        model_name: str,
+        task_inputs: list,
+        async_enabled: bool = False,
+    ) -> model_interface.TriggerAsyncOrganizationLatestModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.TriggerAsyncOrganizationLatestModel,
+                request=model_interface.TriggerAsyncOrganizationLatestModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    task_inputs=task_inputs,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TriggerAsyncOrganizationLatestModel,
+            request=model_interface.TriggerAsyncOrganizationLatestModelRequest(
+                name=f"{self.namespace}/models/{model_name}",
+                task_inputs=task_inputs,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def trigger_organization_model_binary_file_upload(
+        self,
+        model_name: str,
+        # task_input: list,
+        version: str,
+        async_enabled: bool = False,
+    ) -> model_interface.TriggerOrganizationModelBinaryFileUploadResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.TriggerOrganizationModelBinaryFileUpload,
+                request=model_interface.TriggerOrganizationModelBinaryFileUploadRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    # task_input=task_input,
+                    version=version,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[
+                self.instance
+            ].client.TriggerOrganizationModelBinaryFileUpload,
+            request=model_interface.TriggerOrganizationModelBinaryFileUploadRequest(
+                name=f"{self.namespace}/models/{model_name}",
+                # task_input=task_input,
+                version=version,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
