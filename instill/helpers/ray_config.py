@@ -10,6 +10,7 @@ from instill.helpers.const import (
     DEFAULT_MAX_ONGOING_REQUESTS,
     DEFAULT_MAX_QUEUED_REQUESTS,
     DEFAULT_RAY_ACTOR_OPTIONS,
+    ENV_IS_TEST_MODEL,
     ENV_MEMORY,
     ENV_NUM_OF_CPUS,
     ENV_NUM_OF_GPUS,
@@ -34,6 +35,10 @@ class InstillDeployable:
         num_of_cpus = os.getenv(ENV_NUM_OF_CPUS)
         if num_of_cpus is not None and num_of_cpus != "":
             self._update_num_cpus(float(num_of_cpus))
+
+        is_test_model = os.getenv(ENV_IS_TEST_MODEL)
+        if is_test_model is not None and is_test_model.lower() == "true":
+            self._update_num_cpus(float(0.001))
 
         memory = os.getenv(ENV_MEMORY)
         if memory is not None and memory != "":
