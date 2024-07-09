@@ -155,8 +155,7 @@ class ModelClient(Client):
         region: str,
         hardware: str,
         definition: str,
-        # type TBD
-        # visibility: str,
+        visibility: model_interface.Model.Visibility.ValueType,
         configuration: dict,
         async_enabled: bool = False,
     ) -> model_interface.CreateUserModelResponse:
@@ -166,7 +165,7 @@ class ModelClient(Client):
         model.region = region
         model.hardware = hardware
         model.model_definition = definition
-        # model.visibility = visibility
+        model.visibility = visibility
         model.configuration.update(configuration)
         if async_enabled:
             return RequestFactory(
@@ -517,11 +516,12 @@ class ModelClient(Client):
     @grpc_handler
     def list_models(
         self,
+        visibility: model_interface.Model.Visibility.ValueType,
         next_page_token: str = "",
         total_size: int = 100,
         show_deleted: bool = False,
         public=False,
-        # filter: str = "",
+        filter_str: str = "",
         order_by: str = "",
         async_enabled: bool = False,
     ) -> model_interface.ListUserModelsResponse:
@@ -535,8 +535,8 @@ class ModelClient(Client):
                         page_token=next_page_token,
                         show_deleted=show_deleted,
                         view=model_definition_interface.VIEW_FULL,
-                        # filter=filter,
-                        # visibility=visibility,
+                        filter=filter_str,
+                        visibility=visibility,
                         order_by=order_by,
                     ),
                     metadata=self.hosts[self.instance].metadata,
@@ -550,8 +550,8 @@ class ModelClient(Client):
                     page_token=next_page_token,
                     show_deleted=show_deleted,
                     view=model_definition_interface.VIEW_FULL,
-                    # filter=filter,
-                    # visibility=visibility,
+                    filter=filter_str,
+                    visibility=visibility,
                     order_by=order_by,
                 ),
                 metadata=self.hosts[self.instance].metadata,
@@ -565,8 +565,8 @@ class ModelClient(Client):
                     page_token=next_page_token,
                     show_deleted=show_deleted,
                     view=model_definition_interface.VIEW_FULL,
-                    # filter=filter,
-                    # visibility=visibility,
+                    filter=filter_str,
+                    visibility=visibility,
                     order_by=order_by,
                 ),
                 metadata=self.hosts[self.instance].metadata,
@@ -580,8 +580,8 @@ class ModelClient(Client):
                 page_token=next_page_token,
                 show_deleted=show_deleted,
                 view=model_definition_interface.VIEW_FULL,
-                # filter=filter,
-                # visibility=visibility,
+                filter=filter_str,
+                visibility=visibility,
                 order_by=order_by,
             ),
             metadata=self.hosts[self.instance].metadata,
