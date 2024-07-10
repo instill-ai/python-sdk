@@ -6,6 +6,7 @@ from google.protobuf.struct_pb2 import Struct
 
 # common
 import instill.protogen.common.healthcheck.v1beta.healthcheck_pb2 as healthcheck
+import instill.protogen.vdp.pipeline.v1beta.component_definition_pb2 as component_definition
 
 # pipeline
 import instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 as pipeline_interface
@@ -15,6 +16,7 @@ from instill.clients.base import Client, RequestFactory
 from instill.clients.constant import DEFAULT_INSTANCE
 from instill.clients.instance import InstillInstance
 from instill.configuration import global_config
+from instill.protogen.vdp.pipeline.v1beta import common_pb2
 from instill.utils.error_handler import grpc_handler
 
 # from instill.utils.logger import Logger
@@ -269,6 +271,8 @@ class PipelineClient(Client):
         self,
         name: str,
         target: str,
+        description: str,
+        sharing: common_pb2.Sharing,
         async_enabled: bool = False,
     ) -> pipeline_interface.CloneUserPipelineResponse:
         if async_enabled:
@@ -277,6 +281,8 @@ class PipelineClient(Client):
                 request=pipeline_interface.CloneUserPipelineRequest(
                     name=f"{self.target_namespace}/pipelines/{name}",
                     target=f"{self.target_namespace}/pipelines/{target}",
+                    description=description,
+                    sharing=sharing,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -286,6 +292,8 @@ class PipelineClient(Client):
             request=pipeline_interface.CloneUserPipelineRequest(
                 name=f"{self.target_namespace}/pipelines/{name}",
                 target=f"{self.target_namespace}/pipelines/{target}",
+                description=description,
+                sharing=sharing,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -295,6 +303,7 @@ class PipelineClient(Client):
         self,
         name: str,
         inputs: list,
+        data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerUserPipelineResponse:
         if async_enabled:
@@ -303,6 +312,7 @@ class PipelineClient(Client):
                 request=pipeline_interface.TriggerUserPipelineRequest(
                     name=f"{self.target_namespace}/pipelines/{name}",
                     inputs=inputs,
+                    data=data,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -312,6 +322,7 @@ class PipelineClient(Client):
             request=pipeline_interface.TriggerUserPipelineRequest(
                 name=f"{self.target_namespace}/pipelines/{name}",
                 inputs=inputs,
+                data=data,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -321,6 +332,7 @@ class PipelineClient(Client):
         self,
         name: str,
         inputs: list,
+        data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerAsyncUserPipelineResponse:
         if async_enabled:
@@ -329,6 +341,7 @@ class PipelineClient(Client):
                 request=pipeline_interface.TriggerAsyncUserPipelineRequest(
                     name=f"{self.target_namespace}/pipelines/{name}",
                     inputs=inputs,
+                    data=data,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -338,6 +351,7 @@ class PipelineClient(Client):
             request=pipeline_interface.TriggerAsyncUserPipelineRequest(
                 name=f"{self.target_namespace}/pipelines/{name}",
                 inputs=inputs,
+                data=data,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -368,7 +382,9 @@ class PipelineClient(Client):
     @grpc_handler
     def list_pipelines(
         self,
-        filer_str: str = "",
+        visibility: pipeline_interface.Pipeline.Visibility.ValueType,
+        order_by: str,
+        filter_str: str = "",
         next_page_token: str = "",
         total_size: int = 100,
         show_deleted: bool = False,
@@ -384,11 +400,13 @@ class PipelineClient(Client):
                 return RequestFactory(
                     method=method,
                     request=pipeline_interface.ListPipelinesRequest(
-                        filter=filer_str,
+                        filter=filter_str,
                         page_size=total_size,
                         page_token=next_page_token,
                         show_deleted=show_deleted,
                         view=pipeline_interface.Pipeline.VIEW_RECIPE,
+                        visibility=visibility,
+                        order_by=order_by,
                     ),
                     metadata=self.hosts[self.instance].metadata,
                 ).send_async()
@@ -397,11 +415,13 @@ class PipelineClient(Client):
                 method=method,
                 request=pipeline_interface.ListUserPipelinesRequest(
                     parent=self.target_namespace,
-                    filter=filer_str,
+                    filter=filter_str,
                     page_size=total_size,
                     page_token=next_page_token,
                     show_deleted=show_deleted,
                     view=pipeline_interface.Pipeline.VIEW_RECIPE,
+                    visibility=visibility,
+                    order_by=order_by,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -410,11 +430,13 @@ class PipelineClient(Client):
             return RequestFactory(
                 method=method,
                 request=pipeline_interface.ListPipelinesRequest(
-                    filter=filer_str,
+                    filter=filter_str,
                     page_size=total_size,
                     page_token=next_page_token,
                     show_deleted=show_deleted,
                     view=pipeline_interface.Pipeline.VIEW_RECIPE,
+                    visibility=visibility,
+                    order_by=order_by,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_sync()
@@ -423,11 +445,13 @@ class PipelineClient(Client):
             method=method,
             request=pipeline_interface.ListUserPipelinesRequest(
                 parent=self.target_namespace,
-                filter=filer_str,
+                filter=filter_str,
                 page_size=total_size,
                 page_token=next_page_token,
                 show_deleted=show_deleted,
                 view=pipeline_interface.Pipeline.VIEW_RECIPE,
+                visibility=visibility,
+                order_by=order_by,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -586,7 +610,7 @@ class PipelineClient(Client):
     @grpc_handler
     def list_pipeline_releases(
         self,
-        filer_str: str = "",
+        filter_str: str = "",
         next_page_token: str = "",
         total_size: int = 100,
         show_deleted: bool = False,
@@ -597,7 +621,7 @@ class PipelineClient(Client):
                 method=self.hosts[self.instance].async_client.ListUserPipelineReleases,
                 request=pipeline_interface.ListUserPipelineReleasesRequest(
                     parent=self.target_namespace,
-                    filter=filer_str,
+                    filter=filter_str,
                     page_size=total_size,
                     page_token=next_page_token,
                     show_deleted=show_deleted,
@@ -610,7 +634,7 @@ class PipelineClient(Client):
             method=self.hosts[self.instance].client.ListUserPipelineReleases,
             request=pipeline_interface.ListUserPipelineReleasesRequest(
                 parent=self.target_namespace,
-                filter=filer_str,
+                filter=filter_str,
                 page_size=total_size,
                 page_token=next_page_token,
                 show_deleted=show_deleted,
@@ -672,6 +696,7 @@ class PipelineClient(Client):
         self,
         name: str,
         inputs: list,
+        data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerUserPipelineReleaseResponse:
         if async_enabled:
@@ -682,6 +707,7 @@ class PipelineClient(Client):
                 request=pipeline_interface.TriggerUserPipelineReleaseRequest(
                     name=f"{self.target_namespace}/pipelines/{name}",
                     inputs=inputs,
+                    data=data,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -691,6 +717,7 @@ class PipelineClient(Client):
             request=pipeline_interface.TriggerUserPipelineReleaseRequest(
                 name=f"{self.target_namespace}/pipelines/{name}",
                 inputs=inputs,
+                data=data,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -700,6 +727,7 @@ class PipelineClient(Client):
         self,
         name: str,
         inputs: list,
+        data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerAsyncUserPipelineReleaseResponse:
         if async_enabled:
@@ -710,6 +738,7 @@ class PipelineClient(Client):
                 request=pipeline_interface.TriggerAsyncUserPipelineReleaseRequest(
                     name=f"{self.target_namespace}/pipelines/{name}",
                     inputs=inputs,
+                    data=data,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -719,6 +748,7 @@ class PipelineClient(Client):
             request=pipeline_interface.TriggerAsyncUserPipelineReleaseRequest(
                 name=f"{self.target_namespace}/pipelines/{name}",
                 inputs=inputs,
+                data=data,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -891,7 +921,8 @@ class PipelineClient(Client):
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.GetOrganizationPipeline,
                 request=pipeline_interface.GetOrganizationPipelineRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}"
+                    name=f"{self.target_namespace}/pipelines/{name}",
+                    view=pipeline_interface.Pipeline.VIEW_RECIPE,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -899,7 +930,8 @@ class PipelineClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.GetOrganizationPipeline,
             request=pipeline_interface.GetOrganizationPipelineRequest(
-                name=f"{self.target_namespace}/pipelines/{name}"
+                name=f"{self.target_namespace}/pipelines/{name}",
+                view=pipeline_interface.Pipeline.VIEW_RECIPE,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -990,6 +1022,8 @@ class PipelineClient(Client):
         self,
         name: str,
         target: str,
+        description: str,
+        sharing: common_pb2.Sharing,
         async_enabled: bool = False,
     ) -> pipeline_interface.CloneOrganizationPipelineResponse:
         if async_enabled:
@@ -998,6 +1032,8 @@ class PipelineClient(Client):
                 request=pipeline_interface.CloneOrganizationPipelineRequest(
                     name=f"{self.target_namespace}/pipelines/{name}",
                     target=f"{self.target_namespace}/pipelines/{target}",
+                    description=description,
+                    sharing=sharing,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -1007,6 +1043,8 @@ class PipelineClient(Client):
             request=pipeline_interface.CloneOrganizationPipelineRequest(
                 name=f"{self.target_namespace}/pipelines/{name}",
                 target=f"{self.target_namespace}/pipelines/{target}",
+                description=description,
+                sharing=sharing,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -1016,6 +1054,7 @@ class PipelineClient(Client):
         self,
         name: str,
         inputs: list,
+        data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerOrganizationPipelineResponse:
         if async_enabled:
@@ -1026,6 +1065,7 @@ class PipelineClient(Client):
                 request=pipeline_interface.TriggerOrganizationPipelineRequest(
                     name=f"{self.target_namespace}/pipelines/{name}",
                     inputs=inputs,
+                    data=data,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -1035,6 +1075,7 @@ class PipelineClient(Client):
             request=pipeline_interface.TriggerOrganizationPipelineRequest(
                 name=f"{self.target_namespace}/pipelines/{name}",
                 inputs=inputs,
+                data=data,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -1044,6 +1085,7 @@ class PipelineClient(Client):
         self,
         name: str,
         inputs: list,
+        data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerAsyncOrganizationPipelineResponse:
         if async_enabled:
@@ -1054,6 +1096,7 @@ class PipelineClient(Client):
                 request=pipeline_interface.TriggerAsyncOrganizationPipelineRequest(
                     name=f"{self.target_namespace}/pipelines/{name}",
                     inputs=inputs,
+                    data=data,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -1063,6 +1106,7 @@ class PipelineClient(Client):
             request=pipeline_interface.TriggerAsyncOrganizationPipelineRequest(
                 name=f"{self.target_namespace}/pipelines/{name}",
                 inputs=inputs,
+                data=data,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -1095,7 +1139,9 @@ class PipelineClient(Client):
     @grpc_handler
     def list_org_pipelines(
         self,
-        filer_str: str = "",
+        visibility: pipeline_interface.Pipeline.Visibility.ValueType,
+        order_by: str,
+        filter_str: str = "",
         next_page_token: str = "",
         total_size: int = 100,
         show_deleted: bool = False,
@@ -1105,8 +1151,10 @@ class PipelineClient(Client):
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.ListOrganizationPipelines,
                 request=pipeline_interface.ListOrganizationPipelinesRequest(
+                    visibility=visibility,
+                    order_by=order_by,
                     parent=self.target_namespace,
-                    filter=filer_str,
+                    filter=filter_str,
                     page_size=total_size,
                     page_token=next_page_token,
                     show_deleted=show_deleted,
@@ -1117,8 +1165,10 @@ class PipelineClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.ListOrganizationPipelines,
             request=pipeline_interface.ListOrganizationPipelinesRequest(
+                visibility=visibility,
+                order_by=order_by,
                 parent=self.target_namespace,
-                filter=filer_str,
+                filter=filter_str,
                 page_size=total_size,
                 page_token=next_page_token,
                 show_deleted=show_deleted,
@@ -1266,7 +1316,7 @@ class PipelineClient(Client):
     @grpc_handler
     def list_org_pipeline_releases(
         self,
-        filer_str: str = "",
+        filter_str: str = "",
         next_page_token: str = "",
         total_size: int = 100,
         show_deleted: bool = False,
@@ -1279,7 +1329,7 @@ class PipelineClient(Client):
                 ].async_client.ListOrganizationPipelineReleases,
                 request=pipeline_interface.ListOrganizationPipelineReleasesRequest(
                     parent=self.target_namespace,
-                    filter=filer_str,
+                    filter=filter_str,
                     page_size=total_size,
                     page_token=next_page_token,
                     show_deleted=show_deleted,
@@ -1292,7 +1342,7 @@ class PipelineClient(Client):
             method=self.hosts[self.instance].client.ListOrganizationPipelineReleases,
             request=pipeline_interface.ListOrganizationPipelineReleasesRequest(
                 parent=self.target_namespace,
-                filter=filer_str,
+                filter=filter_str,
                 page_size=total_size,
                 page_token=next_page_token,
                 show_deleted=show_deleted,
@@ -1537,6 +1587,318 @@ class PipelineClient(Client):
                 parent=self.target_namespace,
                 page_size=total_size,
                 page_token=next_page_token,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def get_hub_stats(
+        self,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.GetHubStatsResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.GetHubStats,
+                request=pipeline_interface.GetHubStatsRequest(),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetHubStats,
+            request=pipeline_interface.GetHubStatsRequest(),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def clone_pipeline_release(
+        self,
+        name: str,
+        target: str,
+        description: str,
+        sharing: common_pb2.Sharing,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.CloneUserPipelineReleaseResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.CloneUserPipelineRelease,
+                request=pipeline_interface.CloneUserPipelineReleaseRequest(
+                    name=f"{self.target_namespace}/pipelines/{name}",
+                    target=f"{self.target_namespace}/pipelines/{target}",
+                    description=description,
+                    sharing=sharing,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.CloneUserPipelineRelease,
+            request=pipeline_interface.CloneUserPipelineReleaseRequest(
+                name=f"{self.target_namespace}/pipelines/{name}",
+                target=f"{self.target_namespace}/pipelines/{target}",
+                description=description,
+                sharing=sharing,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def trigger_pipeline_with_stream(
+        self,
+        name: str,
+        inputs: list,
+        data: list,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.TriggerUserPipelineWithStreamResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.TriggerUserPipelineWithStream,
+                request=pipeline_interface.TriggerUserPipelineWithStreamRequest(
+                    name=f"{self.target_namespace}/pipelines/{name}",
+                    inputs=inputs,
+                    data=data,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TriggerUserPipelineWithStream,
+            request=pipeline_interface.TriggerUserPipelineWithStreamRequest(
+                name=f"{self.target_namespace}/pipelines/{name}",
+                inputs=inputs,
+                data=data,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def clone_organization_pipeline_release(
+        self,
+        name: str,
+        target: str,
+        description: str,
+        sharing: common_pb2.Sharing,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.CloneOrganizationPipelineReleaseResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.CloneOrganizationPipelineRelease,
+                request=pipeline_interface.CloneOrganizationPipelineReleaseRequest(
+                    name=f"{self.target_namespace}/pipelines/{name}",
+                    target=f"{self.target_namespace}/pipelines/{target}",
+                    description=description,
+                    sharing=sharing,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.CloneOrganizationPipelineRelease,
+            request=pipeline_interface.CloneOrganizationPipelineReleaseRequest(
+                name=f"{self.target_namespace}/pipelines/{name}",
+                target=f"{self.target_namespace}/pipelines/{target}",
+                description=description,
+                sharing=sharing,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def trigger_organization_pipeline_stream(
+        self,
+        name: str,
+        inputs: list,
+        data: list,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.TriggerOrganizationPipelineStreamResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.TriggerOrganizationPipelineStream,
+                request=pipeline_interface.TriggerOrganizationPipelineStreamRequest(
+                    name=f"{self.target_namespace}/pipelines/{name}",
+                    inputs=inputs,
+                    data=data,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TriggerOrganizationPipelineStream,
+            request=pipeline_interface.TriggerOrganizationPipelineStreamRequest(
+                name=f"{self.target_namespace}/pipelines/{name}",
+                inputs=inputs,
+                data=data,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def list_connector_definitions(
+        self,
+        total_size: int = 100,
+        next_page_token: str = "",
+        filter_str: str = "",
+        async_enabled: bool = False,
+    ) -> component_definition.ListConnectorDefinitionsResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.ListConnectorDefinitions,
+                request=component_definition.ListConnectorDefinitionsRequest(
+                    view=component_definition.ComponentDefinition.VIEW_FULL,
+                    page_size=total_size,
+                    page_token=next_page_token,
+                    filter=filter_str,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.ListConnectorDefinitions,
+            request=component_definition.ListConnectorDefinitionsRequest(
+                view=component_definition.ComponentDefinition.VIEW_FULL,
+                page_size=total_size,
+                page_token=next_page_token,
+                filter=filter_str,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def get_connector_definition(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> component_definition.GetConnectorDefinitionResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.GetConnectorDefinition,
+                request=component_definition.GetConnectorDefinitionRequest(
+                    name=f"{self.target_namespace}/pipelines/{name}",
+                    view=component_definition.ComponentDefinition.VIEW_FULL,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetConnectorDefinition,
+            request=component_definition.GetConnectorDefinitionRequest(
+                name=f"{self.target_namespace}/pipelines/{name}",
+                view=component_definition.ComponentDefinition.VIEW_FULL,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def list_operator_definitions(
+        self,
+        total_size: int = 100,
+        next_page_token: str = "",
+        filter_str: str = "",
+        async_enabled: bool = False,
+    ) -> component_definition.ListOperatorDefinitionsResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.ListOperatorDefinitions,
+                request=component_definition.ListOperatorDefinitionsRequest(
+                    view=component_definition.ComponentDefinition.VIEW_FULL,
+                    page_size=total_size,
+                    page_token=next_page_token,
+                    filter=filter_str,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.ListOperatorDefinitions,
+            request=component_definition.ListOperatorDefinitionsRequest(
+                view=component_definition.ComponentDefinition.VIEW_FULL,
+                page_size=total_size,
+                page_token=next_page_token,
+                filter=filter_str,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def list_component_definitions(
+        self,
+        page: int,
+        total_size: int = 100,
+        filter_str: str = "",
+        async_enabled: bool = False,
+    ) -> component_definition.ListComponentDefinitionsResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.ListComponentDefinitions,
+                request=component_definition.ListComponentDefinitionsRequest(
+                    view=component_definition.ComponentDefinition.VIEW_FULL,
+                    page=page,
+                    page_size=total_size,
+                    filter=filter_str,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.ListComponentDefinitions,
+            request=component_definition.ListComponentDefinitionsRequest(
+                view=component_definition.ComponentDefinition.VIEW_FULL,
+                page=page,
+                page_size=total_size,
+                filter=filter_str,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def get_operator_definition(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> component_definition.GetOperatorDefinitionResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.GetOperatorDefinition,
+                request=component_definition.GetOperatorDefinitionRequest(
+                    name=f"{self.target_namespace}/pipelines/{name}",
+                    view=component_definition.ComponentDefinition.VIEW_FULL,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetOperatorDefinition,
+            request=component_definition.GetOperatorDefinitionRequest(
+                name=f"{self.target_namespace}/pipelines/{name}",
+                view=component_definition.ComponentDefinition.VIEW_FULL,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def check_name(
+        self,
+        name: str,
+        async_enabled: bool = False,
+    ) -> common_pb2.CheckNameResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.CheckName,
+                request=common_pb2.CheckNameRequest(
+                    name=f"{self.target_namespace}/pipelines/{name}",
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.CheckName,
+            request=common_pb2.CheckNameRequest(
+                name=f"{self.target_namespace}/pipelines/{name}",
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()

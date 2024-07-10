@@ -54,3 +54,4 @@ coverage.xml
 
 # MacOS
 .DS_Store
+.idea

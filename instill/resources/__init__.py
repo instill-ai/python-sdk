@@ -1,3 +1,4 @@
+import instill.protogen.common.task.v1alpha.task_pb2 as task
 import instill.protogen.model.model.v1alpha.model_pb2 as model_pb
 import instill.protogen.model.model.v1alpha.task_classification_pb2 as task_classification
 import instill.protogen.model.model.v1alpha.task_detection_pb2 as task_detection
