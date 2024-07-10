@@ -5,6 +5,7 @@ from google.protobuf import field_mask_pb2
 
 # common
 import instill.protogen.common.healthcheck.v1beta.healthcheck_pb2 as healthcheck
+import instill.protogen.common.task.v1alpha.task_pb2 as task_interface
 import instill.protogen.model.model.v1alpha.model_definition_pb2 as model_definition_interface
 
 # model
@@ -151,12 +152,12 @@ class ModelClient(Client):
     def create_model(
         self,
         name: str,
-        task: str,
+        task: task_interface.Task.ValueType,
         region: str,
         hardware: str,
         definition: str,
-        visibility: model_interface.Model.Visibility.ValueType,
         configuration: dict,
+        visibility: model_interface.Model.Visibility.ValueType = model_interface.Model.VISIBILITY_PUBLIC,
         async_enabled: bool = False,
     ) -> model_interface.CreateUserModelResponse:
         model = model_interface.Model()
@@ -209,34 +210,34 @@ class ModelClient(Client):
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
-    # @grpc_handler
-    # def trigger_async_model(
-    #     self,
-    #     model_name: str,
-    #     task_inputs: list,
-    #     version: str,
-    #     async_enabled: bool = False,
-    # ) -> model_interface.TriggerAsyncUserModelResponse:
-    #     if async_enabled:
-    #         return RequestFactory(
-    #             method=self.hosts[self.instance].async_client.TriggerAsyncUserModel,
-    #             request=model_interface.TriggerAsyncUserModelRequest(
-    #                 name=f"{self.namespace}/models/{model_name}",
-    #                 task_inputs=task_inputs,
-    #                 version=version,
-    #             ),
-    #             metadata=self.hosts[self.instance].metadata,
-    #         ).send_async()
+    @grpc_handler
+    def trigger_async_model(
+        self,
+        model_name: str,
+        task_inputs: list,
+        version: str,
+        async_enabled: bool = False,
+    ) -> model_interface.TriggerAsyncUserModelResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.TriggerAsyncUserModel,
+                request=model_interface.TriggerAsyncUserModelRequest(
+                    name=f"{self.namespace}/models/{model_name}",
+                    task_inputs=task_inputs,
+                    version=version,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
 
-    #     return RequestFactory(
-    #         method=self.hosts[self.instance].client.TriggerAsyncUserModel,
-    #         request=model_interface.TriggerAsyncUserModelRequest(
-    #             name=f"{self.namespace}/models/{model_name}",
-    #             task_inputs=task_inputs,
-    #             version=version,
-    #         ),
-    #         metadata=self.hosts[self.instance].metadata,
-    #     ).send_sync()
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TriggerAsyncUserModel,
+            request=model_interface.TriggerAsyncUserModelRequest(
+                name=f"{self.namespace}/models/{model_name}",
+                task_inputs=task_inputs,
+                version=version,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
 
     @grpc_handler
     def trigger_latest_model(
@@ -516,7 +517,7 @@ class ModelClient(Client):
     @grpc_handler
     def list_models(
         self,
-        visibility: model_interface.Model.Visibility.ValueType,
+        visibility: model_interface.Model.Visibility.ValueType = model_interface.Model.VISIBILITY_PUBLIC,
         next_page_token: str = "",
         total_size: int = 100,
         show_deleted: bool = False,
