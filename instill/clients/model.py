@@ -106,13 +106,15 @@ class ModelClient(Client):
     def watch_model(
         self,
         model_name: str,
+        version: str,
         async_enabled: bool = False,
     ) -> model_interface.WatchUserModelResponse:
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.WatchUserModel,
                 request=model_interface.WatchUserModelRequest(
-                    name=f"{self.namespace}/models/{model_name}"
+                    name=f"{self.namespace}/models/{model_name}",
+                    version=version,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -167,6 +169,7 @@ class ModelClient(Client):
         model.hardware = hardware
         model.model_definition = definition
         model.visibility = visibility
+        model.configuration.Clear()
         model.configuration.update(configuration)
         if async_enabled:
             return RequestFactory(
