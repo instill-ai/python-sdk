@@ -4,6 +4,8 @@ from typing import Any, Dict, List, Union
 
 import numpy as np
 
+PROMPT_ROLES = ["user", "assistant", "system"]
+
 
 class DataType(Enum):
     TYPE_BOOL = 1
@@ -21,63 +23,49 @@ class DataType(Enum):
     TYPE_STRING = 13
 
 
-class TextGenerationInput:
-    prompt = ""
-    prompt_images: Union[List[np.ndarray], None] = None
-    chat_history: Union[List[str], None] = None
-    system_message: Union[str, None] = None
+class VisionInput:
+    image: np.ndarray
+
+
+class ConversationInput:
+    conversation: List[Dict[str, str]]
     max_new_tokens = 100
     temperature = 0.8
     top_k = 1
-    random_seed = 0
+    seed = 0
+    stop_words: Any = ""  # Optional
+    extra_params: Dict[str, str] = {}
+
+
+class ConversationMultiModelInput:
+    conversation: List[Union[Dict[str, Union[str, Dict[str, str]]]]]
+    prompt_images: Union[List[np.ndarray], None] = None
+    max_new_tokens = 100
+    temperature = 0.8
+    top_k = 1
+    seed = 0
     stop_words: Any = ""  # Optional
     extra_params: Dict[str, str] = {}
 
 
 class TextToImageInput:
-    prompt_image: Union[np.ndarray, None] = None
     prompt = ""
-    negative_prompt = ""
     steps = 5
-    guidance_scale = 7.5
+    cfg_scale = 7.5
     seed = 0
     samples = 1
     extra_params: Dict[str, str] = {}
 
 
 class ImageToImageInput:
-    prompt_image: Union[np.ndarray, None] = None
     prompt = ""
+    prompt_image: Union[np.ndarray, None] = None
     steps = 5
-    guidance_scale = 7.5
+    cfg_scale = 7.5
     seed = 0
     samples = 1
-    extra_params: Dict[str, str] = {}
-
-
-class TextGenerationChatInput:
-    prompt = ""
-    prompt_images: Union[List[np.ndarray], None] = None
-    chat_history: Union[List[str], None] = None
-    system_message: Union[str, None] = None
-    max_new_tokens = 100
-    temperature = 0.8
-    top_k = 1
-    random_seed = 0
-    stop_words: Any = ""  # Optional
-    extra_params: Dict[str, str] = {}
-
-
-class VisualQuestionAnsweringInput:
-    prompt = ""
-    prompt_images: Union[List[np.ndarray], None] = None
-    chat_history: Union[List[str], None] = None
-    system_message: Union[str, None] = None
-    max_new_tokens = 100
-    temperature = 0.8
-    top_k = 1
-    random_seed = 0
-    stop_words: Any = ""  # Optional
+    low_threshold = 100
+    high_threshold = 200
     extra_params: Dict[str, str] = {}
 
 
