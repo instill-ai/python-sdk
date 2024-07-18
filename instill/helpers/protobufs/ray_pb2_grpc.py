@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import ray_pb2 as ray_dot_v1_dot_ray__pb2
+import ray_pb2 as ray__pb2
 
 
 class RayServiceStub(object):
@@ -17,8 +17,8 @@ class RayServiceStub(object):
         """
         self.Trigger = channel.unary_unary(
                 '/ray.v1.RayService/Trigger',
-                request_serializer=ray_dot_v1_dot_ray__pb2.TriggerRequest.SerializeToString,
-                response_deserializer=ray_dot_v1_dot_ray__pb2.TriggerResponse.FromString,
+                request_serializer=ray__pb2.TriggerRequest.SerializeToString,
+                response_deserializer=ray__pb2.TriggerResponse.FromString,
                 )
 
 
@@ -38,8 +38,8 @@ def add_RayServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Trigger': grpc.unary_unary_rpc_method_handler(
                     servicer.Trigger,
-                    request_deserializer=ray_dot_v1_dot_ray__pb2.TriggerRequest.FromString,
-                    response_serializer=ray_dot_v1_dot_ray__pb2.TriggerResponse.SerializeToString,
+                    request_deserializer=ray__pb2.TriggerRequest.FromString,
+                    response_serializer=ray__pb2.TriggerResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -64,7 +64,7 @@ class RayService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/ray.v1.RayService/Trigger',
-            ray_dot_v1_dot_ray__pb2.TriggerRequest.SerializeToString,
-            ray_dot_v1_dot_ray__pb2.TriggerResponse.FromString,
+            ray__pb2.TriggerRequest.SerializeToString,
+            ray__pb2.TriggerResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
