@@ -1,4 +1,4 @@
-# pylint: disable=no-member,no-name-in-module, inconsistent-return-statements
+# pylint: disable=no-member,no-name-in-module, inconsistent-return-statements, unused-import
 import base64
 import io
 import re
