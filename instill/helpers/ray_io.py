@@ -53,13 +53,27 @@ def url_to_pil_image(url):
     return Image.open(io.BytesIO(resp.content))
 
 
+def snake_to_lower_camel(name):
+    """Convert snake_case to lowerCamelCase."""
+    components = name.split("_")
+    return components[0] + "".join(x.title() for x in components[1:])
+
+
 def protobuf_to_struct(pb_msg):
     """Convert Protobuf message to Struct"""
     dict_data = json_format.MessageToDict(pb_msg)
 
+    lower_camel_dict = {}
+    # task layer
+    for k, v in dict_data.items():
+        lower_camel_dict[k[0].lower() + k[1:]] = {}
+        # field layer
+        for kk, vv in v.items():
+            lower_camel_dict[k[0].lower() + k[1:]][snake_to_lower_camel(kk)] = vv
+
     # Convert dictionary to struct_pb2.Struct
     struct_pb = struct_pb2.Struct()
-    json_format.ParseDict(dict_data, struct_pb)
+    json_format.ParseDict(lower_camel_dict, struct_pb)
 
     return struct_pb
 
@@ -68,9 +82,17 @@ def struct_to_protobuf(struct_pb, pb_message_type):
     """Convert Struct to Protobuf message"""
     dict_data = json_format.MessageToDict(struct_pb)
 
+    lower_camel_dict = {}
+    # task layer
+    for k, v in dict_data.items():
+        lower_camel_dict[k[0].lower() + k[1:]] = {}
+        # field layer
+        for kk, vv in v.items():
+            lower_camel_dict[k[0].lower() + k[1:]][snake_to_lower_camel(kk)] = vv
+
     # Parse dictionary to Protobuf message
     pb_msg = pb_message_type()
-    json_format.ParseDict(dict_data, pb_msg)
+    json_format.ParseDict(lower_camel_dict, pb_msg)
 
     return pb_msg
 
