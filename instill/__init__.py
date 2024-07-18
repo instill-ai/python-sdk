@@ -9,15 +9,6 @@ Logger.initialize()
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "protogen"))
 
-# protogen `model` package collides with `model.py`
-# temporarily remove current directory from sys.path
-# and import ray_io
-if "" in sys.path:
-    sys.path.remove("")
-    import instill.helpers.ray_io
-
-    sys.path.insert(0, "")
-
 try:
     __version__ = version("instill-sdk")
 except PackageNotFoundError:

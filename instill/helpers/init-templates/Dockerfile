@@ -23,4 +23,4 @@ RUN pip install --default-timeout=1000 --no-cache-dir instill-sdk==${SDK_VERSION
 
 WORKDIR /home/ray
 COPY --chown=ray:users --exclude=model.py . .
-COPY --chown=ray:users model.py model.py
+COPY --chown=ray:users model.py _model.py
