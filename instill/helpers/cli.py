@@ -148,7 +148,6 @@ def build(args):
                 packages_str += p + " "
         for p in DEFAULT_DEPENDENCIES:
             packages_str += p + " "
-        packages_str += f"instill-sdk=={instill_version}"
 
         with tempfile.TemporaryDirectory() as tmpdir:
             shutil.copyfile(
@@ -176,6 +175,8 @@ def build(args):
                 f"PACKAGES={packages_str}",
                 "--build-arg",
                 f"SYSTEM_PACKAGES={system_str}",
+                "--build-arg",
+                f"SDK_VERSION={instill_version}",
                 "--platform",
                 f"linux/{args.target_arch}",
                 "-t",
