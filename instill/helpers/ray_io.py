@@ -2,7 +2,7 @@
 import base64
 import io
 import re
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Union
 
 import requests
 from google.protobuf import json_format, struct_pb2
@@ -63,7 +63,7 @@ def protobuf_to_struct(pb_msg):
     """Convert Protobuf message to Struct"""
     dict_data = json_format.MessageToDict(pb_msg)
 
-    lower_camel_dict = {}
+    lower_camel_dict: Dict[str, Dict[str, Any]] = {}
     # task layer
     for k, v in dict_data.items():
         lower_camel_dict[k[0].lower() + k[1:]] = {}
@@ -82,7 +82,7 @@ def struct_to_protobuf(struct_pb, pb_message_type):
     """Convert Struct to Protobuf message"""
     dict_data = json_format.MessageToDict(struct_pb)
 
-    lower_camel_dict = {}
+    lower_camel_dict: Dict[str, Dict[str, Any]] = {}
     # task layer
     for k, v in dict_data.items():
         lower_camel_dict[k[0].lower() + k[1:]] = {}
