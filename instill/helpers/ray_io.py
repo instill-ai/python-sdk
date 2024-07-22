@@ -550,7 +550,7 @@ def parse_task_text_generation_to_conversation_input(
 
         # max new tokens
         if "max_new_tokens" in task_input_dict:
-            inp.max_new_tokens = task_input_dict["max_new_tokens"]
+            inp.max_new_tokens = int(task_input_dict["max_new_tokens"])
 
         # temperature
         if "temperature" in task_input_dict:
@@ -558,11 +558,11 @@ def parse_task_text_generation_to_conversation_input(
 
         # top k
         if "top_k" in task_input_dict:
-            inp.top_k = task_input_dict["top_k"]
+            inp.top_k = int(task_input_dict["top_k"])
 
         # seed
         if "seed" in task_input_dict:
-            inp.seed = task_input_dict["seed"]
+            inp.seed = int(task_input_dict["seed"])
 
         input_list.append(inp)
 
@@ -679,7 +679,7 @@ def parse_task_text_generation_chat_to_conversation_input(
 
         # max new tokens
         if "max_new_tokens" in task_input_dict:
-            inp.max_new_tokens = task_input_dict["max_new_tokens"]
+            inp.max_new_tokens = int(task_input_dict["max_new_tokens"])
 
         # temperature
         if "temperature" in task_input_dict:
@@ -687,11 +687,11 @@ def parse_task_text_generation_chat_to_conversation_input(
 
         # top k
         if "top_k" in task_input_dict:
-            inp.top_k = task_input_dict["top_k"]
+            inp.top_k = int(task_input_dict["top_k"])
 
         # seed
         if "seed" in task_input_dict:
-            inp.seed = task_input_dict["seed"]
+            inp.seed = int(task_input_dict["seed"])
 
         input_list.append(inp)
 
@@ -793,7 +793,7 @@ def parse_task_visual_question_answering_to_conversation_multimodal_input(
 
         # max new tokens
         if "max_new_tokens" in task_input_dict:
-            inp.max_new_tokens = task_input_dict["max_new_tokens"]
+            inp.max_new_tokens = int(task_input_dict["max_new_tokens"])
 
         # temperature
         if "temperature" in task_input_dict:
@@ -801,11 +801,11 @@ def parse_task_visual_question_answering_to_conversation_multimodal_input(
 
         # top k
         if "top_k" in task_input_dict:
-            inp.top_k = task_input_dict["top_k"]
+            inp.top_k = int(task_input_dict["top_k"])
 
         # seed
         if "seed" in task_input_dict:
-            inp.seed = task_input_dict["seed"]
+            inp.seed = int(task_input_dict["seed"])
 
         input_list.append(inp)
 
@@ -847,7 +847,7 @@ def parse_task_text_to_image_input(
 
         # steps
         if "steps" in task_input_dict:
-            inp.steps = task_input_dict["steps"]
+            inp.steps = int(task_input_dict["steps"])
 
         # cfg_scale
         if "cfg_scale" in task_input_dict:
@@ -855,11 +855,11 @@ def parse_task_text_to_image_input(
 
         # samples
         if "samples" in task_input_dict:
-            inp.samples = task_input_dict["samples"]
+            inp.samples = int(task_input_dict["samples"])
 
         # seed
         if "seed" in task_input_dict:
-            inp.seed = task_input_dict["seed"]
+            inp.seed = int(task_input_dict["seed"])
 
         input_list.append(inp)
 
@@ -922,7 +922,7 @@ def parse_task_image_to_image_input(
 
         # steps
         if "steps" in task_input_dict:
-            inp.steps = task_input_dict["steps"]
+            inp.steps = int(task_input_dict["steps"])
 
         # cfg_scale
         if "cfg_scale" in task_input_dict:
@@ -930,11 +930,11 @@ def parse_task_image_to_image_input(
 
         # samples
         if "samples" in task_input_dict:
-            inp.samples = task_input_dict["samples"]
+            inp.samples = int(task_input_dict["samples"])
 
         # seed
         if "seed" in task_input_dict:
-            inp.seed = task_input_dict["seed"]
+            inp.seed = int(task_input_dict["seed"])
 
         input_list.append(inp)
 

@@ -29,10 +29,10 @@ class VisionInput:
 
 class ConversationInput:
     conversation: List[Dict[str, str]]
-    max_new_tokens = 100
-    temperature = 0.8
-    top_k = 1
-    seed = 0
+    max_new_tokens: int = 100
+    temperature: float = 0.8
+    top_k: int = 1
+    seed: int = 0
     stop_words: Any = ""  # Optional
     extra_params: Dict[str, str] = {}
 
@@ -40,30 +40,30 @@ class ConversationInput:
 class ConversationMultiModelInput:
     conversation: List[Union[Dict[str, Union[str, Dict[str, str]]]]]
     prompt_images: Union[List[np.ndarray], None] = None
-    max_new_tokens = 100
-    temperature = 0.8
-    top_k = 1
-    seed = 0
+    max_new_tokens: int = 100
+    temperature: float = 0.8
+    top_k: int = 1
+    seed: int = 0
     stop_words: Any = ""  # Optional
     extra_params: Dict[str, str] = {}
 
 
 class TextToImageInput:
     prompt = ""
-    steps = 5
-    cfg_scale = 7.5
-    seed = 0
-    samples = 1
+    steps: int = 5
+    cfg_scale: float = 7.5
+    seed: int = 0
+    samples: int = 1
     extra_params: Dict[str, str] = {}
 
 
 class ImageToImageInput:
     prompt = ""
     prompt_image: Union[np.ndarray, None] = None
-    steps = 5
-    cfg_scale = 7.5
-    seed = 0
-    samples = 1
+    steps: int = 5
+    cfg_scale: float = 7.5
+    seed: int = 0
+    samples: int = 1
     low_threshold = 100
     high_threshold = 200
     extra_params: Dict[str, str] = {}
