@@ -6,13 +6,13 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
-class TriggerRequest(_message.Message):
+class CallRequest(_message.Message):
     __slots__ = ("task_inputs",)
     TASK_INPUTS_FIELD_NUMBER: _ClassVar[int]
     task_inputs: _containers.RepeatedCompositeFieldContainer[_struct_pb2.Struct]
     def __init__(self, task_inputs: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ...) -> None: ...
 
-class TriggerResponse(_message.Message):
+class CallResponse(_message.Message):
     __slots__ = ("task_outputs",)
     TASK_OUTPUTS_FIELD_NUMBER: _ClassVar[int]
     task_outputs: _containers.RepeatedCompositeFieldContainer[_struct_pb2.Struct]
