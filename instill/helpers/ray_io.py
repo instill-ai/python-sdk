@@ -30,7 +30,7 @@ from instill.helpers.const import (
     VisionInput,
 )
 from instill.helpers.errors import InvalidInputException, InvalidOutputShapeException
-from instill.helpers.protobufs.ray_pb2 import TriggerRequest, TriggerResponse
+from instill.helpers.protobufs.ray_pb2 import CallRequest, CallResponse
 
 
 def base64_to_pil_image(base64_str):
@@ -71,7 +71,7 @@ def protobuf_to_struct(pb_msg):
 
 
 def parse_task_classification_to_vision_input(
-    request: TriggerRequest,
+    request: CallRequest,
 ) -> List[VisionInput]:
     input_list = []
     for task_input in request.task_inputs:
@@ -98,7 +98,7 @@ def parse_task_classification_to_vision_input(
 def construct_task_classification_output(
     categories: List[str],
     scores: List[float],
-) -> TriggerResponse:
+) -> CallResponse:
     if not len(categories) == len(scores):
         raise InvalidOutputShapeException
 
@@ -115,11 +115,11 @@ def construct_task_classification_output(
             )
         )
 
-    return TriggerResponse(task_outputs=task_outputs)
+    return CallResponse(task_outputs=task_outputs)
 
 
 def parse_task_detection_to_vision_input(
-    request: TriggerRequest,
+    request: CallRequest,
 ) -> List[VisionInput]:
     input_list = []
     for task_input in request.task_inputs:
@@ -145,7 +145,7 @@ def construct_task_detection_output(
     categories: List[List[str]],
     scores: List[List[float]],
     bounding_boxes: List[List[tuple]],
-) -> TriggerResponse:
+) -> CallResponse:
     """Construct trigger output for detection task
 
     Args:
@@ -181,11 +181,11 @@ def construct_task_detection_output(
             )
         )
 
-    return TriggerResponse(task_outputs=task_outputs)
+    return CallResponse(task_outputs=task_outputs)
 
 
 def parse_task_ocr_to_vision_input(
-    request: TriggerRequest,
+    request: CallRequest,
 ) -> List[VisionInput]:
     input_list = []
     for task_input in request.task_inputs:
@@ -211,7 +211,7 @@ def construct_task_ocr_output(
     texts: List[List[str]],
     scores: List[List[float]],
     bounding_boxes: List[List[tuple]],
-) -> TriggerResponse:
+) -> CallResponse:
     """Construct trigger output for ocr task
 
     Args:
@@ -243,11 +243,11 @@ def construct_task_ocr_output(
             protobuf_to_struct(modelpb.TaskOutput(ocr=ocrpb.OcrOutput(objects=objects)))
         )
 
-    return TriggerResponse(task_outputs=task_outputs)
+    return CallResponse(task_outputs=task_outputs)
 
 
 def parse_task_instance_segmentation_to_vision_input(
-    request: TriggerRequest,
+    request: CallRequest,
 ) -> List[VisionInput]:
     input_list = []
     for task_input in request.task_inputs:
@@ -276,7 +276,7 @@ def construct_task_instance_segmentation_output(
     categories: List[List[str]],
     scores: List[List[float]],
     bounding_boxes: List[List[tuple]],
-) -> TriggerResponse:
+) -> CallResponse:
     """Construct trigger output for instance segmentation task
 
     Args:
@@ -316,11 +316,11 @@ def construct_task_instance_segmentation_output(
             )
         )
 
-    return TriggerResponse(task_outputs=task_outputs)
+    return CallResponse(task_outputs=task_outputs)
 
 
 def parse_task_semantic_segmentation_to_vision_input(
-    request: TriggerRequest,
+    request: CallRequest,
 ) -> List[VisionInput]:
     input_list = []
     for task_input in request.task_inputs:
@@ -347,7 +347,7 @@ def parse_task_semantic_segmentation_to_vision_input(
 def construct_task_semantic_segmentation_output(
     rles: List[List[str]],
     categories: List[List[str]],
-) -> TriggerResponse:
+) -> CallResponse:
     """Construct trigger output for semantic segmentation task
 
     Args:
@@ -378,11 +378,11 @@ def construct_task_semantic_segmentation_output(
             )
         )
 
-    return TriggerResponse(task_outputs=task_outputs)
+    return CallResponse(task_outputs=task_outputs)
 
 
 def parse_task_keypoint_to_vision_input(
-    request: TriggerRequest,
+    request: CallRequest,
 ) -> List[VisionInput]:
     input_list = []
     for task_input in request.task_inputs:
@@ -408,7 +408,7 @@ def construct_task_keypoint_output(
     keypoints: List[List[List[tuple]]],
     scores: List[List[float]],
     bounding_boxes: List[List[tuple]],
-) -> TriggerResponse:
+) -> CallResponse:
     """Construct trigger output for keypoint task
 
     Args:
@@ -452,11 +452,11 @@ def construct_task_keypoint_output(
             )
         )
 
-    return TriggerResponse(task_outputs=task_outputs)
+    return CallResponse(task_outputs=task_outputs)
 
 
 def parse_task_text_generation_to_conversation_input(
-    request: TriggerRequest,
+    request: CallRequest,
 ) -> List[ConversationInput]:
 
     input_list = []
@@ -569,7 +569,7 @@ def parse_task_text_generation_to_conversation_input(
     return input_list
 
 
-def construct_task_text_generation_output(texts: List[str]) -> TriggerResponse:
+def construct_task_text_generation_output(texts: List[str]) -> CallResponse:
     task_outputs = []
 
     for text in texts:
@@ -581,11 +581,11 @@ def construct_task_text_generation_output(texts: List[str]) -> TriggerResponse:
             )
         )
 
-    return TriggerResponse(task_outputs=task_outputs)
+    return CallResponse(task_outputs=task_outputs)
 
 
 def parse_task_text_generation_chat_to_conversation_input(
-    request: TriggerRequest,
+    request: CallRequest,
 ) -> List[ConversationInput]:
 
     input_list = []
@@ -698,7 +698,7 @@ def parse_task_text_generation_chat_to_conversation_input(
     return input_list
 
 
-def construct_task_text_generation_chat_output(texts: List[str]) -> TriggerResponse:
+def construct_task_text_generation_chat_output(texts: List[str]) -> CallResponse:
     task_outputs = []
 
     for text in texts:
@@ -712,11 +712,11 @@ def construct_task_text_generation_chat_output(texts: List[str]) -> TriggerRespo
             )
         )
 
-    return TriggerResponse(task_outputs=task_outputs)
+    return CallResponse(task_outputs=task_outputs)
 
 
 def parse_task_visual_question_answering_to_conversation_multimodal_input(
-    request: TriggerRequest,
+    request: CallRequest,
 ) -> List[ConversationMultiModelInput]:
 
     input_list = []
@@ -814,7 +814,7 @@ def parse_task_visual_question_answering_to_conversation_multimodal_input(
 
 def construct_task_visual_question_answering_output(
     texts: List[str],
-) -> TriggerResponse:
+) -> CallResponse:
     task_outputs = []
 
     for text in texts:
@@ -828,11 +828,11 @@ def construct_task_visual_question_answering_output(
             )
         )
 
-    return TriggerResponse(task_outputs=task_outputs)
+    return CallResponse(task_outputs=task_outputs)
 
 
 def parse_task_text_to_image_input(
-    request: TriggerRequest,
+    request: CallRequest,
 ) -> List[TextToImageInput]:
 
     input_list = []
@@ -868,7 +868,7 @@ def parse_task_text_to_image_input(
 
 def construct_task_text_to_image_output(
     images: List[List[str]],
-) -> TriggerResponse:
+) -> CallResponse:
     """Construct trigger output for keypoint task
 
     Args:
@@ -885,11 +885,11 @@ def construct_task_text_to_image_output(
             )
         )
 
-    return TriggerResponse(task_outputs=task_outputs)
+    return CallResponse(task_outputs=task_outputs)
 
 
 def parse_task_image_to_image_input(
-    request: TriggerRequest,
+    request: CallRequest,
 ) -> List[ImageToImageInput]:
 
     input_list = []
@@ -943,7 +943,7 @@ def parse_task_image_to_image_input(
 
 def construct_task_image_to_image_output(
     images: List[List[str]],
-) -> TriggerResponse:
+) -> CallResponse:
     """Construct trigger output for keypoint task
 
     Args:
@@ -960,4 +960,4 @@ def construct_task_image_to_image_output(
             )
         )
 
-    return TriggerResponse(task_outputs=task_outputs)
+    return CallResponse(task_outputs=task_outputs)

@@ -1,5 +1,5 @@
 # pylint: disable=no-name-in-module
-from instill.helpers.protobufs.ray_pb2 import TriggerRequest, TriggerResponse
+from instill.helpers.protobufs.ray_pb2 import CallRequest, CallResponse
 from instill.helpers.ray_io import (
     construct_task_classification_output,
     construct_task_detection_output,
