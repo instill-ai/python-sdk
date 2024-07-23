@@ -1,6 +1,4 @@
 import argparse
-import uuid
-import time
 
 # import hashlib
 import os
@@ -8,6 +6,8 @@ import platform
 import shutil
 import subprocess
 import tempfile
+import time
+import uuid
 
 import ray
 import yaml

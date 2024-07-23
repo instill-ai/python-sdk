@@ -1,7 +1,8 @@
 import argparse
 import json
-import requests
 import pprint
+
+import requests
 
 parser = argparse.ArgumentParser()
 

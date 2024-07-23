@@ -2,7 +2,6 @@ import os
 from enum import Enum
 from typing import Any, Dict, List, Union
 
-import numpy as np
 from PIL import Image
 
 PROMPT_ROLES = ["user", "assistant", "system"]
