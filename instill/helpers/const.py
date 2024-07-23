@@ -40,7 +40,7 @@ class ConversationInput:
 
 class ConversationMultiModelInput:
     conversation: List[Union[Dict[str, Union[str, Dict[str, str]]]]]
-    prompt_images: Union[List[np.ndarray], None] = None
+    prompt_images: Union[List[Image.Image], None] = None
     max_new_tokens: int = 100
     temperature: float = 0.8
     top_k: int = 1
@@ -60,7 +60,7 @@ class TextToImageInput:
 
 class ImageToImageInput:
     prompt = ""
-    prompt_image: Union[np.ndarray, None] = None
+    prompt_image: Union[Image.Image, None] = None
     steps: int = 5
     cfg_scale: float = 7.5
     seed: int = 0

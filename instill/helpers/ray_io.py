@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Union
 import requests
 from google.protobuf import json_format, struct_pb2
 from PIL import Image
+from starlette.requests import Request
 
 import instill.protogen.model.model.v1alpha.common_pb2 as commonpb
 import instill.protogen.model.model.v1alpha.model_pb2 as modelpb
@@ -70,9 +71,18 @@ def protobuf_to_struct(pb_msg):
     return struct_pb
 
 
-def parse_task_classification_to_vision_input(
-    request: CallRequest,
+async def parse_task_classification_to_vision_input(
+    request: Union[CallRequest, Request],
 ) -> List[VisionInput]:
+
+    # http test input
+    if isinstance(request, Request):
+        test_image_url: str = await request.json()
+
+        inp = VisionInput()
+        inp.image = url_to_pil_image(test_image_url)
+        return [inp]
+
     input_list = []
     for task_input in request.task_inputs:
         task_input_dict = json_format.MessageToDict(task_input)["Classification"][
@@ -96,11 +106,18 @@ def parse_task_classification_to_vision_input(
 
 
 def construct_task_classification_output(
+    request: Union[CallRequest, Request],
     categories: List[str],
     scores: List[float],
-) -> CallResponse:
+) -> Union[CallResponse, Dict[str, List]]:
     if not len(categories) == len(scores):
         raise InvalidOutputShapeException
+
+    if isinstance(request, Request):
+        return {
+            "categories": categories,
+            "scores": scores,
+        }
 
     task_outputs = []
     for category, score in zip(categories, scores):
@@ -118,9 +135,18 @@ def construct_task_classification_output(
     return CallResponse(task_outputs=task_outputs)
 
 
-def parse_task_detection_to_vision_input(
-    request: CallRequest,
+async def parse_task_detection_to_vision_input(
+    request: Union[CallRequest, Request],
 ) -> List[VisionInput]:
+
+    # http test input
+    if isinstance(request, Request):
+        test_image_url: str = await request.json()
+
+        inp = VisionInput()
+        inp.image = url_to_pil_image(test_image_url)
+        return [inp]
+
     input_list = []
     for task_input in request.task_inputs:
         task_input_dict = json_format.MessageToDict(task_input)["Detection"]["Type"]
@@ -142,10 +168,11 @@ def parse_task_detection_to_vision_input(
 
 
 def construct_task_detection_output(
+    request: Union[CallRequest, Request],
     categories: List[List[str]],
     scores: List[List[float]],
     bounding_boxes: List[List[tuple]],
-) -> CallResponse:
+) -> Union[CallResponse, Dict[str, List]]:
     """Construct trigger output for detection task
 
     Args:
@@ -156,6 +183,13 @@ def construct_task_detection_output(
     """
     if not len(categories) == len(scores) == len(bounding_boxes):
         raise InvalidOutputShapeException
+
+    if isinstance(request, Request):
+        return {
+            "categories": categories,
+            "scores": scores,
+            "bounding_boxes": bounding_boxes,
+        }
 
     task_outputs = []
     for category, score, bbox in zip(categories, scores, bounding_boxes):
@@ -184,9 +218,18 @@ def construct_task_detection_output(
     return CallResponse(task_outputs=task_outputs)
 
 
-def parse_task_ocr_to_vision_input(
-    request: CallRequest,
+async def parse_task_ocr_to_vision_input(
+    request: Union[CallRequest, Request],
 ) -> List[VisionInput]:
+
+    # http test input
+    if isinstance(request, Request):
+        test_image_url: str = await request.json()
+
+        inp = VisionInput()
+        inp.image = url_to_pil_image(test_image_url)
+        return [inp]
+
     input_list = []
     for task_input in request.task_inputs:
         task_input_dict = json_format.MessageToDict(task_input)["Ocr"]["Type"]
@@ -208,10 +251,11 @@ def parse_task_ocr_to_vision_input(
 
 
 def construct_task_ocr_output(
+    request: Union[CallRequest, Request],
     texts: List[List[str]],
     scores: List[List[float]],
     bounding_boxes: List[List[tuple]],
-) -> CallResponse:
+) -> Union[CallResponse, Dict[str, List]]:
     """Construct trigger output for ocr task
 
     Args:
@@ -222,6 +266,13 @@ def construct_task_ocr_output(
     """
     if not len(texts) == len(scores) == len(bounding_boxes):
         raise InvalidOutputShapeException
+
+    if isinstance(request, Request):
+        return {
+            "texts": texts,
+            "scores": scores,
+            "bounding_boxes": bounding_boxes,
+        }
 
     task_outputs = []
     for text, score, bbox in zip(texts, scores, bounding_boxes):
@@ -246,9 +297,18 @@ def construct_task_ocr_output(
     return CallResponse(task_outputs=task_outputs)
 
 
-def parse_task_instance_segmentation_to_vision_input(
-    request: CallRequest,
+async def parse_task_instance_segmentation_to_vision_input(
+    request: Union[CallRequest, Request],
 ) -> List[VisionInput]:
+
+    # http test input
+    if isinstance(request, Request):
+        test_image_url: str = await request.json()
+
+        inp = VisionInput()
+        inp.image = url_to_pil_image(test_image_url)
+        return [inp]
+
     input_list = []
     for task_input in request.task_inputs:
         task_input_dict = json_format.MessageToDict(task_input)["InstanceSegmentation"][
@@ -272,11 +332,12 @@ def parse_task_instance_segmentation_to_vision_input(
 
 
 def construct_task_instance_segmentation_output(
+    request: Union[CallRequest, Request],
     rles: List[List[str]],
     categories: List[List[str]],
     scores: List[List[float]],
     bounding_boxes: List[List[tuple]],
-) -> CallResponse:
+) -> Union[CallResponse, Dict[str, List]]:
     """Construct trigger output for instance segmentation task
 
     Args:
@@ -288,6 +349,14 @@ def construct_task_instance_segmentation_output(
     """
     if not len(rles) == len(categories) == len(scores) == len(bounding_boxes):
         raise InvalidOutputShapeException
+
+    if isinstance(request, Request):
+        return {
+            "rles": rles,
+            "categories": categories,
+            "scores": scores,
+            "bounding_boxes": bounding_boxes,
+        }
 
     task_outputs = []
     for rle, category, score, bbox in zip(rles, categories, scores, bounding_boxes):
@@ -319,9 +388,18 @@ def construct_task_instance_segmentation_output(
     return CallResponse(task_outputs=task_outputs)
 
 
-def parse_task_semantic_segmentation_to_vision_input(
-    request: CallRequest,
+async def parse_task_semantic_segmentation_to_vision_input(
+    request: Union[CallRequest, Request],
 ) -> List[VisionInput]:
+
+    # http test input
+    if isinstance(request, Request):
+        test_image_url: str = await request.json()
+
+        inp = VisionInput()
+        inp.image = url_to_pil_image(test_image_url)
+        return [inp]
+
     input_list = []
     for task_input in request.task_inputs:
         task_input_dict = json_format.MessageToDict(task_input)["SemanticSegmentation"][
@@ -345,9 +423,10 @@ def parse_task_semantic_segmentation_to_vision_input(
 
 
 def construct_task_semantic_segmentation_output(
+    request: Union[CallRequest, Request],
     rles: List[List[str]],
     categories: List[List[str]],
-) -> CallResponse:
+) -> Union[CallResponse, Dict[str, List]]:
     """Construct trigger output for semantic segmentation task
 
     Args:
@@ -357,6 +436,12 @@ def construct_task_semantic_segmentation_output(
     """
     if not len(rles) == len(categories):
         raise InvalidOutputShapeException
+
+    if isinstance(request, Request):
+        return {
+            "rles": rles,
+            "categories": categories,
+        }
 
     task_outputs = []
     for rle, category in zip(rles, categories):
@@ -381,9 +466,18 @@ def construct_task_semantic_segmentation_output(
     return CallResponse(task_outputs=task_outputs)
 
 
-def parse_task_keypoint_to_vision_input(
-    request: CallRequest,
+async def parse_task_keypoint_to_vision_input(
+    request: Union[CallRequest, Request],
 ) -> List[VisionInput]:
+
+    # http test input
+    if isinstance(request, Request):
+        test_image_url: str = await request.json()
+
+        inp = VisionInput()
+        inp.image = url_to_pil_image(test_image_url)
+        return [inp]
+
     input_list = []
     for task_input in request.task_inputs:
         task_input_dict = json_format.MessageToDict(task_input)["Keypoint"]["Type"]
@@ -405,10 +499,11 @@ def parse_task_keypoint_to_vision_input(
 
 
 def construct_task_keypoint_output(
+    request: Union[CallRequest, Request],
     keypoints: List[List[List[tuple]]],
     scores: List[List[float]],
     bounding_boxes: List[List[tuple]],
-) -> CallResponse:
+) -> Union[CallResponse, Dict[str, List]]:
     """Construct trigger output for keypoint task
 
     Args:
@@ -418,8 +513,16 @@ def construct_task_keypoint_output(
         bounding_boxes (List[List[tuple]]): for each image input, the list of detected object's bbox, with the format
         (top, left, width, height)
     """
+
     if not len(keypoints) == len(scores) == len(bounding_boxes):
         raise InvalidOutputShapeException
+
+    if isinstance(request, Request):
+        return {
+            "keypoints": keypoints,
+            "scores": scores,
+            "bounding_boxes": bounding_boxes,
+        }
 
     task_outputs = []
     for keypoint, score, bbox in zip(keypoints, scores, bounding_boxes):
@@ -455,12 +558,19 @@ def construct_task_keypoint_output(
     return CallResponse(task_outputs=task_outputs)
 
 
-def parse_task_text_generation_to_conversation_input(
-    request: CallRequest,
+async def parse_task_text_generation_to_conversation_input(
+    request: Union[CallRequest, Request],
 ) -> List[ConversationInput]:
 
-    input_list = []
+    # http test input
+    if isinstance(request, Request):
+        test_prompt: str = await request.json()
 
+        inp = ConversationInput()
+        inp.conversation = [{"role": "user", "content": test_prompt}]
+        return [inp]
+
+    input_list = []
     for task_input in request.task_inputs:
         task_input_dict = json_format.MessageToDict(task_input)["TextGeneration"]
 
@@ -569,9 +679,15 @@ def parse_task_text_generation_to_conversation_input(
     return input_list
 
 
-def construct_task_text_generation_output(texts: List[str]) -> CallResponse:
-    task_outputs = []
+def construct_task_text_generation_output(
+    request: Union[CallRequest, Request],
+    texts: List[str],
+) -> Union[CallResponse, List[str]]:
 
+    if isinstance(request, Request):
+        return texts
+
+    task_outputs = []
     for text in texts:
         task_outputs.append(
             protobuf_to_struct(
@@ -584,12 +700,19 @@ def construct_task_text_generation_output(texts: List[str]) -> CallResponse:
     return CallResponse(task_outputs=task_outputs)
 
 
-def parse_task_text_generation_chat_to_conversation_input(
-    request: CallRequest,
+async def parse_task_text_generation_chat_to_conversation_input(
+    request: Union[CallRequest, Request],
 ) -> List[ConversationInput]:
 
-    input_list = []
+    # http test input
+    if isinstance(request, Request):
+        test_prompt: str = await request.json()
 
+        inp = ConversationInput()
+        inp.conversation = [{"role": "user", "content": test_prompt}]
+        return [inp]
+
+    input_list = []
     for task_input in request.task_inputs:
         task_input_dict = json_format.MessageToDict(task_input)["TextGenerationChat"]
 
@@ -693,14 +816,20 @@ def parse_task_text_generation_chat_to_conversation_input(
         if "seed" in task_input_dict:
             inp.seed = int(task_input_dict["seed"])
 
-        input_list.append(inp)
+    input_list.append(inp)
 
     return input_list
 
 
-def construct_task_text_generation_chat_output(texts: List[str]) -> CallResponse:
-    task_outputs = []
+def construct_task_text_generation_chat_output(
+    request: Union[CallRequest, Request],
+    texts: List[str],
+) -> Union[CallResponse, List[str]]:
 
+    if isinstance(request, Request):
+        return texts
+
+    task_outputs = []
     for text in texts:
         task_outputs.append(
             protobuf_to_struct(
@@ -715,12 +844,31 @@ def construct_task_text_generation_chat_output(texts: List[str]) -> CallResponse
     return CallResponse(task_outputs=task_outputs)
 
 
-def parse_task_visual_question_answering_to_conversation_multimodal_input(
-    request: CallRequest,
+async def parse_task_visual_question_answering_to_conversation_multimodal_input(
+    request: Union[CallRequest, Request],
 ) -> List[ConversationMultiModelInput]:
 
-    input_list = []
+    # http test input
+    if isinstance(request, Request):
+        test_dict: dict = await request.json()
 
+        test_prompt = test_dict["prompt"]
+        image_url = test_dict["image_url"]
+
+        inp = ConversationMultiModelInput()
+        inp.conversation = [
+            {
+                "role": "user",
+                "content": {
+                    "type": "text",
+                    "content": test_prompt,
+                },
+            }
+        ]
+        inp.prompt_images = [url_to_pil_image(image_url)]
+        return [inp]
+
+    input_list = []
     for task_input in request.task_inputs:
         task_input_dict = json_format.MessageToDict(task_input)[
             "VisualQuestionAnswering"
@@ -813,10 +961,14 @@ def parse_task_visual_question_answering_to_conversation_multimodal_input(
 
 
 def construct_task_visual_question_answering_output(
+    request: Union[CallRequest, Request],
     texts: List[str],
-) -> CallResponse:
-    task_outputs = []
+) -> Union[CallResponse, List[str]]:
 
+    if isinstance(request, Request):
+        return texts
+
+    task_outputs = []
     for text in texts:
         task_outputs.append(
             protobuf_to_struct(
@@ -831,12 +983,20 @@ def construct_task_visual_question_answering_output(
     return CallResponse(task_outputs=task_outputs)
 
 
-def parse_task_text_to_image_input(
-    request: CallRequest,
+async def parse_task_text_to_image_input(
+    request: Union[CallRequest, Request],
 ) -> List[TextToImageInput]:
 
-    input_list = []
+    # http test input
+    if isinstance(request, Request):
+        test_prompt: str = await request.json()
 
+        inp = TextToImageInput()
+        inp.prompt = test_prompt
+
+        return [inp]
+
+    input_list = []
     for task_input in request.task_inputs:
         task_input_dict = json_format.MessageToDict(task_input)["TextToImage"]
 
@@ -867,15 +1027,19 @@ def parse_task_text_to_image_input(
 
 
 def construct_task_text_to_image_output(
+    request: Union[CallRequest, Request],
     images: List[List[str]],
-) -> CallResponse:
+) -> Union[CallResponse, List[List[str]]]:
     """Construct trigger output for keypoint task
 
     Args:
         images (List[List[str]]): for each input prompt, the generated images with the length of `samples`
     """
-    task_outputs = []
 
+    if isinstance(request, Request):
+        return images
+
+    task_outputs = []
     for imgs in images:
         task_outputs.append(
             protobuf_to_struct(
@@ -888,12 +1052,24 @@ def construct_task_text_to_image_output(
     return CallResponse(task_outputs=task_outputs)
 
 
-def parse_task_image_to_image_input(
-    request: CallRequest,
+async def parse_task_image_to_image_input(
+    request: Union[CallRequest, Request],
 ) -> List[ImageToImageInput]:
 
-    input_list = []
+    # http test input
+    if isinstance(request, Request):
+        test_dict: dict = await request.json()
 
+        test_prompt = test_dict["prompt"]
+        test_image_url = test_dict["image_url"]
+
+        inp = ImageToImageInput()
+        inp.prompt = test_prompt
+        inp.prompt_image = url_to_pil_image(test_image_url)
+
+        return [inp]
+
+    input_list = []
     for task_input in request.task_inputs:
         task_input_dict = json_format.MessageToDict(task_input)["ImageToImage"]
 
@@ -942,15 +1118,19 @@ def parse_task_image_to_image_input(
 
 
 def construct_task_image_to_image_output(
+    request: Union[CallRequest, Request],
     images: List[List[str]],
-) -> CallResponse:
+) -> Union[CallResponse, List[List[str]]]:
     """Construct trigger output for keypoint task
 
     Args:
         images (List[List[str]]): for each input prompt, the generated images with the length of `samples`
     """
-    task_outputs = []
 
+    if isinstance(request, Request):
+        return images
+
+    task_outputs = []
     for imgs in images:
         task_outputs.append(
             protobuf_to_struct(
