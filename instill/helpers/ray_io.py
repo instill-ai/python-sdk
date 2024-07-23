@@ -77,10 +77,10 @@ async def parse_task_classification_to_vision_input(
 
     # http test input
     if isinstance(request, Request):
-        test_image_url: str = await request.json()
+        data: dict = await request.json()
 
         inp = VisionInput()
-        inp.image = url_to_pil_image(test_image_url)
+        inp.image = url_to_pil_image(data["image_url"])
         return [inp]
 
     input_list = []
@@ -141,10 +141,10 @@ async def parse_task_detection_to_vision_input(
 
     # http test input
     if isinstance(request, Request):
-        test_image_url: str = await request.json()
+        data: dict = await request.json()
 
         inp = VisionInput()
-        inp.image = url_to_pil_image(test_image_url)
+        inp.image = url_to_pil_image(data["image_url"])
         return [inp]
 
     input_list = []
@@ -224,10 +224,10 @@ async def parse_task_ocr_to_vision_input(
 
     # http test input
     if isinstance(request, Request):
-        test_image_url: str = await request.json()
+        data: dict = await request.json()
 
         inp = VisionInput()
-        inp.image = url_to_pil_image(test_image_url)
+        inp.image = url_to_pil_image(data["image_url"])
         return [inp]
 
     input_list = []
@@ -303,10 +303,10 @@ async def parse_task_instance_segmentation_to_vision_input(
 
     # http test input
     if isinstance(request, Request):
-        test_image_url: str = await request.json()
+        data: dict = await request.json()
 
         inp = VisionInput()
-        inp.image = url_to_pil_image(test_image_url)
+        inp.image = url_to_pil_image(data["image_url"])
         return [inp]
 
     input_list = []
@@ -394,10 +394,10 @@ async def parse_task_semantic_segmentation_to_vision_input(
 
     # http test input
     if isinstance(request, Request):
-        test_image_url: str = await request.json()
+        data: dict = await request.json()
 
         inp = VisionInput()
-        inp.image = url_to_pil_image(test_image_url)
+        inp.image = url_to_pil_image(data["image_url"])
         return [inp]
 
     input_list = []
@@ -472,10 +472,10 @@ async def parse_task_keypoint_to_vision_input(
 
     # http test input
     if isinstance(request, Request):
-        test_image_url: str = await request.json()
+        data: dict = await request.json()
 
         inp = VisionInput()
-        inp.image = url_to_pil_image(test_image_url)
+        inp.image = url_to_pil_image(data["image_url"])
         return [inp]
 
     input_list = []
@@ -564,10 +564,10 @@ async def parse_task_text_generation_to_conversation_input(
 
     # http test input
     if isinstance(request, Request):
-        test_prompt: str = await request.json()
+        data: dict = await request.json()
 
         inp = ConversationInput()
-        inp.conversation = [{"role": "user", "content": test_prompt}]
+        inp.conversation = [{"role": "user", "content": data["prompt"]}]
         return [inp]
 
     input_list = []
@@ -706,10 +706,10 @@ async def parse_task_text_generation_chat_to_conversation_input(
 
     # http test input
     if isinstance(request, Request):
-        test_prompt: str = await request.json()
+        data: dict = await request.json()
 
         inp = ConversationInput()
-        inp.conversation = [{"role": "user", "content": test_prompt}]
+        inp.conversation = [{"role": "user", "content": data["prompt"]}]
         return [inp]
 
     input_list = []
@@ -850,10 +850,10 @@ async def parse_task_visual_question_answering_to_conversation_multimodal_input(
 
     # http test input
     if isinstance(request, Request):
-        test_dict: dict = await request.json()
+        data: dict = await request.json()
 
-        test_prompt = test_dict["prompt"]
-        image_url = test_dict["image_url"]
+        test_prompt = data["prompt"]
+        image_url = data["image_url"]
 
         inp = ConversationMultiModelInput()
         inp.conversation = [
@@ -989,10 +989,10 @@ async def parse_task_text_to_image_input(
 
     # http test input
     if isinstance(request, Request):
-        test_prompt: str = await request.json()
+        data: dict = await request.json()
 
         inp = TextToImageInput()
-        inp.prompt = test_prompt
+        inp.prompt = data["prompt"]
 
         return [inp]
 
@@ -1058,10 +1058,10 @@ async def parse_task_image_to_image_input(
 
     # http test input
     if isinstance(request, Request):
-        test_dict: dict = await request.json()
+        data: dict = await request.json()
 
-        test_prompt = test_dict["prompt"]
-        test_image_url = test_dict["image_url"]
+        test_prompt = data["prompt"]
+        test_image_url = data["image_url"]
 
         inp = ImageToImageInput()
         inp.prompt = test_prompt

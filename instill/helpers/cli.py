@@ -1,4 +1,6 @@
 import argparse
+import uuid
+import time
 
 # import hashlib
 import os
@@ -86,6 +88,27 @@ def cli():
         help="tag for the model image, default to `latest`",
         default="latest",
         required=False,
+    )
+
+    # run
+    run_parser = subcommands.add_parser("run", help="Run inference on model image")
+    run_parser.set_defaults(func=run)
+    run_parser.add_argument(
+        "name",
+        help="user and model namespace, in the format of <user-id>/<model-id>",
+    )
+    run_parser.add_argument(
+        "-t",
+        "--tag",
+        help="tag for the model image, default to `latest`",
+        default="latest",
+        required=False,
+    )
+    run_parser.add_argument(
+        "-i",
+        "--input",
+        help="inference input json",
+        required=True,
     )
 
     args = parser.parse_args()
@@ -220,6 +243,69 @@ def push(args):
         Logger.i(f"[Instill Builder] {registry}/{args.name}:{args.tag} pushed")
     except subprocess.CalledProcessError:
         Logger.e("[Instill Builder] Push failed")
+    except Exception as e:
+        Logger.e("[Instill Builder] Prepare failed")
+        Logger.e(e)
+    finally:
+        Logger.i("[Instill Builder] Done")
+
+
+def run(args):
+    try:
+        name = uuid.uuid4()
+
+        Logger.i("[Instill Builder] Starting model image...")
+        subprocess.run(
+            [
+                "docker",
+                "run",
+                "--rm",
+                "-d",
+                "--name",
+                str(name),
+                f"{args.name}:{args.tag}",
+                "serve",
+                "run",
+                "_model:entrypoint",
+            ],
+            check=True,
+        )
+        time.sleep(10)
+        subprocess.run(
+            [
+                "docker",
+                "exec",
+                str(name),
+                "/bin/bash",
+                "-c",
+                "until serve status --name default | grep 'RUNNING: 1' > /dev/null; do sleep 1; done;",
+            ],
+            check=True,
+        )
+        Logger.i("[Instill Builder] Model running")
+        subprocess.run(
+            [
+                "docker",
+                "exec",
+                str(name),
+                "python",
+                "-m",
+                "instill.helpers.test",
+                "-i",
+                args.input,
+            ],
+            check=True,
+        )
+        subprocess.run(
+            [
+                "docker",
+                "stop",
+                str(name),
+            ],
+            check=True,
+        )
+    except subprocess.CalledProcessError:
+        Logger.e("[Instill Builder] Run failed")
     except Exception as e:
         Logger.e("[Instill Builder] Prepare failed")
         Logger.e(e)
