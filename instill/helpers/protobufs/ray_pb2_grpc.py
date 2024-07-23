@@ -15,10 +15,10 @@ class RayServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.Trigger = channel.unary_unary(
-                '/ray.v1.RayService/Trigger',
-                request_serializer=ray__pb2.TriggerRequest.SerializeToString,
-                response_deserializer=ray__pb2.TriggerResponse.FromString,
+        self.__call__ = channel.unary_unary(
+                '/ray.v1.RayService/__call__',
+                request_serializer=ray__pb2.CallRequest.SerializeToString,
+                response_deserializer=ray__pb2.CallResponse.FromString,
                 )
 
 
@@ -26,7 +26,7 @@ class RayServiceServicer(object):
     """Ray service for internal process
     """
 
-    def Trigger(self, request, context):
+    def __call__(self, request, context):
         """Trigger method is the defaut trigger entry for ray deployment
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -36,10 +36,10 @@ class RayServiceServicer(object):
 
 def add_RayServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'Trigger': grpc.unary_unary_rpc_method_handler(
-                    servicer.Trigger,
-                    request_deserializer=ray__pb2.TriggerRequest.FromString,
-                    response_serializer=ray__pb2.TriggerResponse.SerializeToString,
+            '__call__': grpc.unary_unary_rpc_method_handler(
+                    servicer.__call__,
+                    request_deserializer=ray__pb2.CallRequest.FromString,
+                    response_serializer=ray__pb2.CallResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -53,7 +53,7 @@ class RayService(object):
     """
 
     @staticmethod
-    def Trigger(request,
+    def __call__(request,
             target,
             options=(),
             channel_credentials=None,
@@ -63,8 +63,8 @@ class RayService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/ray.v1.RayService/Trigger',
-            ray__pb2.TriggerRequest.SerializeToString,
-            ray__pb2.TriggerResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/ray.v1.RayService/__call__',
+            ray__pb2.CallRequest.SerializeToString,
+            ray__pb2.CallResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
