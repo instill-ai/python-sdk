@@ -192,7 +192,8 @@ class ModelClient(Client):
     def trigger_model(
         self,
         model_name: str,
-        task_inputs: list,
+        task_inputs: list[model_interface.TaskInput],
+        version: str,
         async_enabled: bool = False,
     ) -> model_interface.TriggerUserModelResponse:
         if async_enabled:
@@ -201,6 +202,7 @@ class ModelClient(Client):
                 request=model_interface.TriggerUserModelRequest(
                     name=f"{self.namespace}/models/{model_name}",
                     task_inputs=task_inputs,
+                    version=version,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -208,7 +210,9 @@ class ModelClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerUserModel,
             request=model_interface.TriggerUserModelRequest(
-                name=f"{self.namespace}/models/{model_name}", task_inputs=task_inputs
+                name=f"{self.namespace}/models/{model_name}",
+                task_inputs=task_inputs,
+                version=version,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -217,7 +221,7 @@ class ModelClient(Client):
     def trigger_async_model(
         self,
         model_name: str,
-        task_inputs: list,
+        task_inputs: list[model_interface.TaskInput],
         version: str,
         async_enabled: bool = False,
     ) -> model_interface.TriggerAsyncUserModelResponse:
@@ -246,7 +250,7 @@ class ModelClient(Client):
     def trigger_latest_model(
         self,
         model_name: str,
-        task_inputs: list,
+        task_inputs: list[model_interface.TaskInput],
         async_enabled: bool = False,
     ) -> model_interface.TriggerUserLatestModelResponse:
         if async_enabled:
@@ -272,7 +276,7 @@ class ModelClient(Client):
     def trigger_async_latest_model(
         self,
         model_name: str,
-        task_inputs: list,
+        task_inputs: list[model_interface.TaskInput],
         async_enabled: bool = False,
     ) -> model_interface.TriggerAsyncUserLatestModelResponse:
         if async_enabled:
@@ -300,7 +304,7 @@ class ModelClient(Client):
     def trigger_model_binary_file_upload(
         self,
         model_name: str,
-        # task_input: list,
+        task_input: model_interface.TaskInputStream,
         version: str,
         async_enabled: bool = False,
     ) -> model_interface.TriggerUserModelBinaryFileUploadResponse:
@@ -311,7 +315,7 @@ class ModelClient(Client):
                 ].async_client.TriggerUserModelBinaryFileUpload,
                 request=model_interface.TriggerUserModelBinaryFileUploadRequest(
                     name=f"{self.namespace}/models/{model_name}",
-                    # task_input=task_input,
+                    task_input=task_input,
                     version=version,
                 ),
                 metadata=self.hosts[self.instance].metadata,
@@ -321,7 +325,7 @@ class ModelClient(Client):
             method=self.hosts[self.instance].client.TriggerUserModelBinaryFileUpload,
             request=model_interface.TriggerUserModelBinaryFileUploadRequest(
                 name=f"{self.namespace}/models/{model_name}",
-                # task_input=task_input,
+                task_input=task_input,
                 version=version,
             ),
             metadata=self.hosts[self.instance].metadata,
