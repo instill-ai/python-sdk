@@ -465,14 +465,14 @@ class PipelineClient(Client):
     @grpc_handler
     def get_operation(
         self,
-        name: str,
+        operation_id: str,
         async_enabled: bool = False,
     ) -> pipeline_interface.GetOperationResponse:
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.GetOperation,
                 request=pipeline_interface.GetOperationRequest(
-                    name=name,
+                    operation_id=operation_id,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -480,7 +480,7 @@ class PipelineClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.GetOperation,
             request=pipeline_interface.GetOperationRequest(
-                name=name,
+                operation_id=operation_id,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()

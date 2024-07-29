@@ -381,52 +381,6 @@ class ModelClient(Client):
         ).send_sync()
 
     @grpc_handler
-    def publish_model(
-        self,
-        model_name: str,
-        async_enabled: bool = False,
-    ) -> model_interface.PublishUserModelResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.PublishUserModel,
-                request=model_interface.PublishUserModelRequest(
-                    name=f"{self.namespace}/models/{model_name}",
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.PublishUserModel,
-            request=model_interface.PublishUserModelRequest(
-                name=f"{self.namespace}/models/{model_name}",
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def unpublish_model(
-        self,
-        model_name: str,
-        async_enabled: bool = False,
-    ) -> model_interface.UnpublishUserModelResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.UnpublishUserModel,
-                request=model_interface.UnpublishUserModelRequest(
-                    name=f"{self.namespace}/models/{model_name}",
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.UnpublishUserModel,
-            request=model_interface.UnpublishUserModelRequest(
-                name=f"{self.namespace}/models/{model_name}",
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
     def get_model(
         self,
         model_name: str,
@@ -495,29 +449,6 @@ class ModelClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.LookUpModel,
             request=model_interface.LookUpModelRequest(permalink=f"models/{model_uid}"),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def get_model_card(
-        self,
-        model_name: str,
-        async_enabled: bool = False,
-    ) -> model_interface.GetUserModelCardResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.GetUserModelCard,
-                request=model_interface.GetUserModelCardRequest(
-                    name=f"{self.namespace}/models/{model_name}"
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.GetUserModelCard,
-            request=model_interface.GetUserModelCardRequest(
-                name=f"{self.namespace}/models/{model_name}"
-            ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
@@ -644,15 +575,15 @@ class ModelClient(Client):
     @grpc_handler
     def get_model_definition(
         self,
-        model_name: str,
+        model_definition_id: str,
         async_enabled: bool = False,
     ) -> model_definition_interface.GetModelDefinitionResponse:
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.GetModelDefinition,
                 request=model_definition_interface.GetModelDefinitionRequest(
-                    name=f"{self.namespace}/models/{model_name}",
                     view=model_definition_interface.VIEW_FULL,
+                    model_definition_id=model_definition_id,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -660,8 +591,8 @@ class ModelClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.GetModelDefinition,
             request=model_definition_interface.GetModelDefinitionRequest(
-                name=f"{self.namespace}/models/{model_name}",
                 view=model_definition_interface.VIEW_FULL,
+                model_definition_id=model_definition_id,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -669,14 +600,14 @@ class ModelClient(Client):
     @grpc_handler
     def get_operation(
         self,
-        model_name: str,
+        operation_id: str,
         async_enabled: bool = False,
     ) -> model_interface.GetModelOperationResponse:
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.GetModelOperation,
                 request=model_interface.GetModelOperationRequest(
-                    name=f"{self.namespace}/models/{model_name}",
+                    operation_id=operation_id,
                     view=model_definition_interface.VIEW_FULL,
                 ),
                 metadata=self.hosts[self.instance].metadata,
@@ -685,7 +616,7 @@ class ModelClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.GetModelOperation,
             request=model_interface.GetModelOperationRequest(
-                name=f"{self.namespace}/models/{model_name}",
+                operation_id=operation_id,
                 view=model_definition_interface.VIEW_FULL,
             ),
             metadata=self.hosts[self.instance].metadata,
@@ -971,77 +902,6 @@ class ModelClient(Client):
             request=model_interface.RenameOrganizationModelRequest(
                 name=f"{self.namespace}/models/{model_name}",
                 new_model_id=new_model_id,
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def publish_organization_model(
-        self,
-        model_name: str,
-        async_enabled: bool = False,
-    ) -> model_interface.PublishOrganizationModelResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.PublishOrganizationModel,
-                request=model_interface.PublishOrganizationModelRequest(
-                    name=f"{self.namespace}/models/{model_name}",
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.PublishOrganizationModel,
-            request=model_interface.PublishOrganizationModelRequest(
-                name=f"{self.namespace}/models/{model_name}",
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def unpublish_organization_model(
-        self,
-        model_name: str,
-        async_enabled: bool = False,
-    ) -> model_interface.UnpublishOrganizationModelResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.UnpublishOrganizationModel,
-                request=model_interface.UnpublishOrganizationModelRequest(
-                    name=f"{self.namespace}/models/{model_name}",
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.UnpublishOrganizationModel,
-            request=model_interface.UnpublishOrganizationModelRequest(
-                name=f"{self.namespace}/models/{model_name}",
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def get_organization_model_card(
-        self,
-        model_name: str,
-        async_enabled: bool = False,
-    ) -> model_interface.GetOrganizationModelCardResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.GetOrganizationModelCard,
-                request=model_interface.GetOrganizationModelCardRequest(
-                    name=f"{self.namespace}/models/{model_name}",
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.GetOrganizationModelCard,
-            request=model_interface.GetOrganizationModelCardRequest(
-                name=f"{self.namespace}/models/{model_name}",
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()

@@ -59,7 +59,6 @@ class ArtifactClient(Client):
     def metadata(self, metadata: str):
         self._metadata = metadata
 
-    @grpc_handler
     def liveness(
         self,
         async_enabled: bool = False,
@@ -77,7 +76,6 @@ class ArtifactClient(Client):
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
-    @grpc_handler
     def readiness(
         self,
         async_enabled: bool = False,
@@ -299,7 +297,7 @@ class ArtifactClient(Client):
         kb_id: str,
         page_size: int,
         page_token: str,
-        filter: artifact_interface.ListKnowledgeBaseFilesFilter,
+        files_filter: artifact_interface.ListKnowledgeBaseFilesFilter,
         async_enabled: bool = False,
     ) -> artifact_interface.ListKnowledgeBaseFilesResponse:
         if async_enabled:
@@ -310,7 +308,7 @@ class ArtifactClient(Client):
                     kb_id=kb_id,
                     page_size=page_size,
                     page_token=page_token,
-                    filter=filter,
+                    filter=files_filter,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -322,7 +320,7 @@ class ArtifactClient(Client):
                 kb_id=kb_id,
                 page_size=page_size,
                 page_token=page_token,
-                filter=filter,
+                filter=files_filter,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
