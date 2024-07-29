@@ -1,1 +1,0 @@
-{"instillUIOrder":0,"properties":{"embedding":{"items":{"instillFormat":"number","title":"Embedding","type":"number"},"title":"Embedding","type":"array"}},"required":["embedding"],"title":"Output","type":"object"}

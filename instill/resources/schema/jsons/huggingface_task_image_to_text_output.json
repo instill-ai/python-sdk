@@ -1,1 +1,0 @@
-{"instillUIOrder":0,"properties":{"text":{"instillFormat":"string","instillUIMultiline":true,"instillUIOrder":0,"title":"Text","type":"string"}},"required":["text"],"title":"Output","type":"object"}

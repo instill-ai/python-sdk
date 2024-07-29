@@ -1,1 +1,0 @@
-{"instillUIOrder":0,"properties":{"image":{"instillFormat":"image/jpeg","instillUIOrder":0,"title":"Image","type":"string"}},"required":["image"],"title":"Output","type":"object"}

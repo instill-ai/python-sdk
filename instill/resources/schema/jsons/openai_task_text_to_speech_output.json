@@ -1,1 +1,0 @@
-{"instillUIOrder":0,"properties":{"audio":{"description":"AI generated audio","instillFormat":"audio/wav","instillUIOrder":0,"title":"Audio","type":"string"}},"required":[],"title":"Output","type":"object"}
