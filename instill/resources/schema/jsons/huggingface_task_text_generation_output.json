@@ -1,1 +1,0 @@
-{"instillUIOrder":0,"properties":{"generated_text":{"description":"The continuated string","instillFormat":"string","instillUIMultiline":true,"instillUIOrder":1,"title":"Generated Text","type":"string"}},"required":["generated_text"],"title":"Output","type":"object"}

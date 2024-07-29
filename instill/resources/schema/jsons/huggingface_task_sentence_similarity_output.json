@@ -1,1 +1,0 @@
-{"instillUIOrder":0,"properties":{"scores":{"description":"The associated similarity score for each of the given strings","instillUIOrder":0,"items":{"instillFormat":"number","type":"number"},"title":"Scores","type":"array"}},"required":["scores"],"title":"Output","type":"object"}

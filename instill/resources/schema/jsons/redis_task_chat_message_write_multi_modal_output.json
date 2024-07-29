@@ -1,1 +1,0 @@
-{"instillUIOrder":0,"properties":{"status":{"description":"The status of the write operation","instillFormat":"boolean","instillUIOrder":0,"title":"Status","type":"boolean"}},"required":["status"],"title":"Output","type":"object"}
