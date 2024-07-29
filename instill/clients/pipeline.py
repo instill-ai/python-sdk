@@ -117,13 +117,15 @@ class PipelineClient(Client):
     def create_pipeline(
         self,
         name: str,
-        recipe: Struct,
+        description: str,
+        recipe: dict,
         async_enabled: bool = False,
     ) -> pipeline_interface.CreateUserPipelineResponse:
         pipeline = pipeline_interface.Pipeline(
             id=name,
-            recipe=recipe,
+            description=description,
         )
+        pipeline.recipe.update(recipe)
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.CreateUserPipeline,
@@ -306,24 +308,28 @@ class PipelineClient(Client):
         data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerUserPipelineResponse:
+        request = pipeline_interface.TriggerUserPipelineRequest(
+            name=f"{self.target_namespace}/pipelines/{name}",
+        )
+        for input_value in inputs:
+            trigger_inputs = Struct()
+            trigger_inputs.update(input_value)
+            request.inputs.append(trigger_inputs)
+        for d in data:
+            trigger_data = pipeline_interface.TriggerData()
+            trigger_data.variable.update(d)
+            request.data.append(trigger_data)
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.TriggerUserPipeline,
-                request=pipeline_interface.TriggerUserPipelineRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}",
-                    inputs=inputs,
-                    data=data,
-                ),
+                request=request,
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerUserPipeline,
-            request=pipeline_interface.TriggerUserPipelineRequest(
-                name=f"{self.target_namespace}/pipelines/{name}",
-                inputs=inputs,
-                data=data,
-            ),
+            request=request,
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
