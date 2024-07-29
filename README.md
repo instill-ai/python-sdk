@@ -1,12 +1,8 @@
-[![Unix Build Status](https://img.shields.io/github/actions/workflow/status/instill-ai/python-sdk/build.yml?branch=main&label=linux)](https://github.com/instill-ai/python-sdk/actions)
-[![Coverage Status](https://img.shields.io/codecov/c/gh/instill-ai/python-sdk)](https://codecov.io/gh/instill-ai/python-sdk)
-[![PyPI License](https://img.shields.io/pypi/l/instill-sdk.svg)](https://pypi.org/project/instill-sdk)
-[![PyPI Version](https://img.shields.io/pypi/v/instill-sdk.svg)](https://pypi.org/project/instill-sdk)
-[![PyPI Downloads](https://img.shields.io/pypi/dm/instill-sdk.svg?color=orange)](https://pypistats.org/packages/instill-sdk)
+[![Unix Build Status](https://img.shields.io/github/actions/workflow/status/instill-ai/python-sdk/build.yml?branch=main&label=linux)](https://github.com/instill-ai/python-sdk/actions) [![Coverage Status](https://img.shields.io/codecov/c/gh/instill-ai/python-sdk)](https://codecov.io/gh/instill-ai/python-sdk) [![PyPI License](https://img.shields.io/pypi/l/instill-sdk.svg)](https://pypi.org/project/instill-sdk) [![PyPI Version](https://img.shields.io/pypi/v/instill-sdk.svg)](https://pypi.org/project/instill-sdk) [![PyPI Downloads](https://img.shields.io/pypi/dm/instill-sdk.svg?color=orange)](https://pypistats.org/packages/instill-sdk)
 
-> [!IMPORTANT]  
-> **This SDK tool is under active development**  
-> For any bug found or featur request, feel free to open any issue regarding this SDK in our [community](https://github.com/instill-ai/community/issues) repo.
+> [!IMPORTANT]<br>
+> **This SDK tool is under active development**<br>
+> For any bug found or featur request, feel free to open any issue regarding this SDK in our [instill-core](https://github.com/instill-ai/instill-core/issues) repo.
 
 # Overview
 
@@ -19,16 +15,16 @@ Before you jump into creating your first application with this SDK tool, we reco
 
 ## Setup
 
-> [!NOTE]  
+> [!NOTE]<br>
 > For setting up development environment, please refer to [Contributing](#contributing)
 
 ### Requirements
 
-- Python 3.8+
+- Python 3.8 - 3.11
 
 ### Installation
 
-> [!WARNING]  
+> [!WARNING]<br>
 > If your host machine is on arm64 architecture(including Apple silicon machines, equipped with m1/m2 processors), there are some issues when installing `grpcio` within `conda` environment. You will have to manually build and install it like below. Read more about this issue [here](https://github.com/grpc/grpc/issues/33714).
 
 ```bash
@@ -115,361 +111,102 @@ global_config.set_default(
 
 ## Usage
 
-### Create client
+Before we get into this, please make sure a local instance of `Instill VDP` and `Instill Model` is running, and the config file had been populated with the correct `url` and `api_token`
 
-**You can also find some notebook examples [here](https://github.com/instill-ai/python-sdk/tree/main/notebooks)**
+Let's get started!
 
-Simply import the `get_client` function to get the client that are connected to all services with the config you setup previously.
-
-```python
-from instill.clients import get_client
-
-client = get_client()
-```
-
-> [!NOTE]  
-> Remember to call `client.close()` at the end of script to release the channel and the underlying resources
-
-If you have not set up `Instill VDP` or `Instill Model`, you will get a warning like this:
-
-```bash
-2023-09-27 18:49:04,871.871 WARNING  Instill VDP is not serving, VDP functionalities will not work
-2023-09-27 18:49:04,907.907 WARNING  Instill Model is not serving, Model functionalities will not work
-```
-
-You can check the readiness of each service:
-
-```python
-client.mgmt_service.is_serving()
-# True
-client.pipeline_service.is_serving()
-# True
-client.model_service.is_serving()
-# True
-```
-
-You can also switch to other instances
-
-```python
-client.set_instance("your-instance-in-config")
-client.mgmt_service.instance
-# 'your-instance-in-config'
-```
-
-After making sure all desired services are serving, we can check the user status by:
-
-```python
-client.mgmt_service.get_user()
-```
-
-If you have a valid `api_token` in your config file, you should see something like this:
-
-```
-name: "users/admin"
-uid: "4767b74d-640a-4cdf-9c6d-7bb0e36098a0"
-id: "admin"
-type: OWNER_TYPE_USER
-create_time {
-  seconds: 1695589596
-  nanos: 36522000
-}
-update_time {
-  seconds: 1695589749
-  nanos: 544980000
-}
-email: "hello@instill.tech"
-first_name: "Instill"
-last_name: "AI"
-org_name: "Instill AI"
-role: "hobbyist"
-newsletter_subscription: true
-cookie_token: ""
-```
-
-#### Now we can proceed to create resources
-
-### Create Model
-
-Let's say we want to serve a `yolov7` model from `github` with the following configs
-
-```python
-model_name = "yolov7"
-model_repo = "instill-ai/model-yolov7-dvc"
-model_tag = "v1.0-cpu"
-```
-
-Simply import the GithubModel resource and fill in the corresponding fields
-
-```python
-from instill.resources.model import GithubModel
-
-yolov7 = GithubModel(
-  client=client,
-  name=model_name,
-  model_repo=model_repo,
-  model_tag=model_tag,
-)
-```
-
-After the creation is done, we can check the state of the model[^3]
-
-[^3]: [State definition](https://www.instill.tech/docs/model/core-concepts/overview#state)
-
-```python
-yolov7.get_state()
-# 1
-# means STATE_OFFLINE
-```
-
-Now we can deploy the model
-
-```python
-yolov7.deploy()
-```
-
-Check the status
-
-```python
-yolov7.get_state()
-# 2
-# means STATE_ONLINE
-```
-
-Trigger the model with the correct `task` type[^4]
-
-[^4]: Check out our [task protocol](https://www.instill.tech/docs/model/core-concepts/ai-task) to learn more, or read our [json schema](https://raw.githubusercontent.com/instill-ai/connector-ai/main/pkg/instill/config/seed/data.json) directly
-
-```python
-from instill.resources import model_pb, task_detection
-task_inputs = [
-  model_pb.TaskInput(
-    detection=task_detection.DetectionInput(
-      image_url="https://artifacts.instill.tech/imgs/dog.jpg"
-    )
-  ),
-  model_pb.TaskInput(
-    detection=task_detection.DetectionInput(
-      image_url="https://artifacts.instill.tech/imgs/bear.jpg"
-    )
-  ),
-  model_pb.TaskInput(
-    detection=task_detection.DetectionInput(
-      image_url="https://artifacts.instill.tech/imgs/polar-bear.jpg"
-    )
-  ),
-]
-
-outputs = yolov7(task_inputs=task_inputs)
-```
-
-Now if you `print` the outputs, you will get a list of specific `task` output, in this case is a list of `TASK_DETECTION` output
-
-```
-[detection {
-  objects {
-    category: "dog"
-    score: 0.958271801
-    bounding_box {
-      top: 102
-      left: 324
-      width: 208
-      height: 403
-    }
-  }
-  objects {
-    category: "dog"
-    score: 0.945684791
-    bounding_box {
-      top: 198
-      left: 130
-      width: 198
-      height: 236
-    }
-  }
-}
-, detection {
-  objects {
-    category: "bear"
-    score: 0.968335629
-    bounding_box {
-      top: 85
-      left: 291
-      width: 554
-      height: 756
-    }
-  }
-}
-, detection {
-  objects {
-    category: "bear"
-    score: 0.948612273
-    bounding_box {
-      top: 458
-      left: 1373
-      width: 1298
-      height: 2162
-    }
-  }
-}
-]
-```
-
-### Create connector
-
-With similiar conecpt as creating `model`, below is the steps to create a `instill model connector`
-
-First import our predefined `InstillModelConnector` and config dataclass `InstillModelConnector2`[^5]
-
-[^5]: config dataclass is auto-gen from our json schema, we will refacor the source json to make the dataclass name makes more sense
-
-```python
-from instill.resources.schema.instill import InstillModelConnector1
-from instill.resources import InstillModelConnector, connector_pb, const
-```
-
-Then we set up the connector resource information[^6]
-
-[^6]: Find out the resource definition in our [json schema](https://raw.githubusercontent.com/instill-ai/connector-ai/8bf4463b57a5b668f3f656e4c168561b623d065d/pkg/instill/config/seed/resource.json)
-
-```python
-# create the config dataclass object and fill in necessary fields
-instill_model_config = InstillModelConnector1(mode=const.INSTILL_MODEL_INTERNAL_MODE)
-
-instill_model = InstillModelConnector(
-    client,
-    name="instill",
-    config=instill_model_config,
-)
-```
-
-After the connector is created, the state should be `STATE_DISCONNECTED`
-
-```python
-instill_model.get_state() == connector_pb.Connector.STATE_DISCONNECTED
-# True
-```
-
-Now we can test the connection for the newly configured connector, to make sure the connection with the host can be established
-
-```python
-instill_model.test() == connector_pb.Connector.STATE_CONNECTED
-# True
-```
-
-### Create pipeline
-
-Since we have created a `Instill Model Connector` that connect to our `Instill Model` instance, we can now create a pipeline that utilize both `Instill VDP` and `Instill Model`
-
-First we import `Pipeline` class and other helper functions
-
-```python
-from instill.resources.schema import (
-  instill_task_detection_input,
-  start_task_start_metadata,
-  end_task_end_metadata,
-)
-from instill.resources import (
-  const,
-  InstillModelConnector,
-  Pipeline,
-  create_start_operator,
-  create_end_operator,
-  create_recipe,
-  populate_default_value,
-)
-```
+### Import packages
 
 To Form a pipeine, it required a `start` operator and a `end` operator, we have helper functions to create both
 
 ```python
-# define start operator input spec
-start_metadata = {}
-start_metadata.update(
-  {
-    "input_image": start_task_start_metadata.Model1(
-        instillFormat="image/*",
-        title="Image",
-        type="string",
-    )
-  }
-)
-# create start operator
-start_operator_component = create_start_operator(start_metadata)
+from instill.clients import InstillClient
 ```
 
-If you wish to define multiple input fields in the start operator, simply add more `"key"` and `"start_task_start_metadata.Model1"` pair by
+### Get the client
+
+Get the unified client that connect to all the available services offered by `Instill VDP` and `Instill Model`, including
+
+- mgmt_service
+- pipeline_service
+- model_service
+- artifact_service
 
 ```python
-start_metadata.update(
-  {
-    "input_image": start_task_start_metadata.Model1(
-        instillFormat="{your input format}",
-        title="{input title}",
-        type="{input type}",
-    )
-  }
-)
+client = InstillClient()
+
+user = client.mgmt_service.get_user()
+# name: "users/admin"
+# uid: "4767b74d-640a-4cdf-9c6d-7bb0e36098a0"
+# id: "admin"
+# ...
+# ...
 ```
 
-Now we can create a `model` `component`. From the already defined `instill Model Connector`, we can utilize the models served on `Instill Model`, import them as a `component`.
+Please find more usages for this sdk at [here](https://www.instill.tech/docs/sdk/python#usage)
+
+**You can also find some notebook examples [here](https://github.com/instill-ai/python-sdk/tree/main/notebooks)**
+
+### Create a model
+
+Now create a model `text-generation` in `Instill Model` for later use
 
 ```python
-# first we create the input for the component from the dataclass
-# here we need to specify which model we want to use on our `Instill Model` instance
-# in this case there is only one model we deployed, which is the yolov7 model
-instill_model_input = instill_task_detection_input.Input(
-  model_namespace="admin",
-  model_id="yolov7",
-  image_base64="{start.input_image}",
+import instill.protogen.common.task.v1alpha.task_pb2 as task_interface
+model_id = "model_text-generation"
+client.model_service.create_model(
+    model_id,
+    task_interface.Task.TASK_TEXT_GENERATION,
+    "REGION_GCP_EUROPE_WEST4",
+    "CPU",
+    "model-definitions/container",
+    {},
 )
-# create model connector component from the connector resource we had created previously
-instill_model_connector_component = instill_model.create_component(
-  name="yolov7",
-  inp=instill_model_input,
-)
-
-# define end operator input and metadata spec
-end_operator_inp = {}
-end_operator_inp.update({"inference_result": "{yolov7.output.objects}"})
-end_operator_metadata = {}
-end_operator_metadata.update(
-  {"inference_result": end_task_end_metadata.Model1(title="result")}
-)
-# create end operator
-end_operator_component = create_end_operator(end_operator_inp, end_operator_metadata)
 ```
 
-We now have all the components ready for the pipeline. Next, we add them into the recipe and create a pipeline.
+#### Build and deploy the model
+
+`Instill Model` is an advanced MLOps/LLMOps platform that was specifically crafted to facilitate the efficient management and orchestration of model deployments for unstructured data ETL. With `Instill Model`, you can easily create, manage, and deploy your own custom models with ease in `Instill Core` or on the cloud with `Instill Cloud`.
+
+Follow the instructions [here](https://www.instill.tech/docs/model/create) to build and deploy your model.
+
+### Create pipeline
+
+In the section we will be creating a pipeline using this `python-sdk` to harness the power of `Instill VDP`!
+
+The pipeline receipt below is a sample for demo. It simply returns the input string value.
 
 ```python
-# create a recipe to construct the pipeline
-recipe = create_recipe([start_operator_component, instill_model_connector_component, end_operator_component])
-# create pipeline
-instill_model_pipeline = Pipeline(
-  client=client, name="instill-model-pipeline", recipe=recipe
+pipeline_id = "pipeline_demo"
+client.pipeline_service.create_pipeline(
+    pipeline_id,
+    "this is a pipeline for demo",
+    {
+        "output": {"result": {"title": "result", "value": "${variable.input}"}},
+        "variable": {"input": {"instillFormat": "string", "title": "input"}},
+    },
 )
 ```
+
+#### Validate the pipeline
+
+Before we trigger the pipeline, it is recommended to first validate the pipeline recipe first
+
+```python
+# validate the pipeline recipe
+client.pipeline_service.validate_pipeline(pipeline_id)
+```
+
+#### Trigger the pipeline
 
 Finally the pipeline is done, now let us test it by triggering it!
 
 ```python
 # we can trigger the pipeline now
-import base64
-import requests
-from google.protobuf.struct_pb2 import Struct
-i = Struct()
-i.update(
-  {
-    "input_image": base64.b64encode(
-      requests.get(
-        "https://artifacts.instill.tech/imgs/dog.jpg", timeout=5
-      ).content
-    ).decode("ascii")
-  }
-)
-# verify the output
-instill_model_pipeline([i])[0][0]["inference_result"][0]["category"] == "dog"
+client.pipeline_service.trigger_pipeline(pipeline_id, [], [{"input": "hello world"}])
 ```
+
+And the output should be exactly the same as your input.
 
 ## Contributing
 
