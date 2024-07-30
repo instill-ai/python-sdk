@@ -1,7 +1,7 @@
 # pylint: disable=no-member,wrong-import-position,too-many-lines,no-name-in-module
 from typing import Dict
 
-# pipeline
+# artifact
 import instill.protogen.artifact.artifact.v1alpha.artifact_pb2 as artifact_interface
 import instill.protogen.artifact.artifact.v1alpha.artifact_public_service_pb2_grpc as artifact_service
 import instill.protogen.artifact.artifact.v1alpha.chunk_pb2 as chunk_interface
