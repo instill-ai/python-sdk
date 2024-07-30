@@ -55,16 +55,25 @@ def cli():
         required=False,
     )
     build_parser.add_argument(
+        "-n",
         "--no-cache",
         help="build the image without cache",
         action="store_true",
         required=False,
     )
     build_parser.add_argument(
+        "-a",
         "--target-arch",
         help="target platform architecture for the model image, default to host",
         default=default_platform,
         choices=["arm64", "amd64"],
+        required=False,
+    )
+    build_parser.add_argument(
+        "-w",
+        "--sdk-wheel",
+        help="instill sdk wheel absolute path for debug purpose",
+        default=None,
         required=False,
     )
 
@@ -178,6 +187,12 @@ def build(args):
                 f"{tmpdir}/Dockerfile",
             )
             shutil.copytree(os.getcwd(), tmpdir, dirs_exist_ok=True)
+
+            if args.sdk_wheel is not None:
+                shutil.copyfile(
+                    args.sdk_wheel,
+                    f"{tmpdir}/instill_sdk-{instill_version}dev-py3-none-any.whl",
+                )
 
             target_arch_suffix = "-aarch64" if args.target_arch == "arm64" else ""
 
