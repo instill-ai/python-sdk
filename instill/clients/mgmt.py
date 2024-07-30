@@ -122,7 +122,7 @@ class MgmtClient(Client):
         ).send_sync()
 
     @grpc_handler
-    def list_memberships(
+    def list_user_membership(
         self,
         user_id: str,
         async_enabled: bool = False,
@@ -145,7 +145,7 @@ class MgmtClient(Client):
         ).send_sync()
 
     @grpc_handler
-    def get_membership(
+    def get_user_membership(
         self,
         user_id: str,
         organization_id: str,
@@ -198,7 +198,7 @@ class MgmtClient(Client):
         ).send_sync()
 
     @grpc_handler
-    def delete_membership(
+    def delete_user_membership(
         self,
         user_id: str,
         organization_id: str,
@@ -590,7 +590,7 @@ class MgmtClient(Client):
     @grpc_handler
     def get_user(
         self,
-        user_id: str,
+        user_id: str = "me",
         async_enabled: bool = False,
     ) -> mgmt_interface.GetUserResponse:
         if async_enabled:

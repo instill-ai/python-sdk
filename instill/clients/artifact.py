@@ -108,7 +108,7 @@ class ArtifactClient(Client):
         namespace_id: str,
         name: str,
         description: str,
-        tags: str,
+        tags: list[str],
         async_enabled: bool = False,
     ) -> artifact_interface.CreateKnowledgeBaseResponse:
         if async_enabled:
@@ -270,7 +270,7 @@ class ArtifactClient(Client):
     @grpc_handler
     def process_knowledge_base_files(
         self,
-        file_uids: str,
+        file_uids: list[str],
         async_enabled: bool = False,
     ) -> artifact_interface.ProcessKnowledgeBaseFilesResponse:
         if async_enabled:

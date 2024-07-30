@@ -13,8 +13,8 @@ class InstillClient:
         if not self.mgmt_service.is_serving():
             Logger.w("Instill Core is required")
             raise NotServingException
-        
-        user_name = self.mgmt_service.get_user('me').user.name
+
+        user_name = self.mgmt_service.get_user().user.name
 
         self.pipeline_service = PipelineClient(
             namespace=user_name,
@@ -31,10 +31,8 @@ class InstillClient:
             Logger.w(
                 "Instill Model is not serving, Model functionalities will not work"
             )
-            
-        self.artifact_service = ArtifactClient(
-            async_enabled=async_enabled,
-        )
+
+        self.artifact_service = ArtifactClient(async_enabled=async_enabled)
         if not self.artifact_service.is_serving():
             Logger.w(
                 "Instill Artifact is not serving, Artifact functionalities will not work"
