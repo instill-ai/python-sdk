@@ -295,9 +295,9 @@ class ArtifactClient(Client):
         self,
         namespace_id: str,
         kb_id: str,
-        page_size: int,
-        page_token: str,
         files_filter: artifact_interface.ListKnowledgeBaseFilesFilter,
+        page_size: int = 100,
+        page_token: str = "",
         async_enabled: bool = False,
     ) -> artifact_interface.ListKnowledgeBaseFilesResponse:
         if async_enabled:
@@ -306,9 +306,9 @@ class ArtifactClient(Client):
                 request=artifact_interface.ListKnowledgeBaseFilesRequest(
                     namespace_id=namespace_id,
                     kb_id=kb_id,
+                    filter=files_filter,
                     page_size=page_size,
                     page_token=page_token,
-                    filter=files_filter,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -318,9 +318,9 @@ class ArtifactClient(Client):
             request=artifact_interface.ListKnowledgeBaseFilesRequest(
                 namespace_id=namespace_id,
                 kb_id=kb_id,
+                filter=files_filter,
                 page_size=page_size,
                 page_token=page_token,
-                filter=files_filter,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
