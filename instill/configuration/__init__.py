@@ -28,6 +28,10 @@ class _Config(BaseModel):
 class Configuration:
     def __init__(self) -> None:
         self._config: _Config
+        self.load()
+
+        if "default" not in self._config.hosts:
+            self.set_default(url="api.instill.tech", secure=True, token="")
 
         CONFIG_DIR.mkdir(exist_ok=True)
 
@@ -68,4 +72,3 @@ class Configuration:
 
 
 global_config = Configuration()
-global_config.load()
