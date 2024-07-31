@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.10.2](https://github.com/instill-ai/python-sdk/compare/v0.10.1...v0.10.2) (2024-07-31)
+
+
+### Features
+
+* **artifact:** updated proto and added client code ([#185](https://github.com/instill-ai/python-sdk/issues/185)) ([51942bd](https://github.com/instill-ai/python-sdk/commit/51942bdbd9690c3190f444170bbf820a1f825a86))
+* **client:** adopt latest api spec ([#168](https://github.com/instill-ai/python-sdk/issues/168)) ([d33c050](https://github.com/instill-ai/python-sdk/commit/d33c050526e753a5e6d6d116889dff3351cc16af))
+
+
+### Bug Fixes
+
+* **client:** added some parameter default values for artifact ([#192](https://github.com/instill-ai/python-sdk/issues/192)) ([ab624f4](https://github.com/instill-ai/python-sdk/commit/ab624f42c821811cff665099769e54981d3b9d01))
+* **specs:** deleted out-dated resources ([#183](https://github.com/instill-ai/python-sdk/issues/183)) ([be86e69](https://github.com/instill-ai/python-sdk/commit/be86e69c1301091db6beda202dc49db6c7658db7))
+
+
+### Miscellaneous Chores
+
+* **release:** release v0.10.2 ([f15a1a9](https://github.com/instill-ai/python-sdk/commit/f15a1a945659b6960664ed6ac9b71637bfd6dfab))
+
 ## [0.10.1](https://github.com/instill-ai/python-sdk/compare/v0.10.0...v0.10.1) (2024-06-29)
 
 
