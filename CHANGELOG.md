@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://github.com/instill-ai/python-sdk/compare/v0.10.2...v0.11.0) (2024-08-01)
+
+
+### Features
+
+* **artifact:** updated proto and client code ([#193](https://github.com/instill-ai/python-sdk/issues/193)) ([e6e54b1](https://github.com/instill-ai/python-sdk/commit/e6e54b1de71536564c729b77fdc556989756a9db))
+
 ## [0.10.2](https://github.com/instill-ai/python-sdk/compare/v0.10.1...v0.10.2) (2024-07-31)
 
 
