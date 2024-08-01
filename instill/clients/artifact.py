@@ -103,18 +103,18 @@ class ArtifactClient(Client):
             return False
 
     @grpc_handler
-    def create_knowledge_base(
+    def create_catalog(
         self,
         namespace_id: str,
         name: str,
         description: str,
         tags: list[str],
         async_enabled: bool = False,
-    ) -> artifact_interface.CreateKnowledgeBaseResponse:
+    ) -> artifact_interface.CreateCatalogResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.CreateKnowledgeBase,
-                request=artifact_interface.CreateKnowledgeBaseRequest(
+                method=self.hosts[self.instance].async_client.CreateCatalog,
+                request=artifact_interface.CreateCatalogRequest(
                     namespace_id=namespace_id,
                     name=name,
                     description=description,
@@ -124,8 +124,8 @@ class ArtifactClient(Client):
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.CreateKnowledgeBase,
-            request=artifact_interface.CreateKnowledgeBaseRequest(
+            method=self.hosts[self.instance].client.CreateCatalog,
+            request=artifact_interface.CreateCatalogRequest(
                 namespace_id=namespace_id,
                 name=name,
                 description=description,
@@ -135,42 +135,42 @@ class ArtifactClient(Client):
         ).send_sync()
 
     @grpc_handler
-    def list_knowledge_bases(
+    def list_catalogs(
         self,
         namespace_id: str,
         async_enabled: bool = False,
-    ) -> artifact_interface.ListKnowledgeBasesResponse:
+    ) -> artifact_interface.ListCatalogsResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.ListKnowledgeBases,
-                request=artifact_interface.ListKnowledgeBasesRequest(
+                method=self.hosts[self.instance].async_client.ListCatalogs,
+                request=artifact_interface.ListCatalogsRequest(
                     namespace_id=namespace_id,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.ListKnowledgeBases,
-            request=artifact_interface.ListKnowledgeBasesRequest(
+            method=self.hosts[self.instance].client.ListCatalogs,
+            request=artifact_interface.ListCatalogsRequest(
                 namespace_id=namespace_id,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
     @grpc_handler
-    def update_knowledge_base(
+    def update_catalog(
         self,
-        kb_id: str,
+        catalog_id: str,
         description: str,
-        tags: str,
+        tags: list[str],
         namespace_id: str,
         async_enabled: bool = False,
-    ) -> artifact_interface.UpdateKnowledgeBaseResponse:
+    ) -> artifact_interface.UpdateCatalogResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.UpdateKnowledgeBase,
-                request=artifact_interface.UpdateKnowledgeBaseRequest(
-                    kb_id=kb_id,
+                method=self.hosts[self.instance].async_client.UpdateCatalog,
+                request=artifact_interface.UpdateCatalogRequest(
+                    catalog_id=catalog_id,
                     description=description,
                     tags=tags,
                     namespace_id=namespace_id,
@@ -179,9 +179,9 @@ class ArtifactClient(Client):
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.UpdateKnowledgeBase,
-            request=artifact_interface.UpdateKnowledgeBaseRequest(
-                kb_id=kb_id,
+            method=self.hosts[self.instance].client.UpdateCatalog,
+            request=artifact_interface.UpdateCatalogRequest(
+                catalog_id=catalog_id,
                 description=description,
                 tags=tags,
                 namespace_id=namespace_id,
@@ -190,122 +190,122 @@ class ArtifactClient(Client):
         ).send_sync()
 
     @grpc_handler
-    def delete_knowledge_base(
+    def delete_catalog(
         self,
         namespace_id: str,
-        kb_id: str,
+        catalog_id: str,
         async_enabled: bool = False,
-    ) -> artifact_interface.DeleteKnowledgeBaseResponse:
+    ) -> artifact_interface.DeleteCatalogResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.DeleteKnowledgeBase,
-                request=artifact_interface.DeleteKnowledgeBaseRequest(
+                method=self.hosts[self.instance].async_client.DeleteCatalog,
+                request=artifact_interface.DeleteCatalogRequest(
                     namespace_id=namespace_id,
-                    kb_id=kb_id,
+                    catalog_id=catalog_id,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.DeleteKnowledgeBase,
-            request=artifact_interface.DeleteKnowledgeBaseRequest(
+            method=self.hosts[self.instance].client.DeleteCatalog,
+            request=artifact_interface.DeleteCatalogRequest(
                 namespace_id=namespace_id,
-                kb_id=kb_id,
+                catalog_id=catalog_id,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
     @grpc_handler
-    def upload_knowledge_base_file(
+    def upload_catalog_file(
         self,
         namespace_id: str,
-        kb_id: str,
+        catalog_id: str,
         file: artifact_interface.File,
         async_enabled: bool = False,
-    ) -> artifact_interface.UploadKnowledgeBaseFileResponse:
+    ) -> artifact_interface.UploadCatalogFileResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.UploadKnowledgeBaseFile,
-                request=artifact_interface.UploadKnowledgeBaseFileRequest(
+                method=self.hosts[self.instance].async_client.UploadCatalogFile,
+                request=artifact_interface.UploadCatalogFileRequest(
                     namespace_id=namespace_id,
-                    kb_id=kb_id,
+                    catalog_id=catalog_id,
                     file=file,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.UploadKnowledgeBaseFile,
-            request=artifact_interface.UploadKnowledgeBaseFileRequest(
+            method=self.hosts[self.instance].client.UploadCatalogFile,
+            request=artifact_interface.UploadCatalogFileRequest(
                 namespace_id=namespace_id,
-                kb_id=kb_id,
+                catalog_id=catalog_id,
                 file=file,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
     @grpc_handler
-    def delete_knowledge_base_file(
+    def delete_catalog_file(
         self,
         file_uid: str,
         async_enabled: bool = False,
-    ) -> artifact_interface.DeleteKnowledgeBaseFileResponse:
+    ) -> artifact_interface.DeleteCatalogFileResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.DeleteKnowledgeBaseFile,
-                request=artifact_interface.DeleteKnowledgeBaseFileRequest(
+                method=self.hosts[self.instance].async_client.DeleteCatalogFile,
+                request=artifact_interface.DeleteCatalogFileRequest(
                     file_uid=file_uid,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.DeleteKnowledgeBaseFile,
-            request=artifact_interface.DeleteKnowledgeBaseFileRequest(
+            method=self.hosts[self.instance].client.DeleteCatalogFile,
+            request=artifact_interface.DeleteCatalogFileRequest(
                 file_uid=file_uid,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
     @grpc_handler
-    def process_knowledge_base_files(
+    def process_catalog_files(
         self,
         file_uids: list[str],
         async_enabled: bool = False,
-    ) -> artifact_interface.ProcessKnowledgeBaseFilesResponse:
+    ) -> artifact_interface.ProcessCatalogFilesResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.ProcessKnowledgeBaseFiles,
-                request=artifact_interface.ProcessKnowledgeBaseFilesRequest(
+                method=self.hosts[self.instance].async_client.ProcessCatalogFiles,
+                request=artifact_interface.ProcessCatalogFilesRequest(
                     file_uids=file_uids,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.ProcessKnowledgeBaseFiles,
-            request=artifact_interface.ProcessKnowledgeBaseFilesRequest(
+            method=self.hosts[self.instance].client.ProcessCatalogFiles,
+            request=artifact_interface.ProcessCatalogFilesRequest(
                 file_uids=file_uids,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
     @grpc_handler
-    def list_knowledge_base_files(
+    def list_catalog_files(
         self,
         namespace_id: str,
-        kb_id: str,
-        files_filter: artifact_interface.ListKnowledgeBaseFilesFilter,
+        catalog_id: str,
+        files_filter: artifact_interface.ListCatalogFilesFilter,
         page_size: int = 100,
         page_token: str = "",
         async_enabled: bool = False,
-    ) -> artifact_interface.ListKnowledgeBaseFilesResponse:
+    ) -> artifact_interface.ListCatalogFilesResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.ListKnowledgeBaseFiles,
-                request=artifact_interface.ListKnowledgeBaseFilesRequest(
+                method=self.hosts[self.instance].async_client.ListCatalogFiles,
+                request=artifact_interface.ListCatalogFilesRequest(
                     namespace_id=namespace_id,
-                    kb_id=kb_id,
+                    catalog_id=catalog_id,
                     filter=files_filter,
                     page_size=page_size,
                     page_token=page_token,
@@ -314,10 +314,10 @@ class ArtifactClient(Client):
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.ListKnowledgeBaseFiles,
-            request=artifact_interface.ListKnowledgeBaseFilesRequest(
+            method=self.hosts[self.instance].client.ListCatalogFiles,
+            request=artifact_interface.ListCatalogFilesRequest(
                 namespace_id=namespace_id,
-                kb_id=kb_id,
+                catalog_id=catalog_id,
                 filter=files_filter,
                 page_size=page_size,
                 page_token=page_token,
@@ -329,7 +329,7 @@ class ArtifactClient(Client):
     def list_chunks(
         self,
         namespace_id: str,
-        kb_id: str,
+        catalog_id: str,
         file_uid: str,
         async_enabled: bool = False,
     ) -> chunk_interface.ListChunksResponse:
@@ -338,7 +338,7 @@ class ArtifactClient(Client):
                 method=self.hosts[self.instance].async_client.ListChunks,
                 request=chunk_interface.ListChunksRequest(
                     namespace_id=namespace_id,
-                    kb_id=kb_id,
+                    catalog_id=catalog_id,
                     file_uid=file_uid,
                 ),
                 metadata=self.hosts[self.instance].metadata,
@@ -348,7 +348,7 @@ class ArtifactClient(Client):
             method=self.hosts[self.instance].client.ListChunks,
             request=chunk_interface.ListChunksRequest(
                 namespace_id=namespace_id,
-                kb_id=kb_id,
+                catalog_id=catalog_id,
                 file_uid=file_uid,
             ),
             metadata=self.hosts[self.instance].metadata,
@@ -358,7 +358,7 @@ class ArtifactClient(Client):
     def get_source_file(
         self,
         namespace_id: str,
-        kb_id: str,
+        catalog_id: str,
         file_uid: str,
         async_enabled: bool = False,
     ) -> chunk_interface.GetSourceFileResponse:
@@ -367,7 +367,7 @@ class ArtifactClient(Client):
                 method=self.hosts[self.instance].async_client.GetSourceFile,
                 request=chunk_interface.GetSourceFileRequest(
                     namespace_id=namespace_id,
-                    kb_id=kb_id,
+                    catalog_id=catalog_id,
                     file_uid=file_uid,
                 ),
                 metadata=self.hosts[self.instance].metadata,
@@ -377,7 +377,7 @@ class ArtifactClient(Client):
             method=self.hosts[self.instance].client.GetSourceFile,
             request=chunk_interface.GetSourceFileRequest(
                 namespace_id=namespace_id,
-                kb_id=kb_id,
+                catalog_id=catalog_id,
                 file_uid=file_uid,
             ),
             metadata=self.hosts[self.instance].metadata,
@@ -413,7 +413,7 @@ class ArtifactClient(Client):
     def similarity_chunks_search(
         self,
         namespace_id: str,
-        kb_id: str,
+        catalog_id: str,
         text_prompt: str,
         topk: int,
         async_enabled: bool = False,
@@ -423,7 +423,7 @@ class ArtifactClient(Client):
                 method=self.hosts[self.instance].async_client.SimilarityChunksSearch,
                 request=chunk_interface.SimilarityChunksSearchRequest(
                     namespace_id=namespace_id,
-                    kb_id=kb_id,
+                    catalog_id=catalog_id,
                     text_prompt=text_prompt,
                     topk=topk,
                 ),
@@ -434,7 +434,7 @@ class ArtifactClient(Client):
             method=self.hosts[self.instance].client.SimilarityChunksSearch,
             request=chunk_interface.SimilarityChunksSearchRequest(
                 namespace_id=namespace_id,
-                kb_id=kb_id,
+                catalog_id=catalog_id,
                 text_prompt=text_prompt,
                 topk=topk,
             ),
