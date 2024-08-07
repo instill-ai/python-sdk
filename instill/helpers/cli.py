@@ -107,6 +107,13 @@ def cli():
         help="user and model namespace, in the format of <user-id>/<model-id>",
     )
     run_parser.add_argument(
+        "-g",
+        "--gpu",
+        help="whether the model needs gpu",
+        action="store_true",
+        required=False,
+    )
+    run_parser.add_argument(
         "-t",
         "--tag",
         help="tag for the model image, default to `latest`",
@@ -271,19 +278,26 @@ def run(args):
         name = uuid.uuid4()
 
         Logger.i("[Instill] Starting model image...")
-        subprocess.run(
+        command = [
+            "docker",
+            "run",
+            "--rm",
+            "-d",
+        ]
+        if args.gpu:
+            command.extend(["--gpus", "all"])
+        command.extend(
             [
-                "docker",
-                "run",
-                "--rm",
-                "-d",
                 "--name",
                 str(name),
                 f"{args.name}:{args.tag}",
                 "serve",
                 "run",
                 "_model:entrypoint",
-            ],
+            ]
+        )
+        subprocess.run(
+            command,
             check=True,
             stdout=subprocess.DEVNULL,
         )
@@ -300,7 +314,7 @@ def run(args):
             ],
             check=True,
         )
-        Logger.i("[Instill] Model running")
+        Logger.i("[Instill] Deploying model...")
         subprocess.run(
             [
                 "docker",
