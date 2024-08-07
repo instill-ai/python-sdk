@@ -1,51 +1,34 @@
 import os
-from enum import Enum
-from typing import Any, Dict, List, Union
+from typing import Dict, List, Sequence, Union
 
 from PIL import Image
 
 PROMPT_ROLES = ["user", "assistant", "system"]
 
 
-class DataType(Enum):
-    TYPE_BOOL = 1
-    TYPE_UINT8 = 2
-    TYPE_UINT16 = 3
-    TYPE_UINT32 = 4
-    TYPE_UINT64 = 5
-    TYPE_INT8 = 6
-    TYPE_INT16 = 7
-    TYPE_INT32 = 8
-    TYPE_INT64 = 9
-    TYPE_FP16 = 10
-    TYPE_FP32 = 11
-    TYPE_FP64 = 12
-    TYPE_STRING = 13
-
-
 class VisionInput:
     image: Image.Image
 
 
-class ConversationInput:
-    conversation: List[Dict[str, str]]
-    max_new_tokens: int = 100
-    temperature: float = 0.8
-    top_k: int = 1
+class ChatInput:
+    messages: List[Dict[str, str]]
+    max_tokens: int = 50
+    n: int = 1
     seed: int = 0
-    stop_words: Any = ""  # Optional
-    extra_params: Dict[str, str] = {}
+    temperature: float = 0.7
+    top_p: int = 1
+    stream: bool = False
 
 
-class ConversationMultiModelInput:
-    conversation: List[Union[Dict[str, Union[str, Dict[str, str]]]]]
+class ChatMultiModelInput:
+    messages: List[Union[Dict[str, str], Dict[str, Sequence]]]
     prompt_images: Union[List[Image.Image], None] = None
-    max_new_tokens: int = 100
-    temperature: float = 0.8
-    top_k: int = 1
+    max_tokens: int = 50
+    n: int = 1
     seed: int = 0
-    stop_words: Any = ""  # Optional
-    extra_params: Dict[str, str] = {}
+    temperature: float = 0.7
+    top_p: int = 1
+    stream: bool = False
 
 
 class TextToImageInput:
@@ -59,7 +42,6 @@ class TextToImageInput:
 
 class ImageToImageInput:
     prompt = ""
-    prompt_image: Union[Image.Image, None] = None
     steps: int = 5
     cfg_scale: float = 7.5
     seed: int = 0

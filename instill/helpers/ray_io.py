@@ -4,6 +4,7 @@ import io
 import re
 from typing import Any, Dict, List, Union
 
+import numpy as np
 import requests
 from google.protobuf import json_format, struct_pb2
 from PIL import Image
@@ -24,8 +25,8 @@ import instill.protogen.model.model.v1alpha.task_text_to_image_pb2 as texttoimag
 import instill.protogen.model.model.v1alpha.task_visual_question_answering_pb2 as visualquestionansweringpb
 from instill.helpers.const import (
     PROMPT_ROLES,
-    ConversationInput,
-    ConversationMultiModelInput,
+    ChatInput,
+    ChatMultiModelInput,
     ImageToImageInput,
     TextToImageInput,
     VisionInput,
@@ -60,11 +61,8 @@ def snake_to_lower_camel(name):
     return components[0] + "".join(x.title() for x in components[1:])
 
 
-def protobuf_to_struct(pb_msg):
-    """Convert Protobuf message to Struct"""
-    dict_data = json_format.MessageToDict(pb_msg)
-
-    # Convert dictionary to struct_pb2.Struct
+def dict_to_struct(dict_data):
+    """Convert Dict to Struct"""
     struct_pb = struct_pb2.Struct()
     json_format.ParseDict(dict_data, struct_pb)
 
@@ -85,18 +83,22 @@ async def parse_task_classification_to_vision_input(
 
     input_list = []
     for task_input in request.task_inputs:
-        task_input_dict = json_format.MessageToDict(task_input)["Classification"][
-            "Type"
-        ]
+        task_input_dict = json_format.MessageToDict(task_input)
+
+        data = task_input_dict["data"]
+
         inp = VisionInput()
-        if ("ImageBase64" in task_input_dict and "ImageUrl" in task_input_dict) or (
-            not "ImageBase64" in task_input_dict and not "ImageUrl" in task_input_dict
+
+        image = data["image"]
+
+        if ("image-base64" in image and "image-url" in image) or (
+            not "image-base64" in image and not "image-url" in image
         ):
             raise InvalidInputException
-        if "ImageBase64" in task_input_dict and task_input_dict["ImageBase64"] != "":
-            inp.image = base64_to_pil_image(task_input_dict["ImageBase64"])
-        elif "ImageUrl" in task_input_dict and task_input_dict["ImageUrl"] != "":
-            inp.image = url_to_pil_image(task_input_dict["ImageUrl"])
+        if "image-base64" in image and image["image-base64"] != "":
+            inp.image = base64_to_pil_image(image["image-base64"])
+        elif "image-url" in image and image["image-url"] != "":
+            inp.image = url_to_pil_image(image["image-url"])
         else:
             raise InvalidInputException
 
@@ -109,28 +111,21 @@ def construct_task_classification_output(
     request: Union[CallRequest, Request],
     categories: List[str],
     scores: List[float],
-) -> Union[CallResponse, Dict[str, List]]:
+) -> Union[CallResponse, List]:
     if not len(categories) == len(scores):
         raise InvalidOutputShapeException
 
-    if isinstance(request, Request):
-        return {
-            "categories": categories,
-            "scores": scores,
-        }
-
     task_outputs = []
     for category, score in zip(categories, scores):
+        data = {"category": str(category), "score": float(score)}
 
-        task_outputs.append(
-            protobuf_to_struct(
-                modelpb.TaskOutput(
-                    classification=classificationpb.ClassificationOutput(
-                        category=category, score=score
-                    )
-                )
-            )
-        )
+        if isinstance(request, Request):
+            task_outputs.append({"data": data})
+        else:
+            task_outputs.append(dict_to_struct({"data": data}))
+
+    if isinstance(request, Request):
+        return task_outputs
 
     return CallResponse(task_outputs=task_outputs)
 
@@ -149,16 +144,22 @@ async def parse_task_detection_to_vision_input(
 
     input_list = []
     for task_input in request.task_inputs:
-        task_input_dict = json_format.MessageToDict(task_input)["Detection"]["Type"]
+        task_input_dict = json_format.MessageToDict(task_input)
+
+        data = task_input_dict["data"]
+
         inp = VisionInput()
-        if ("ImageBase64" in task_input_dict and "ImageUrl" in task_input_dict) or (
-            not "ImageBase64" in task_input_dict and not "ImageUrl" in task_input_dict
+
+        image = data["image"]
+
+        if ("image-base64" in image and "image-url" in image) or (
+            not "image-base64" in image and not "image-url" in image
         ):
             raise InvalidInputException
-        if "ImageBase64" in task_input_dict and task_input_dict["ImageBase64"] != "":
-            inp.image = base64_to_pil_image(task_input_dict["ImageBase64"])
-        elif "ImageUrl" in task_input_dict and task_input_dict["ImageUrl"] != "":
-            inp.image = url_to_pil_image(task_input_dict["ImageUrl"])
+        if "image-base64" in image and image["image-base64"] != "":
+            inp.image = base64_to_pil_image(image["image-base64"])
+        elif "image-url" in image and image["image-url"] != "":
+            inp.image = url_to_pil_image(image["image-url"])
         else:
             raise InvalidInputException
 
@@ -172,7 +173,7 @@ def construct_task_detection_output(
     categories: List[List[str]],
     scores: List[List[float]],
     bounding_boxes: List[List[tuple]],
-) -> Union[CallResponse, Dict[str, List]]:
+) -> Union[CallResponse, List]:
     """Construct trigger output for detection task
 
     Args:
@@ -184,36 +185,26 @@ def construct_task_detection_output(
     if not len(categories) == len(scores) == len(bounding_boxes):
         raise InvalidOutputShapeException
 
-    if isinstance(request, Request):
-        return {
-            "categories": categories,
-            "scores": scores,
-            "bounding_boxes": bounding_boxes,
-        }
-
     task_outputs = []
     for category, score, bbox in zip(categories, scores, bounding_boxes):
+        data = {}
         objects = []
         for cat, sc, bb in zip(category, score, bbox):
+            if isinstance(bb, np.ndarray):
+                bb = bb.tolist()
             objects.append(
-                detectionpb.DetectionObject(
-                    category=cat,
-                    score=sc,
-                    bounding_box=commonpb.BoundingBox(
-                        top=bb[0],
-                        left=bb[1],
-                        width=bb[2],
-                        height=bb[3],
-                    ),
-                )
+                {"category": str(cat), "score": float(sc), "bounding-box": list(bb)}
             )
-        task_outputs.append(
-            protobuf_to_struct(
-                modelpb.TaskOutput(
-                    detection=detectionpb.DetectionOutput(objects=objects)
-                )
-            )
-        )
+
+        data["objects"] = objects
+
+        if isinstance(request, Request):
+            task_outputs.append({"data": data})
+        else:
+            task_outputs.append(dict_to_struct({"data": data}))
+
+    if isinstance(request, Request):
+        return task_outputs
 
     return CallResponse(task_outputs=task_outputs)
 
@@ -232,16 +223,22 @@ async def parse_task_ocr_to_vision_input(
 
     input_list = []
     for task_input in request.task_inputs:
-        task_input_dict = json_format.MessageToDict(task_input)["Ocr"]["Type"]
+        task_input_dict = json_format.MessageToDict(task_input)
+
+        data = task_input_dict["data"]
+
         inp = VisionInput()
-        if ("ImageBase64" in task_input_dict and "ImageUrl" in task_input_dict) or (
-            not "ImageBase64" in task_input_dict and not "ImageUrl" in task_input_dict
+
+        image = data["image"]
+
+        if ("image-base64" in image and "image-url" in image) or (
+            not "image-base64" in image and not "image-url" in image
         ):
             raise InvalidInputException
-        if "ImageBase64" in task_input_dict and task_input_dict["ImageBase64"] != "":
-            inp.image = base64_to_pil_image(task_input_dict["ImageBase64"])
-        elif "ImageUrl" in task_input_dict and task_input_dict["ImageUrl"] != "":
-            inp.image = url_to_pil_image(task_input_dict["ImageUrl"])
+        if "image-base64" in image and image["image-base64"] != "":
+            inp.image = base64_to_pil_image(image["image-base64"])
+        elif "image-url" in image and image["image-url"] != "":
+            inp.image = url_to_pil_image(image["image-url"])
         else:
             raise InvalidInputException
 
@@ -255,7 +252,7 @@ def construct_task_ocr_output(
     texts: List[List[str]],
     scores: List[List[float]],
     bounding_boxes: List[List[tuple]],
-) -> Union[CallResponse, Dict[str, List]]:
+) -> Union[CallResponse, List]:
     """Construct trigger output for ocr task
 
     Args:
@@ -267,32 +264,26 @@ def construct_task_ocr_output(
     if not len(texts) == len(scores) == len(bounding_boxes):
         raise InvalidOutputShapeException
 
-    if isinstance(request, Request):
-        return {
-            "texts": texts,
-            "scores": scores,
-            "bounding_boxes": bounding_boxes,
-        }
-
     task_outputs = []
     for text, score, bbox in zip(texts, scores, bounding_boxes):
+        data = {}
         objects = []
         for txt, sc, bb in zip(text, score, bbox):
+            if isinstance(bb, np.ndarray):
+                bb = bb.tolist()
             objects.append(
-                ocrpb.OcrObject(
-                    text=txt,
-                    score=sc,
-                    bounding_box=commonpb.BoundingBox(
-                        top=bb[0],
-                        left=bb[1],
-                        width=bb[2],
-                        height=bb[3],
-                    ),
-                )
+                {"text": str(txt), "score": float(sc), "bounding-box": list(bb)}
             )
-        task_outputs.append(
-            protobuf_to_struct(modelpb.TaskOutput(ocr=ocrpb.OcrOutput(objects=objects)))
-        )
+
+        data["objects"] = objects
+
+        if isinstance(request, Request):
+            task_outputs.append({"data": data})
+        else:
+            task_outputs.append(dict_to_struct({"data": data}))
+
+    if isinstance(request, Request):
+        return task_outputs
 
     return CallResponse(task_outputs=task_outputs)
 
@@ -311,18 +302,22 @@ async def parse_task_instance_segmentation_to_vision_input(
 
     input_list = []
     for task_input in request.task_inputs:
-        task_input_dict = json_format.MessageToDict(task_input)["InstanceSegmentation"][
-            "Type"
-        ]
+        task_input_dict = json_format.MessageToDict(task_input)
+
+        data = task_input_dict["data"]
+
         inp = VisionInput()
-        if ("ImageBase64" in task_input_dict and "ImageUrl" in task_input_dict) or (
-            not "ImageBase64" in task_input_dict and not "ImageUrl" in task_input_dict
+
+        image = data["image"]
+
+        if ("image-base64" in image and "image-url" in image) or (
+            not "image-base64" in image and not "image-url" in image
         ):
             raise InvalidInputException
-        if "ImageBase64" in task_input_dict and task_input_dict["ImageBase64"] != "":
-            inp.image = base64_to_pil_image(task_input_dict["ImageBase64"])
-        elif "ImageUrl" in task_input_dict and task_input_dict["ImageUrl"] != "":
-            inp.image = url_to_pil_image(task_input_dict["ImageUrl"])
+        if "image-base64" in image and image["image-base64"] != "":
+            inp.image = base64_to_pil_image(image["image-base64"])
+        elif "image-url" in image and image["image-url"] != "":
+            inp.image = url_to_pil_image(image["image-url"])
         else:
             raise InvalidInputException
 
@@ -337,7 +332,7 @@ def construct_task_instance_segmentation_output(
     categories: List[List[str]],
     scores: List[List[float]],
     bounding_boxes: List[List[tuple]],
-) -> Union[CallResponse, Dict[str, List]]:
+) -> Union[CallResponse, List]:
     """Construct trigger output for instance segmentation task
 
     Args:
@@ -350,40 +345,32 @@ def construct_task_instance_segmentation_output(
     if not len(rles) == len(categories) == len(scores) == len(bounding_boxes):
         raise InvalidOutputShapeException
 
-    if isinstance(request, Request):
-        return {
-            "rles": rles,
-            "categories": categories,
-            "scores": scores,
-            "bounding_boxes": bounding_boxes,
-        }
-
     task_outputs = []
     for rle, category, score, bbox in zip(rles, categories, scores, bounding_boxes):
+        data = {}
         objects = []
         for r, cat, sc, bb in zip(rle, category, score, bbox):
+            if isinstance(bb, np.ndarray):
+                bb = bb.tolist()
+
             objects.append(
-                instancesegmentationpb.InstanceSegmentationObject(
-                    rle=r,
-                    category=cat,
-                    score=sc,
-                    bounding_box=commonpb.BoundingBox(
-                        top=bb[0],
-                        left=bb[1],
-                        width=bb[2],
-                        height=bb[3],
-                    ),
-                )
+                {
+                    "rle": str(r),
+                    "category": str(cat),
+                    "score": float(sc),
+                    "bounding-box": list(bb),
+                }
             )
-        task_outputs.append(
-            protobuf_to_struct(
-                modelpb.TaskOutput(
-                    instance_segmentation=instancesegmentationpb.InstanceSegmentationOutput(
-                        objects=objects
-                    )
-                )
-            )
-        )
+
+        data["objects"] = objects
+
+        if isinstance(request, Request):
+            task_outputs.append({"data": data})
+        else:
+            task_outputs.append(dict_to_struct({"data": data}))
+
+    if isinstance(request, Request):
+        return task_outputs
 
     return CallResponse(task_outputs=task_outputs)
 
@@ -402,18 +389,22 @@ async def parse_task_semantic_segmentation_to_vision_input(
 
     input_list = []
     for task_input in request.task_inputs:
-        task_input_dict = json_format.MessageToDict(task_input)["SemanticSegmentation"][
-            "Type"
-        ]
+        task_input_dict = json_format.MessageToDict(task_input)
+
+        data = task_input_dict["data"]
+
         inp = VisionInput()
-        if ("ImageBase64" in task_input_dict and "ImageUrl" in task_input_dict) or (
-            not "ImageBase64" in task_input_dict and not "ImageUrl" in task_input_dict
+
+        image = data["image"]
+
+        if ("image-base64" in image and "image-url" in image) or (
+            not "image-base64" in image and not "image-url" in image
         ):
             raise InvalidInputException
-        if "ImageBase64" in task_input_dict and task_input_dict["ImageBase64"] != "":
-            inp.image = base64_to_pil_image(task_input_dict["ImageBase64"])
-        elif "ImageUrl" in task_input_dict and task_input_dict["ImageUrl"] != "":
-            inp.image = url_to_pil_image(task_input_dict["ImageUrl"])
+        if "image-base64" in image and image["image-base64"] != "":
+            inp.image = base64_to_pil_image(image["image-base64"])
+        elif "image-url" in image and image["image-url"] != "":
+            inp.image = url_to_pil_image(image["image-url"])
         else:
             raise InvalidInputException
 
@@ -426,7 +417,7 @@ def construct_task_semantic_segmentation_output(
     request: Union[CallRequest, Request],
     rles: List[List[str]],
     categories: List[List[str]],
-) -> Union[CallResponse, Dict[str, List]]:
+) -> Union[CallResponse, List]:
     """Construct trigger output for semantic segmentation task
 
     Args:
@@ -437,31 +428,22 @@ def construct_task_semantic_segmentation_output(
     if not len(rles) == len(categories):
         raise InvalidOutputShapeException
 
-    if isinstance(request, Request):
-        return {
-            "rles": rles,
-            "categories": categories,
-        }
-
     task_outputs = []
     for rle, category in zip(rles, categories):
+        data = {}
         objects = []
         for r, cat in zip(rle, category):
-            objects.append(
-                semanticsegmentationpb.SemanticSegmentationStuff(
-                    rle=r,
-                    category=cat,
-                )
-            )
-        task_outputs.append(
-            protobuf_to_struct(
-                modelpb.TaskOutput(
-                    instance_segmentation=semanticsegmentationpb.SemanticSegmentationOutput(
-                        stuffs=objects
-                    )
-                )
-            )
-        )
+            objects.append({"rle": str(r), "category": str(cat)})
+
+        data["objects"] = objects
+
+        if isinstance(request, Request):
+            task_outputs.append({"data": data})
+        else:
+            task_outputs.append(dict_to_struct({"data": data}))
+
+    if isinstance(request, Request):
+        return task_outputs
 
     return CallResponse(task_outputs=task_outputs)
 
@@ -480,16 +462,22 @@ async def parse_task_keypoint_to_vision_input(
 
     input_list = []
     for task_input in request.task_inputs:
-        task_input_dict = json_format.MessageToDict(task_input)["Keypoint"]["Type"]
+        task_input_dict = json_format.MessageToDict(task_input)
+
+        data = task_input_dict["data"]
+
         inp = VisionInput()
-        if ("ImageBase64" in task_input_dict and "ImageUrl" in task_input_dict) or (
-            not "ImageBase64" in task_input_dict and not "ImageUrl" in task_input_dict
+
+        image = data["image"]
+
+        if ("image-base64" in image and "image-url" in image) or (
+            not "image-base64" in image and not "image-url" in image
         ):
             raise InvalidInputException
-        if "ImageBase64" in task_input_dict and task_input_dict["ImageBase64"] != "":
-            inp.image = base64_to_pil_image(task_input_dict["ImageBase64"])
-        elif "ImageUrl" in task_input_dict and task_input_dict["ImageUrl"] != "":
-            inp.image = url_to_pil_image(task_input_dict["ImageUrl"])
+        if "image-base64" in image and image["image-base64"] != "":
+            inp.image = base64_to_pil_image(image["image-base64"])
+        elif "image-url" in image and image["image-url"] != "":
+            inp.image = url_to_pil_image(image["image-url"])
         else:
             raise InvalidInputException
 
@@ -503,7 +491,7 @@ def construct_task_keypoint_output(
     keypoints: List[List[List[tuple]]],
     scores: List[List[float]],
     bounding_boxes: List[List[tuple]],
-) -> Union[CallResponse, Dict[str, List]]:
+) -> Union[CallResponse, List]:
     """Construct trigger output for keypoint task
 
     Args:
@@ -517,82 +505,69 @@ def construct_task_keypoint_output(
     if not len(keypoints) == len(scores) == len(bounding_boxes):
         raise InvalidOutputShapeException
 
-    if isinstance(request, Request):
-        return {
-            "keypoints": keypoints,
-            "scores": scores,
-            "bounding_boxes": bounding_boxes,
-        }
-
     task_outputs = []
     for keypoint, score, bbox in zip(keypoints, scores, bounding_boxes):
+        data = {}
         objects = []
         for kps, sc, bb in zip(keypoint, score, bbox):
             point_list = []
             for kp in kps:
-                point_list.append(
-                    keypointpb.Keypoint(
-                        x=kp[0],
-                        y=kp[1],
-                        v=kp[2],
-                    )
-                )
+                if isinstance(kp, np.ndarray):
+                    kp = kp.tolist()
+                dd = {"x": kp[0], "y": kp[1], "v": kp[2]}
+                if isinstance(request, Request):
+                    point_list.append(dd)
+                else:
+                    point_list.append(dict_to_struct(dd))
+
+            if isinstance(bb, np.ndarray):
+                bb = bb.tolist()
+
             objects.append(
-                keypointpb.KeypointObject(
-                    keypoints=point_list,
-                    score=sc,
-                    bounding_box=commonpb.BoundingBox(
-                        top=bb[0],
-                        left=bb[1],
-                        width=bb[2],
-                        height=bb[3],
-                    ),
-                )
+                {"keypoints": point_list, "score": float(sc), "bounding-box": list(bb)}
             )
-        task_outputs.append(
-            protobuf_to_struct(
-                modelpb.TaskOutput(keypoint=keypointpb.KeypointOutput(objects=objects))
-            )
-        )
+
+        data["objects"] = objects
+
+        if isinstance(request, Request):
+            task_outputs.append({"data": data})
+        else:
+            task_outputs.append(dict_to_struct({"data": data}))
+
+    if isinstance(request, Request):
+        return task_outputs
 
     return CallResponse(task_outputs=task_outputs)
 
 
-async def parse_task_text_generation_to_conversation_input(
+async def parse_task_chat_to_chat_input(
     request: Union[CallRequest, Request],
-) -> List[ConversationInput]:
+) -> List[ChatInput]:
 
     # http test input
     if isinstance(request, Request):
-        data: dict = await request.json()
+        test_data: dict = await request.json()
 
-        inp = ConversationInput()
-        inp.conversation = [{"role": "user", "content": data["prompt"]}]
+        inp = ChatInput()
+        inp.messages = [{"role": "user", "content": test_data["prompt"]}]
         return [inp]
 
     input_list = []
     for task_input in request.task_inputs:
-        task_input_dict = json_format.MessageToDict(task_input)["TextGeneration"]
+        task_input_dict = json_format.MessageToDict(task_input)
 
-        inp = ConversationInput()
+        data = task_input_dict["data"]
+        parameter = (
+            task_input_dict["parameter"] if "parameter" in task_input_dict else {}
+        )
 
-        conversation: List[Dict[str, str]] = []
+        inp = ChatInput()
 
-        # system message
-        if (
-            "system_message" in task_input_dict
-            and len(task_input_dict["system_message"]) > 0
-        ):
-            conversation.append(
-                {"role": "system", "content": task_input_dict["system_message"]}
-            )
+        messages: List[Dict[str, str]] = []
 
-        # conversation history
-        if (
-            "chat_history" in task_input_dict
-            and len(task_input_dict["chat_history"]) > 0
-        ):
-            for chat_entity in task_input_dict["chat_history"]:
+        # messages
+        if len(data["messages"]) > 0:
+            for chat_entity in data["messages"]:
                 chat_message = None
                 if len(chat_entity["content"]) > 1:
                     raise ValueError(
@@ -600,22 +575,13 @@ async def parse_task_text_generation_to_conversation_input(
                         " in a single chat history entity"
                     )
 
-                if chat_entity["content"][0]["type"] == "text":
-                    if "Content" in chat_entity["content"][0]:
-                        chat_message = chat_entity["content"][0]["Content"]["Text"]
-                    elif "Text" in chat_entity["content"][0]:
-                        chat_message = chat_entity["content"][0]["Text"]
-                    elif "text" in chat_entity["content"][0]:
-                        chat_message = chat_entity["content"][0]["text"]
-                    else:
-                        raise ValueError(
-                            f"Unknown structure of chat_history: {task_input_dict['chat_history']}"
-                        )
+                if "text" in chat_entity["content"][0]:
+                    chat_message = chat_entity["content"][0]["text"]
                 else:
                     raise ValueError(
                         "Unsupported chat_hisotry message type"
                         ", expected 'text'"
-                        f" but get {chat_entity['content'][0]['type']}"
+                        f" but get {chat_entity['content'][0]}"
                     )
 
                 if chat_entity["role"] not in PROMPT_ROLES:
@@ -623,521 +589,377 @@ async def parse_task_text_generation_to_conversation_input(
                         f"Role `{chat_entity['role']}` is not in supported"
                         f"role list ({','.join(PROMPT_ROLES)})"
                     )
-                if (
-                    chat_entity["role"] == PROMPT_ROLES[-1]
-                    and task_input_dict["system_message"] is not None
-                    and len(task_input_dict["system_message"]) > 0
-                ):
-                    continue
                 if chat_message is None:
                     raise ValueError(
                         f"No message found in chat_history. {chat_message}"
                     )
 
-                if len(conversation) == 1 and chat_entity["role"] != PROMPT_ROLES[0]:
-                    conversation.append({"role": "user", "content": " "})
+                if len(messages) == 1 and chat_entity["role"] != PROMPT_ROLES[0]:
+                    messages.append({"role": "user", "content": " "})
 
-                if (
-                    len(conversation) > 0
-                    and conversation[-1]["role"] == chat_entity["role"]
-                ):
-                    last_conversation = conversation.pop()
+                if len(messages) > 0 and messages[-1]["role"] == chat_entity["role"]:
+                    last_conversation = messages.pop()
                     chat_message = f"{last_conversation['content']}\n\n{chat_message}"
 
-                conversation.append(
-                    {"role": chat_entity["role"], "content": chat_message}
+                messages.append({"role": chat_entity["role"], "content": chat_message})
+
+            if messages[0]["role"] != PROMPT_ROLES[-1]:
+                messages.insert(
+                    0,
+                    {
+                        "role": PROMPT_ROLES[-1],
+                        "content": (
+                            "You are a helpful, respectful and honest assistant. "
+                            "Always answer as helpfully as possible, while being safe.  "
+                            "Your answers should not include any harmful, unethical, racist, "
+                            "sexist, toxic, dangerous, or illegal content. Please ensure that "
+                            "your responses are socially unbiased and positive in nature. "
+                            "If a question does not make any sense, or is not factually coherent, "
+                            "explain why instead of answering something not correct. If you don't "
+                            "know the answer to a question, please don't share false information."
+                        ),
+                    },
                 )
 
-        # conversation
-        prompt = task_input_dict["prompt"]
-        if len(conversation) > 0 and conversation[-1]["role"] == PROMPT_ROLES[0]:
-            last_conversation = conversation.pop()
-            prompt = f"{last_conversation['content']}\n\n{prompt}"
+        inp.messages = messages
 
-        conversation.append({"role": "user", "content": prompt})
-
-        inp.conversation = conversation
-
-        # max new tokens
-        if "max_new_tokens" in task_input_dict:
-            inp.max_new_tokens = int(task_input_dict["max_new_tokens"])
+        # max tokens
+        if "max-tokens" in parameter:
+            inp.max_tokens = int(parameter["max-tokens"])
 
         # temperature
-        if "temperature" in task_input_dict:
-            inp.temperature = task_input_dict["temperature"]
+        if "temperature" in parameter:
+            inp.temperature = parameter["temperature"]
+
+        # number of generated outputs
+        if "n" in parameter:
+            inp.n = parameter["n"]
 
         # top k
-        if "top_k" in task_input_dict:
-            inp.top_k = int(task_input_dict["top_k"])
+        if "top-p" in parameter:
+            inp.top_p = int(parameter["top-p"])
 
         # seed
-        if "seed" in task_input_dict:
-            inp.seed = int(task_input_dict["seed"])
+        if "seed" in parameter:
+            inp.seed = int(parameter["seed"])
+
+        # stream
+        if "stream" in parameter:
+            inp.seed = int(parameter["stream"])
 
         input_list.append(inp)
 
     return input_list
 
 
-def construct_task_text_generation_output(
+def construct_task_chat_output(
     request: Union[CallRequest, Request],
-    texts: List[str],
-) -> Union[CallResponse, List[str]]:
+    finish_reasons: List[List[str]],
+    indexes: List[List[int]],
+    created_timestamps: List[List[int]],
+    messages: List[List[dict]],
+    completion_tokens: Union[List[int], None] = None,
+    prompt_tokens: Union[List[int], None] = None,
+    total_tokens: Union[List[int], None] = None,
+) -> Union[CallResponse, List]:
 
-    if isinstance(request, Request):
-        return texts
+    if (
+        not len(finish_reasons)
+        == len(indexes)
+        == len(created_timestamps)
+        == len(messages)
+    ):
+        raise InvalidOutputShapeException
+    if (
+        not len(finish_reasons[0])
+        == len(indexes[0])
+        == len(created_timestamps[0])
+        == len(messages[0])
+    ):
+        raise InvalidOutputShapeException
+
+    if completion_tokens is None or prompt_tokens is None or total_tokens is None:
+        print("one or more of token usage number not set, ignore all ")
+    else:
+        if not len(completion_tokens) == len(prompt_tokens) == len(total_tokens):
+            raise InvalidOutputShapeException
 
     task_outputs = []
-    for text in texts:
-        task_outputs.append(
-            protobuf_to_struct(
-                modelpb.TaskOutput(
-                    text_generation=textgenerationpb.TextGenerationOutput(text=text)
-                )
+    # data
+    for finish_reason_list, index_list, created_timestamp_list, message_list in zip(
+        finish_reasons, indexes, created_timestamps, messages
+    ):
+        data = {}
+        choices = []
+        for (
+            finish_reason,
+            index,
+            created_timestamp,
+            message,
+        ) in zip(finish_reason_list, index_list, created_timestamp_list, message_list):
+            choices.append(
+                {
+                    "finish-reason": finish_reason,
+                    "index": index,
+                    "message": message,
+                    "created": created_timestamp,
+                }
             )
-        )
+        data["choices"] = choices
+        task_outputs.append({"data": data})
+
+    # metadata
+    if (
+        completion_tokens is not None
+        and prompt_tokens is not None
+        and total_tokens is not None
+    ):
+        for i, (completion_token, prompt_token, total_token) in enumerate(
+            zip(completion_tokens, prompt_tokens, total_tokens)
+        ):
+            metadata = {
+                "usage": {
+                    "completion-tokens": completion_token,
+                    "prompt-tokens": prompt_token,
+                    "total-tokens": total_token,
+                }
+            }
+            task_outputs[i]["metadata"] = metadata  # type: ignore
+
+    if isinstance(request, Request):
+        return task_outputs
+
+    for i, o in enumerate(task_outputs):
+        task_outputs[i] = dict_to_struct(o)
 
     return CallResponse(task_outputs=task_outputs)
 
 
-async def parse_task_text_generation_chat_to_conversation_input(
+async def parse_task_chat_to_multimodal_chat_input(
     request: Union[CallRequest, Request],
-) -> List[ConversationInput]:
+) -> List[ChatMultiModelInput]:
 
     # http test input
     if isinstance(request, Request):
-        data: dict = await request.json()
+        test_data: dict = await request.json()
 
-        inp = ConversationInput()
-        inp.conversation = [{"role": "user", "content": data["prompt"]}]
-        return [inp]
+        test_prompt = test_data["prompt"]
+        image_url = test_data["image_url"]
 
-    input_list = []
-    for task_input in request.task_inputs:
-        task_input_dict = json_format.MessageToDict(task_input)["TextGenerationChat"]
-
-        inp = ConversationInput()
-
-        conversation: List[Dict[str, str]] = []
-
-        # system message
-        if (
-            "system_message" in task_input_dict
-            and len(task_input_dict["system_message"]) > 0
-        ):
-            conversation.append(
-                {"role": "system", "content": task_input_dict["system_message"]}
-            )
-
-        # conversation history
-        if (
-            "chat_history" in task_input_dict
-            and len(task_input_dict["chat_history"]) > 0
-        ):
-            for chat_entity in task_input_dict["chat_history"]:
-                chat_message = None
-                if len(chat_entity["content"]) > 1:
-                    raise ValueError(
-                        "Multiple text message detected"
-                        " in a single chat history entity"
-                    )
-
-                if chat_entity["content"][0]["type"] == "text":
-                    if "Content" in chat_entity["content"][0]:
-                        chat_message = chat_entity["content"][0]["Content"]["Text"]
-                    elif "Text" in chat_entity["content"][0]:
-                        chat_message = chat_entity["content"][0]["Text"]
-                    elif "text" in chat_entity["content"][0]:
-                        chat_message = chat_entity["content"][0]["text"]
-                    else:
-                        raise ValueError(
-                            f"Unknown structure of chat_history: {task_input_dict['chat_history']}"
-                        )
-                else:
-                    raise ValueError(
-                        "Unsupported chat_hisotry message type"
-                        ", expected 'text'"
-                        f" but get {chat_entity['content'][0]['type']}"
-                    )
-
-                if chat_entity["role"] not in PROMPT_ROLES:
-                    raise ValueError(
-                        f"Role `{chat_entity['role']}` is not in supported"
-                        f"role list ({','.join(PROMPT_ROLES)})"
-                    )
-                if (
-                    chat_entity["role"] == PROMPT_ROLES[-1]
-                    and task_input_dict["system_message"] is not None
-                    and len(task_input_dict["system_message"]) > 0
-                ):
-                    continue
-                if chat_message is None:
-                    raise ValueError(
-                        f"No message found in chat_history. {chat_message}"
-                    )
-
-                if len(conversation) == 1 and chat_entity["role"] != PROMPT_ROLES[0]:
-                    conversation.append({"role": "user", "content": " "})
-
-                if (
-                    len(conversation) > 0
-                    and conversation[-1]["role"] == chat_entity["role"]
-                ):
-                    last_conversation = conversation.pop()
-                    chat_message = f"{last_conversation['content']}\n\n{chat_message}"
-
-                conversation.append(
-                    {"role": chat_entity["role"], "content": chat_message}
-                )
-
-        # conversation
-        prompt = task_input_dict["prompt"]
-        if len(conversation) > 0 and conversation[-1]["role"] == PROMPT_ROLES[0]:
-            last_conversation = conversation.pop()
-            prompt = f"{last_conversation['content']}\n\n{prompt}"
-
-        conversation.append({"role": "user", "content": prompt})
-
-        inp.conversation = conversation
-
-        # max new tokens
-        if "max_new_tokens" in task_input_dict:
-            inp.max_new_tokens = int(task_input_dict["max_new_tokens"])
-
-        # temperature
-        if "temperature" in task_input_dict:
-            inp.temperature = task_input_dict["temperature"]
-
-        # top k
-        if "top_k" in task_input_dict:
-            inp.top_k = int(task_input_dict["top_k"])
-
-        # seed
-        if "seed" in task_input_dict:
-            inp.seed = int(task_input_dict["seed"])
-
-    input_list.append(inp)
-
-    return input_list
-
-
-def construct_task_text_generation_chat_output(
-    request: Union[CallRequest, Request],
-    texts: List[str],
-) -> Union[CallResponse, List[str]]:
-
-    if isinstance(request, Request):
-        return texts
-
-    task_outputs = []
-    for text in texts:
-        task_outputs.append(
-            protobuf_to_struct(
-                modelpb.TaskOutput(
-                    text_generation_chat=textgenerationchatpb.TextGenerationChatOutput(
-                        text=text
-                    )
-                )
-            )
-        )
-
-    return CallResponse(task_outputs=task_outputs)
-
-
-async def parse_task_visual_question_answering_to_conversation_multimodal_input(
-    request: Union[CallRequest, Request],
-) -> List[ConversationMultiModelInput]:
-
-    # http test input
-    if isinstance(request, Request):
-        data: dict = await request.json()
-
-        test_prompt = data["prompt"]
-        image_url = data["image_url"]
-
-        inp = ConversationMultiModelInput()
-        inp.conversation = [
+        inp = ChatMultiModelInput()
+        inp.messages = [
             {
                 "role": "user",
-                "content": {
-                    "type": "text",
-                    "content": test_prompt,
-                },
+                "content": [
+                    {
+                        "text": test_prompt,
+                    },
+                    {
+                        "datauri": url_to_pil_image(image_url),
+                    },
+                ],
             }
         ]
-        inp.prompt_images = [url_to_pil_image(image_url)]
         return [inp]
 
     input_list = []
     for task_input in request.task_inputs:
-        task_input_dict = json_format.MessageToDict(task_input)[
-            "VisualQuestionAnswering"
-        ]
+        task_input_dict = json_format.MessageToDict(task_input)
 
-        inp = ConversationMultiModelInput()
-
-        conversation: List[Union[Dict[str, Union[str, Dict[str, str]]]]] = []
-
-        # system message
-        if (
-            "system_message" in task_input_dict
-            and len(task_input_dict["system_message"]) > 0
-        ):
-            conversation.append(
-                {"role": "system", "content": task_input_dict["system_message"]}
-            )
-
-        # conversation history
-        if (
-            "chat_history" in task_input_dict
-            and len(task_input_dict["chat_history"]) > 0
-        ):
-            for chat_entity in task_input_dict["chat_history"]:
-                chat_dict = json_format.MessageToDict(chat_entity)
-                conversation.append(chat_dict)
-
-        # conversation
-        prompt = task_input_dict["prompt"]
-        if len(conversation) > 0 and conversation[-1]["role"] == PROMPT_ROLES[0]:
-            last_conversation = conversation.pop()
-            prompt = f"{last_conversation['content']['content']}\n\n{prompt}"  # type: ignore
-
-        conversation.append(
-            {
-                "role": "user",
-                "content": {
-                    "type": "text",
-                    "content": prompt,
-                },
-            }
+        data = task_input_dict["data"]
+        parameter = (
+            task_input_dict["parameter"] if "parameter" in task_input_dict else {}
         )
 
-        inp.conversation = conversation
+        inp = ChatMultiModelInput()
 
-        # prompt images
-        prompt_image_list = []
-        if (
-            "prompt_images" in task_input_dict
-            and len(task_input_dict["prompt_images"]) > 0
-        ):
-            for prompt_image in task_input_dict["prompt_images"]:
-                if (
-                    "PromptImageUrl" in prompt_image["Type"]
-                    and "PromptImageBase64" in prompt_image["Type"]
-                ) or (
-                    "PromptImageUrl" not in prompt_image["Type"]
-                    and "PromptImageBase64" not in prompt_image["Type"]
-                ):
-                    raise InvalidInputException
-                if "PromptImageUrl" in prompt_image["Type"]:
-                    prompt_image_list.append(
-                        url_to_pil_image(prompt_image["Type"]["PromptImageUrl"])
-                    )
-                elif "PromptImageBase64" in prompt_image["Type"]:
-                    prompt_image_list.append(
-                        base64_to_pil_image(prompt_image["Type"]["PromptImageBase64"])
-                    )
-            inp.prompt_images = prompt_image_list
+        # messages
+        inp.messages = data["messages"]
 
-        # max new tokens
-        if "max_new_tokens" in task_input_dict:
-            inp.max_new_tokens = int(task_input_dict["max_new_tokens"])
+        # max tokens
+        if "max-tokens" in parameter:
+            inp.max_tokens = int(parameter["max-tokens"])
 
         # temperature
-        if "temperature" in task_input_dict:
-            inp.temperature = task_input_dict["temperature"]
+        if "temperature" in parameter:
+            inp.temperature = parameter["temperature"]
+
+        # number of generated outputs
+        if "n" in parameter:
+            inp.n = parameter["n"]
 
         # top k
-        if "top_k" in task_input_dict:
-            inp.top_k = int(task_input_dict["top_k"])
+        if "top-p" in parameter:
+            inp.top_p = int(parameter["top-p"])
 
         # seed
-        if "seed" in task_input_dict:
-            inp.seed = int(task_input_dict["seed"])
+        if "seed" in parameter:
+            inp.seed = int(parameter["seed"])
+
+        # stream
+        if "stream" in parameter:
+            inp.seed = int(parameter["stream"])
 
         input_list.append(inp)
 
     return input_list
 
 
-def construct_task_visual_question_answering_output(
-    request: Union[CallRequest, Request],
-    texts: List[str],
-) -> Union[CallResponse, List[str]]:
+# async def parse_task_text_to_image_input(
+#     request: Union[CallRequest, Request],
+# ) -> List[TextToImageInput]:
 
-    if isinstance(request, Request):
-        return texts
+#     # http test input
+#     if isinstance(request, Request):
+#         data: dict = await request.json()
 
-    task_outputs = []
-    for text in texts:
-        task_outputs.append(
-            protobuf_to_struct(
-                modelpb.TaskOutput(
-                    visual_question_answering=visualquestionansweringpb.VisualQuestionAnsweringOutput(
-                        text=text
-                    )
-                )
-            )
-        )
+#         inp = TextToImageInput()
+#         inp.prompt = data["prompt"]
 
-    return CallResponse(task_outputs=task_outputs)
+#         return [inp]
 
+#     input_list = []
+#     for task_input in request.task_inputs:
+#         task_input_dict = json_format.MessageToDict(task_input)["TextToImage"]
 
-async def parse_task_text_to_image_input(
-    request: Union[CallRequest, Request],
-) -> List[TextToImageInput]:
+#         inp = TextToImageInput()
 
-    # http test input
-    if isinstance(request, Request):
-        data: dict = await request.json()
+#         # prompt
+#         inp.prompt = task_input_dict["prompt"]
 
-        inp = TextToImageInput()
-        inp.prompt = data["prompt"]
+#         # steps
+#         if "steps" in task_input_dict:
+#             inp.steps = int(task_input_dict["steps"])
 
-        return [inp]
+#         # cfg_scale
+#         if "cfg_scale" in task_input_dict:
+#             inp.cfg_scale = task_input_dict["cfg_scale"]
 
-    input_list = []
-    for task_input in request.task_inputs:
-        task_input_dict = json_format.MessageToDict(task_input)["TextToImage"]
+#         # samples
+#         if "samples" in task_input_dict:
+#             inp.samples = int(task_input_dict["samples"])
 
-        inp = TextToImageInput()
+#         # seed
+#         if "seed" in task_input_dict:
+#             inp.seed = int(task_input_dict["seed"])
 
-        # prompt
-        inp.prompt = task_input_dict["prompt"]
+#         input_list.append(inp)
 
-        # steps
-        if "steps" in task_input_dict:
-            inp.steps = int(task_input_dict["steps"])
-
-        # cfg_scale
-        if "cfg_scale" in task_input_dict:
-            inp.cfg_scale = task_input_dict["cfg_scale"]
-
-        # samples
-        if "samples" in task_input_dict:
-            inp.samples = int(task_input_dict["samples"])
-
-        # seed
-        if "seed" in task_input_dict:
-            inp.seed = int(task_input_dict["seed"])
-
-        input_list.append(inp)
-
-    return input_list
+#     return input_list
 
 
-def construct_task_text_to_image_output(
-    request: Union[CallRequest, Request],
-    images: List[List[str]],
-) -> Union[CallResponse, List[List[str]]]:
-    """Construct trigger output for keypoint task
+# def construct_task_text_to_image_output(
+#     request: Union[CallRequest, Request],
+#     images: List[List[str]],
+# ) -> Union[CallResponse, List[List[str]]]:
+#     """Construct trigger output for keypoint task
 
-    Args:
-        images (List[List[str]]): for each input prompt, the generated images with the length of `samples`
-    """
+#     Args:
+#         images (List[List[str]]): for each input prompt, the generated images with the length of `samples`
+#     """
 
-    if isinstance(request, Request):
-        return images
+#     if isinstance(request, Request):
+#         return images
 
-    task_outputs = []
-    for imgs in images:
-        task_outputs.append(
-            protobuf_to_struct(
-                modelpb.TaskOutput(
-                    text_to_image=texttoimagepb.TextToImageOutput(images=imgs)
-                )
-            )
-        )
+#     task_outputs = []
+#     for imgs in images:
+#         task_outputs.append(
+#             protobuf_to_struct(
+#                 modelpb.TaskOutput(
+#                     text_to_image=texttoimagepb.TextToImageOutput(images=imgs)
+#                 )
+#             )
+#         )
 
-    return CallResponse(task_outputs=task_outputs)
-
-
-async def parse_task_image_to_image_input(
-    request: Union[CallRequest, Request],
-) -> List[ImageToImageInput]:
-
-    # http test input
-    if isinstance(request, Request):
-        data: dict = await request.json()
-
-        test_prompt = data["prompt"]
-        test_image_url = data["image_url"]
-
-        inp = ImageToImageInput()
-        inp.prompt = test_prompt
-        inp.prompt_image = url_to_pil_image(test_image_url)
-
-        return [inp]
-
-    input_list = []
-    for task_input in request.task_inputs:
-        task_input_dict = json_format.MessageToDict(task_input)["ImageToImage"]
-
-        inp = ImageToImageInput()
-
-        # prompt
-        inp.prompt = task_input_dict["prompt"]
-
-        # prompt images
-        if (
-            "PromptImageUrl" in task_input_dict["Type"]
-            and "PromptImageBase64" in task_input_dict["Type"]
-        ) or (
-            "PromptImageUrl" not in task_input_dict["Type"]
-            and "PromptImageBase64" not in task_input_dict["Type"]
-        ):
-            raise InvalidInputException
-        if "PromptImageUrl" in task_input_dict["Type"]:
-            inp.prompt_image = url_to_pil_image(
-                task_input_dict["Type"]["PromptImageUrl"]
-            )
-        elif "PromptImageBase64" in task_input_dict["Type"]:
-            inp.prompt_image = base64_to_pil_image(
-                task_input_dict["Type"]["PromptImageBase64"]
-            )
-
-        # steps
-        if "steps" in task_input_dict:
-            inp.steps = int(task_input_dict["steps"])
-
-        # cfg_scale
-        if "cfg_scale" in task_input_dict:
-            inp.cfg_scale = task_input_dict["cfg_scale"]
-
-        # samples
-        if "samples" in task_input_dict:
-            inp.samples = int(task_input_dict["samples"])
-
-        # seed
-        if "seed" in task_input_dict:
-            inp.seed = int(task_input_dict["seed"])
-
-        input_list.append(inp)
-
-    return input_list
+#     return CallResponse(task_outputs=task_outputs)
 
 
-def construct_task_image_to_image_output(
-    request: Union[CallRequest, Request],
-    images: List[List[str]],
-) -> Union[CallResponse, List[List[str]]]:
-    """Construct trigger output for keypoint task
+# async def parse_task_image_to_image_input(
+#     request: Union[CallRequest, Request],
+# ) -> List[ImageToImageInput]:
 
-    Args:
-        images (List[List[str]]): for each input prompt, the generated images with the length of `samples`
-    """
+#     # http test input
+#     if isinstance(request, Request):
+#         data: dict = await request.json()
 
-    if isinstance(request, Request):
-        return images
+#         test_prompt = data["prompt"]
+#         test_image_url = data["image_url"]
 
-    task_outputs = []
-    for imgs in images:
-        task_outputs.append(
-            protobuf_to_struct(
-                modelpb.TaskOutput(
-                    image_to_image=imagetoimagepb.ImageToImageOutput(images=imgs)
-                )
-            )
-        )
+#         inp = ImageToImageInput()
+#         inp.prompt = test_prompt
+#         inp.prompt_image = url_to_pil_image(test_image_url)
 
-    return CallResponse(task_outputs=task_outputs)
+#         return [inp]
+
+#     input_list = []
+#     for task_input in request.task_inputs:
+#         task_input_dict = json_format.MessageToDict(task_input)["ImageToImage"]
+
+#         inp = ImageToImageInput()
+
+#         # prompt
+#         inp.prompt = task_input_dict["prompt"]
+
+#         # prompt images
+#         if (
+#             "Promptimage-url" in task_input_dict["Type"]
+#             and "Promptimage-base64" in task_input_dict["Type"]
+#         ) or (
+#             "Promptimage-url" not in task_input_dict["Type"]
+#             and "Promptimage-base64" not in task_input_dict["Type"]
+#         ):
+#             raise InvalidInputException
+#         if "Promptimage-url" in task_input_dict["Type"]:
+#             inp.prompt_image = url_to_pil_image(
+#                 task_input_dict["Type"]["Promptimage-url"]
+#             )
+#         elif "Promptimage-base64" in task_input_dict["Type"]:
+#             inp.prompt_image = base64_to_pil_image(
+#                 task_input_dict["Type"]["Promptimage-base64"]
+#             )
+
+#         # steps
+#         if "steps" in task_input_dict:
+#             inp.steps = int(task_input_dict["steps"])
+
+#         # cfg_scale
+#         if "cfg_scale" in task_input_dict:
+#             inp.cfg_scale = task_input_dict["cfg_scale"]
+
+#         # samples
+#         if "samples" in task_input_dict:
+#             inp.samples = int(task_input_dict["samples"])
+
+#         # seed
+#         if "seed" in task_input_dict:
+#             inp.seed = int(task_input_dict["seed"])
+
+#         input_list.append(inp)
+
+#     return input_list
+
+
+# def construct_task_image_to_image_output(
+#     request: Union[CallRequest, Request],
+#     images: List[List[str]],
+# ) -> Union[CallResponse, List[List[str]]]:
+#     """Construct trigger output for keypoint task
+
+#     Args:
+#         images (List[List[str]]): for each input prompt, the generated images with the length of `samples`
+#     """
+
+#     if isinstance(request, Request):
+#         return images
+
+#     task_outputs = []
+#     for imgs in images:
+#         task_outputs.append(
+#             protobuf_to_struct(
+#                 modelpb.TaskOutput(
+#                     image_to_image=imagetoimagepb.ImageToImageOutput(images=imgs)
+#                 )
+#             )
+#         )
+
+#     return CallResponse(task_outputs=task_outputs)

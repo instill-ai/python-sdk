@@ -141,9 +141,9 @@ def init(_):
 
 def build(args):
     try:
-        Logger.i("[Instill Builder] Loading config file...")
+        Logger.i("[Instill] Loading config file...")
         with open("instill.yaml", "r", encoding="utf8") as f:
-            Logger.i("[Instill Builder] Parsing config file...")
+            Logger.i("[Instill] Parsing config file...")
             config = yaml.safe_load(f)
 
         config_check_required_fields(config)
@@ -196,7 +196,7 @@ def build(args):
 
             target_arch_suffix = "-aarch64" if args.target_arch == "arm64" else ""
 
-            Logger.i("[Instill Builder] Building model image...")
+            Logger.i("[Instill] Building model image...")
             command = [
                 "docker",
                 "buildx",
@@ -228,14 +228,14 @@ def build(args):
                 command,
                 check=True,
             )
-            Logger.i(f"[Instill Builder] {args.name}:{args.tag} built")
+            Logger.i(f"[Instill] {args.name}:{args.tag} built")
     except subprocess.CalledProcessError:
-        Logger.e("[Instill Builder] Build failed")
+        Logger.e("[Instill] Build failed")
     except Exception as e:
-        Logger.e("[Instill Builder] Prepare failed")
+        Logger.e("[Instill] Prepare failed")
         Logger.e(e)
     finally:
-        Logger.i("[Instill Builder] Done")
+        Logger.i("[Instill] Done")
 
 
 def push(args):
@@ -251,25 +251,26 @@ def push(args):
             ],
             check=True,
         )
-        Logger.i("[Instill Builder] Pushing model image...")
+        Logger.i("[Instill] Pushing model image...")
         subprocess.run(
             ["docker", "push", f"{registry}/{args.name}:{args.tag}"], check=True
         )
-        Logger.i(f"[Instill Builder] {registry}/{args.name}:{args.tag} pushed")
+        Logger.i(f"[Instill] {registry}/{args.name}:{args.tag} pushed")
     except subprocess.CalledProcessError:
-        Logger.e("[Instill Builder] Push failed")
+        Logger.e("[Instill] Push failed")
     except Exception as e:
-        Logger.e("[Instill Builder] Prepare failed")
+        Logger.e("[Instill] Prepare failed")
         Logger.e(e)
     finally:
-        Logger.i("[Instill Builder] Done")
+        Logger.i("[Instill] Done")
 
 
 def run(args):
+    docker_run = False
     try:
         name = uuid.uuid4()
 
-        Logger.i("[Instill Builder] Starting model image...")
+        Logger.i("[Instill] Starting model image...")
         subprocess.run(
             [
                 "docker",
@@ -284,7 +285,9 @@ def run(args):
                 "_model:entrypoint",
             ],
             check=True,
+            stdout=subprocess.DEVNULL,
         )
+        docker_run = True
         time.sleep(10)
         subprocess.run(
             [
@@ -297,7 +300,7 @@ def run(args):
             ],
             check=True,
         )
-        Logger.i("[Instill Builder] Model running")
+        Logger.i("[Instill] Model running")
         subprocess.run(
             [
                 "docker",
@@ -311,21 +314,23 @@ def run(args):
             ],
             check=True,
         )
-        subprocess.run(
-            [
-                "docker",
-                "stop",
-                str(name),
-            ],
-            check=True,
-        )
     except subprocess.CalledProcessError:
-        Logger.e("[Instill Builder] Run failed")
+        Logger.e("[Instill] Run failed")
     except Exception as e:
-        Logger.e("[Instill Builder] Prepare failed")
+        Logger.e("[Instill] Prepare failed")
         Logger.e(e)
     finally:
-        Logger.i("[Instill Builder] Done")
+        if docker_run:
+            subprocess.run(
+                [
+                    "docker",
+                    "stop",
+                    str(name),
+                ],
+                check=True,
+                stdout=subprocess.DEVNULL,
+            )
+        Logger.i("[Instill] Done")
 
 
 if __name__ == "__main__":
