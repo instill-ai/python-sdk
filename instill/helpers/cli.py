@@ -278,31 +278,37 @@ def run(args):
         name = uuid.uuid4()
 
         Logger.i("[Instill] Starting model image...")
-        command = [
-            "docker",
-            "run",
-            "--rm",
-            "-d",
-        ]
-        if args.gpu:
-            command.extend(["--gpus", "all"])
-        command.extend(
-            [
-                "--name",
-                str(name),
-                f"{args.name}:{args.tag}",
-                "serve",
-                "run",
-                "_model:entrypoint",
-            ]
-        )
-        subprocess.run(
-            command,
-            check=True,
-            stdout=subprocess.DEVNULL,
-        )
+        if not args.gpu:
+            subprocess.run(
+                [
+                    "docker",
+                    "run",
+                    "--rm",
+                    "-d",
+                    "--name",
+                    str(name),
+                    f"{args.name}:{args.tag}",
+                    "serve",
+                    "run",
+                    "_model:entrypoint",
+                ],
+                check=True,
+                stdout=subprocess.DEVNULL,
+            )
+        else:
+            subprocess.run(
+                f"docker run --rm -d --name {str(name)} --gpus all {args.name}:{args.tag} /bin/bash -c \
+                    \"serve build _model:entrypoint -o serve.yaml && \
+                    sed -i 's/app1/default/' serve.yaml && \
+                    sed -i 's/num_cpus: 0.0/num_gpus: 1.0/' serve.yaml && \
+                    serve run serve.yaml\"",
+                shell=True,
+                check=True,
+                stdout=subprocess.DEVNULL,
+            )
         docker_run = True
         time.sleep(10)
+        Logger.i("[Instill] Deploying model...")
         subprocess.run(
             [
                 "docker",
@@ -314,7 +320,7 @@ def run(args):
             ],
             check=True,
         )
-        Logger.i("[Instill] Deploying model...")
+        Logger.i("[Instill] Running inference...")
         subprocess.run(
             [
                 "docker",
