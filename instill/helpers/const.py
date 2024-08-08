@@ -10,6 +10,17 @@ class VisionInput:
     image: Image.Image
 
 
+class CompletionInput:
+    prompt: str
+    system_message: str = ""
+    max_tokens: int = 50
+    n: int = 1
+    seed: int = 0
+    temperature: float = 0.7
+    top_p: int = 1
+    stream: bool = False
+
+
 class ChatInput:
     messages: List[Dict[str, str]]
     max_tokens: int = 50

@@ -25,6 +25,7 @@ import instill.protogen.model.model.v1alpha.task_text_to_image_pb2 as texttoimag
 import instill.protogen.model.model.v1alpha.task_visual_question_answering_pb2 as visualquestionansweringpb
 from instill.helpers.const import (
     PROMPT_ROLES,
+    CompletionInput,
     ChatInput,
     ChatMultiModelInput,
     ImageToImageInput,
@@ -536,6 +537,158 @@ def construct_task_keypoint_output(
 
     if isinstance(request, Request):
         return task_outputs
+
+    return CallResponse(task_outputs=task_outputs)
+
+
+async def parse_task_completion_to_completion_input(
+    request: Union[CallRequest, Request],
+) -> List[CompletionInput]:
+
+    # http test input
+    if isinstance(request, Request):
+        test_data: dict = await request.json()
+
+        inp = CompletionInput()
+        inp.prompt = test_data["prompt"]
+        return [inp]
+
+    input_list = []
+    for task_input in request.task_inputs:
+        task_input_dict = json_format.MessageToDict(task_input)
+
+        data = task_input_dict["data"]
+        parameter = (
+            task_input_dict["parameter"] if "parameter" in task_input_dict else {}
+        )
+
+        inp = CompletionInput()
+
+        inp.prompt = data["prompt"]
+
+        # system message
+        if "system-message" in data:
+            inp.system_message = data["system-message"]
+        else:
+            inp.system_message = (
+                "You are a helpful, respectful and honest assistant. "
+                "Always answer as helpfully as possible, while being safe.  "
+                "Your answers should not include any harmful, unethical, racist, "
+                "sexist, toxic, dangerous, or illegal content. Please ensure that "
+                "your responses are socially unbiased and positive in nature. "
+                "If a question does not make any sense, or is not factually coherent, "
+                "explain why instead of answering something not correct. If you don't "
+                "know the answer to a question, please don't share false information."
+            )
+
+        # max tokens
+        if "max-tokens" in parameter:
+            inp.max_tokens = int(parameter["max-tokens"])
+
+        # temperature
+        if "temperature" in parameter:
+            inp.temperature = parameter["temperature"]
+
+        # number of generated outputs
+        if "n" in parameter:
+            inp.n = parameter["n"]
+
+        # top k
+        if "top-p" in parameter:
+            inp.top_p = int(parameter["top-p"])
+
+        # seed
+        if "seed" in parameter:
+            inp.seed = int(parameter["seed"])
+
+        # stream
+        if "stream" in parameter:
+            inp.seed = int(parameter["stream"])
+
+        input_list.append(inp)
+
+    return input_list
+
+
+def construct_task_completion_output(
+    request: Union[CallRequest, Request],
+    finish_reasons: List[List[str]],
+    indexes: List[List[int]],
+    created_timestamps: List[List[int]],
+    contents: List[List[str]],
+    completion_tokens: Union[List[int], None] = None,
+    prompt_tokens: Union[List[int], None] = None,
+    total_tokens: Union[List[int], None] = None,
+) -> Union[CallResponse, List]:
+
+    if (
+        not len(finish_reasons)
+        == len(indexes)
+        == len(created_timestamps)
+        == len(contents)
+    ):
+        raise InvalidOutputShapeException
+    if (
+        not len(finish_reasons[0])
+        == len(indexes[0])
+        == len(created_timestamps[0])
+        == len(contents[0])
+    ):
+        raise InvalidOutputShapeException
+
+    if completion_tokens is None or prompt_tokens is None or total_tokens is None:
+        print("one or more of token usage number not set, ignore all ")
+    else:
+        if not len(completion_tokens) == len(prompt_tokens) == len(total_tokens):
+            raise InvalidOutputShapeException
+
+    task_outputs = []
+    # data
+    for finish_reason_list, index_list, created_timestamp_list, content_list in zip(
+        finish_reasons, indexes, created_timestamps, contents
+    ):
+        data = {}
+        choices = []
+        for (
+            finish_reason,
+            index,
+            created_timestamp,
+            content,
+        ) in zip(finish_reason_list, index_list, created_timestamp_list, content_list):
+            choices.append(
+                {
+                    "finish-reason": finish_reason,
+                    "index": index,
+                    "content": content,
+                    "created": created_timestamp,
+                }
+            )
+        data["choices"] = choices
+        task_outputs.append({"data": data})
+
+    # metadata
+    if (
+        completion_tokens is not None
+        and prompt_tokens is not None
+        and total_tokens is not None
+    ):
+        for i, (completion_token, prompt_token, total_token) in enumerate(
+            zip(completion_tokens, prompt_tokens, total_tokens)
+        ):
+            metadata = {
+                "usage": {
+                    "completion-tokens": completion_token,
+                    "prompt-tokens": prompt_token,
+                    "total-tokens": total_token,
+                }
+            }
+            task_outputs[i]["metadata"] = metadata  # type: ignore
+
+    if isinstance(request, Request):
+        return task_outputs
+
+    for i, o in enumerate(task_outputs):
+        task_outputs[i] = dict_to_struct(o)
 
     return CallResponse(task_outputs=task_outputs)
 
