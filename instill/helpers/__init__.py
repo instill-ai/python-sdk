@@ -9,6 +9,7 @@ from instill.helpers.ray_io import (
     construct_task_keypoint_output,
     construct_task_ocr_output,
     construct_task_semantic_segmentation_output,
+    construct_task_text_to_image_output,
     parse_task_completion_to_completion_input,
     parse_task_chat_to_chat_input,
     parse_task_chat_to_multimodal_chat_input,
@@ -18,4 +19,5 @@ from instill.helpers.ray_io import (
     parse_task_keypoint_to_vision_input,
     parse_task_ocr_to_vision_input,
     parse_task_semantic_segmentation_to_vision_input,
+    parse_task_text_to_image_input,
 )

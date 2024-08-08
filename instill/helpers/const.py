@@ -43,12 +43,11 @@ class ChatMultiModalInput:
 
 
 class TextToImageInput:
-    prompt = ""
-    steps: int = 5
-    cfg_scale: float = 7.5
+    prompt: str
+    negative_prompt: str = ""
+    n: int = 1
+    aspect_ratio: str = "1:1"
     seed: int = 0
-    samples: int = 1
-    extra_params: Dict[str, str] = {}
 
 
 class ImageToImageInput:
