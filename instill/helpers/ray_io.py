@@ -593,7 +593,7 @@ async def parse_task_completion_to_completion_input(
         if "n" in parameter:
             inp.n = parameter["n"]
 
-        # top k
+        # top p
         if "top-p" in parameter:
             inp.top_p = int(parameter["top-p"])
 
@@ -788,7 +788,7 @@ async def parse_task_chat_to_chat_input(
         if "n" in parameter:
             inp.n = parameter["n"]
 
-        # top k
+        # top p
         if "top-p" in parameter:
             inp.top_p = int(parameter["top-p"])
 
@@ -959,7 +959,7 @@ async def parse_task_chat_to_multimodal_chat_input(
         if "n" in parameter:
             inp.n = parameter["n"]
 
-        # top k
+        # top p
         if "top-p" in parameter:
             inp.top_p = int(parameter["top-p"])
 
@@ -976,73 +976,92 @@ async def parse_task_chat_to_multimodal_chat_input(
     return input_list
 
 
-# async def parse_task_text_to_image_input(
-#     request: Union[CallRequest, Request],
-# ) -> List[TextToImageInput]:
+async def parse_task_text_to_image_input(
+    request: Union[CallRequest, Request],
+) -> List[TextToImageInput]:
 
-#     # http test input
-#     if isinstance(request, Request):
-#         data: dict = await request.json()
+    # http test input
+    if isinstance(request, Request):
+        data: dict = await request.json()
 
-#         inp = TextToImageInput()
-#         inp.prompt = data["prompt"]
+        inp = TextToImageInput()
+        inp.prompt = data["prompt"]
 
-#         return [inp]
+        return [inp]
 
-#     input_list = []
-#     for task_input in request.task_inputs:
-#         task_input_dict = json_format.MessageToDict(task_input)["TextToImage"]
+    input_list = []
+    for task_input in request.task_inputs:
+        task_input_dict = json_format.MessageToDict(task_input)
 
-#         inp = TextToImageInput()
+        data = task_input_dict["data"]
+        parameter = (
+            task_input_dict["parameter"] if "parameter" in task_input_dict else {}
+        )
 
-#         # prompt
-#         inp.prompt = task_input_dict["prompt"]
+        inp = TextToImageInput()
 
-#         # steps
-#         if "steps" in task_input_dict:
-#             inp.steps = int(task_input_dict["steps"])
+        # prompt
+        inp.prompt = data["prompt"]
 
-#         # cfg_scale
-#         if "cfg_scale" in task_input_dict:
-#             inp.cfg_scale = task_input_dict["cfg_scale"]
+        # negative prompt
+        if "negative-prompt" in parameter:
+            inp.negative_prompt = int(parameter["negative-prompt"])
 
-#         # samples
-#         if "samples" in task_input_dict:
-#             inp.samples = int(task_input_dict["samples"])
+        # aspect ratio
+        if "aspect-ratio" in parameter:
+            inp.aspect_ratio = int(parameter["aspect-ratio"])
 
-#         # seed
-#         if "seed" in task_input_dict:
-#             inp.seed = int(task_input_dict["seed"])
+        # number of generated outputs
+        if "n" in parameter:
+            inp.n = parameter["n"]
 
-#         input_list.append(inp)
+        # seed
+        if "seed" in parameter:
+            inp.seed = int(parameter["seed"])
 
-#     return input_list
+        input_list.append(inp)
+
+    return input_list
 
 
-# def construct_task_text_to_image_output(
-#     request: Union[CallRequest, Request],
-#     images: List[List[str]],
-# ) -> Union[CallResponse, List[List[str]]]:
-#     """Construct trigger output for keypoint task
+def construct_task_text_to_image_output(
+    request: Union[CallRequest, Request],
+    finish_reasons: List[List[str]],
+    images: List[List[str]],
+) -> Union[CallResponse, List[List[str]]]:
+    """Construct trigger output for text to image task
 
-#     Args:
-#         images (List[List[str]]): for each input prompt, the generated images with the length of `samples`
-#     """
+    Args:
+        images (List[List[str]]): for each input prompt, the generated images with the length of `samples`
+    """
 
-#     if isinstance(request, Request):
-#         return images
+    if not len(finish_reasons) == len(images):
+        raise InvalidOutputShapeException
+    if not len(finish_reasons[0]) == len(images[0]):
+        raise InvalidOutputShapeException
 
-#     task_outputs = []
-#     for imgs in images:
-#         task_outputs.append(
-#             protobuf_to_struct(
-#                 modelpb.TaskOutput(
-#                     text_to_image=texttoimagepb.TextToImageOutput(images=imgs)
-#                 )
-#             )
-#         )
+    task_outputs = []
+    for imgs, finishes in zip(images, finish_reasons):
+        data = {}
+        choices = []
 
-#     return CallResponse(task_outputs=task_outputs)
+        for img, finish in zip(imgs, finishes):
+            choices.append(
+                {
+                    "finish-reason": finish,
+                    "image": img,
+                }
+            )
+        data["choices"] = choices
+        task_outputs.append({"data": data})
+
+    if isinstance(request, Request):
+        return task_outputs
+
+    for i, o in enumerate(task_outputs):
+        task_outputs[i] = dict_to_struct(o)
+
+    return CallResponse(task_outputs=task_outputs)
 
 
 # async def parse_task_image_to_image_input(
