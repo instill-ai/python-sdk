@@ -27,7 +27,7 @@ from instill.helpers.const import (
     PROMPT_ROLES,
     CompletionInput,
     ChatInput,
-    ChatMultiModelInput,
+    ChatMultiModalInput,
     ImageToImageInput,
     TextToImageInput,
     VisionInput,
@@ -890,7 +890,7 @@ def construct_task_chat_output(
 
 async def parse_task_chat_to_multimodal_chat_input(
     request: Union[CallRequest, Request],
-) -> List[ChatMultiModelInput]:
+) -> List[ChatMultiModalInput]:
 
     # http test input
     if isinstance(request, Request):
@@ -899,20 +899,14 @@ async def parse_task_chat_to_multimodal_chat_input(
         test_prompt = test_data["prompt"]
         image_url = test_data["image_url"]
 
-        inp = ChatMultiModelInput()
+        inp = ChatMultiModalInput()
         inp.messages = [
             {
                 "role": "user",
-                "content": [
-                    {
-                        "text": test_prompt,
-                    },
-                    {
-                        "datauri": url_to_pil_image(image_url),
-                    },
-                ],
+                "content": test_prompt,
             }
         ]
+        inp.prompt_images = [[url_to_pil_image(image_url)]]
         return [inp]
 
     input_list = []
@@ -924,10 +918,34 @@ async def parse_task_chat_to_multimodal_chat_input(
             task_input_dict["parameter"] if "parameter" in task_input_dict else {}
         )
 
-        inp = ChatMultiModelInput()
+        inp = ChatMultiModalInput()
 
-        # messages
-        inp.messages = data["messages"]
+        # messages and prompt images
+        messages: List[Dict[str, str]] = []
+        images: List[List[Image.Image]] = []
+        for message in data["messages"]:
+            role = message["role"]
+            content = message["content"]
+
+            imgs = []
+            if role == PROMPT_ROLES[0]:
+                for c in content:
+                    if "text" in c:
+                        messages.insert(0, {"role": role, "content": c["text"]})
+                    elif "datauri" in c:
+                        if c["datauri"].startswith("http"):
+                            imgs.append(url_to_pil_image(c["datauri"]))
+                        elif "base64" in c["datauri"]:
+                            imgs.append(base64_to_pil_image(c["datauri"]))
+                    else:
+                        raise InvalidInputException
+            else:
+                messages.insert(0, {"role": role, "content": content[0]["text"]})
+
+            images.append(imgs)
+
+        inp.messages = messages
+        inp.prompt_images = images
 
         # max tokens
         if "max-tokens" in parameter:

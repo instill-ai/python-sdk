@@ -31,9 +31,9 @@ class ChatInput:
     stream: bool = False
 
 
-class ChatMultiModelInput:
-    messages: List[Union[Dict[str, str], Dict[str, Sequence]]]
-    prompt_images: Union[List[Image.Image], None] = None
+class ChatMultiModalInput:
+    messages: List[Dict[str, str]]
+    prompt_images: List[List[Image.Image]]
     max_tokens: int = 50
     n: int = 1
     seed: int = 0
