@@ -24,6 +24,8 @@ import instill.protogen.model.model.v1alpha.task_text_generation_pb2 as textgene
 import instill.protogen.model.model.v1alpha.task_text_to_image_pb2 as texttoimagepb
 import instill.protogen.model.model.v1alpha.task_visual_question_answering_pb2 as visualquestionansweringpb
 from instill.helpers.const import (
+    IMAGE_INPUT_TYPE_URL,
+    IMAGE_INPUT_TYPE_BASE64,
     PROMPT_ROLES,
     CompletionInput,
     ChatInput,
@@ -70,17 +72,32 @@ def dict_to_struct(dict_data):
     return struct_pb
 
 
-async def parse_task_classification_to_vision_input(
+async def _parse_vision_task_to_vision_input(
     request: Union[CallRequest, Request],
 ) -> List[VisionInput]:
+
+    def extract_data(data: dict) -> VisionInput:
+        image = data["image"]
+        image_type = data["type"]
+
+        inp = VisionInput()
+        if image_type == IMAGE_INPUT_TYPE_URL:
+            inp.image = url_to_pil_image(image)
+        elif image_type == IMAGE_INPUT_TYPE_BASE64:
+            inp.image = base64_to_pil_image(image)
+        else:
+            raise InvalidInputException
+
+        return inp
 
     # http test input
     if isinstance(request, Request):
         data: dict = await request.json()
 
-        inp = VisionInput()
-        inp.image = url_to_pil_image(data["image_url"])
-        return [inp]
+        if "type" not in data:
+            data["type"] = IMAGE_INPUT_TYPE_URL
+
+        return [extract_data(data)]
 
     input_list = []
     for task_input in request.task_inputs:
@@ -88,24 +105,16 @@ async def parse_task_classification_to_vision_input(
 
         data = task_input_dict["data"]
 
-        inp = VisionInput()
-
-        image = data["image"]
-
-        if ("image-base64" in image and "image-url" in image) or (
-            not "image-base64" in image and not "image-url" in image
-        ):
-            raise InvalidInputException
-        if "image-base64" in image and image["image-base64"] != "":
-            inp.image = base64_to_pil_image(image["image-base64"])
-        elif "image-url" in image and image["image-url"] != "":
-            inp.image = url_to_pil_image(image["image-url"])
-        else:
-            raise InvalidInputException
-
-        input_list.append(inp)
+        input_list.append(extract_data(data))
 
     return input_list
+
+
+async def parse_task_classification_to_vision_input(
+    request: Union[CallRequest, Request],
+) -> List[VisionInput]:
+
+    return await _parse_vision_task_to_vision_input(request)
 
 
 def construct_task_classification_output(
@@ -135,38 +144,7 @@ async def parse_task_detection_to_vision_input(
     request: Union[CallRequest, Request],
 ) -> List[VisionInput]:
 
-    # http test input
-    if isinstance(request, Request):
-        data: dict = await request.json()
-
-        inp = VisionInput()
-        inp.image = url_to_pil_image(data["image_url"])
-        return [inp]
-
-    input_list = []
-    for task_input in request.task_inputs:
-        task_input_dict = json_format.MessageToDict(task_input)
-
-        data = task_input_dict["data"]
-
-        inp = VisionInput()
-
-        image = data["image"]
-
-        if ("image-base64" in image and "image-url" in image) or (
-            not "image-base64" in image and not "image-url" in image
-        ):
-            raise InvalidInputException
-        if "image-base64" in image and image["image-base64"] != "":
-            inp.image = base64_to_pil_image(image["image-base64"])
-        elif "image-url" in image and image["image-url"] != "":
-            inp.image = url_to_pil_image(image["image-url"])
-        else:
-            raise InvalidInputException
-
-        input_list.append(inp)
-
-    return input_list
+    return await _parse_vision_task_to_vision_input(request)
 
 
 def construct_task_detection_output(
@@ -181,7 +159,7 @@ def construct_task_detection_output(
         categories (List[List[str]]): for each image input, the list of detected object's category
         scores (List[List[float]]): for each image input, the list of detected object's score
         bounding_boxes (List[List[tuple]]): for each image input, the list of detected object's bbox, with the format
-        (top, left, width, height)
+        (top left x, top left y, width, height)
     """
     if not len(categories) == len(scores) == len(bounding_boxes):
         raise InvalidOutputShapeException
@@ -191,10 +169,14 @@ def construct_task_detection_output(
         data = {}
         objects = []
         for cat, sc, bb in zip(category, score, bbox):
-            if isinstance(bb, np.ndarray):
-                bb = bb.tolist()
+            bb_dict = {
+                "top": bb[1],
+                "left": bb[0],
+                "width": bb[2],
+                "height": bb[3],
+            }
             objects.append(
-                {"category": str(cat), "score": float(sc), "bounding-box": list(bb)}
+                {"category": str(cat), "score": float(sc), "bounding-box": bb_dict}
             )
 
         data["objects"] = objects
@@ -214,38 +196,7 @@ async def parse_task_ocr_to_vision_input(
     request: Union[CallRequest, Request],
 ) -> List[VisionInput]:
 
-    # http test input
-    if isinstance(request, Request):
-        data: dict = await request.json()
-
-        inp = VisionInput()
-        inp.image = url_to_pil_image(data["image_url"])
-        return [inp]
-
-    input_list = []
-    for task_input in request.task_inputs:
-        task_input_dict = json_format.MessageToDict(task_input)
-
-        data = task_input_dict["data"]
-
-        inp = VisionInput()
-
-        image = data["image"]
-
-        if ("image-base64" in image and "image-url" in image) or (
-            not "image-base64" in image and not "image-url" in image
-        ):
-            raise InvalidInputException
-        if "image-base64" in image and image["image-base64"] != "":
-            inp.image = base64_to_pil_image(image["image-base64"])
-        elif "image-url" in image and image["image-url"] != "":
-            inp.image = url_to_pil_image(image["image-url"])
-        else:
-            raise InvalidInputException
-
-        input_list.append(inp)
-
-    return input_list
+    return await _parse_vision_task_to_vision_input(request)
 
 
 def construct_task_ocr_output(
@@ -260,7 +211,7 @@ def construct_task_ocr_output(
         texts (List[List[str]]): for each image input, the list of detected text
         scores (List[List[float]]): for each image input, the list of detected text's score
         bounding_boxes (List[List[tuple]]): for each image input, the list of detected text's bbox, with the format
-        (top, left, width, height)
+        (top left x, top left y, width, height)
     """
     if not len(texts) == len(scores) == len(bounding_boxes):
         raise InvalidOutputShapeException
@@ -270,10 +221,14 @@ def construct_task_ocr_output(
         data = {}
         objects = []
         for txt, sc, bb in zip(text, score, bbox):
-            if isinstance(bb, np.ndarray):
-                bb = bb.tolist()
+            bb_dict = {
+                "top": bb[1],
+                "left": bb[0],
+                "width": bb[2],
+                "height": bb[3],
+            }
             objects.append(
-                {"text": str(txt), "score": float(sc), "bounding-box": list(bb)}
+                {"text": str(txt), "score": float(sc), "bounding-box": bb_dict}
             )
 
         data["objects"] = objects
@@ -293,38 +248,7 @@ async def parse_task_instance_segmentation_to_vision_input(
     request: Union[CallRequest, Request],
 ) -> List[VisionInput]:
 
-    # http test input
-    if isinstance(request, Request):
-        data: dict = await request.json()
-
-        inp = VisionInput()
-        inp.image = url_to_pil_image(data["image_url"])
-        return [inp]
-
-    input_list = []
-    for task_input in request.task_inputs:
-        task_input_dict = json_format.MessageToDict(task_input)
-
-        data = task_input_dict["data"]
-
-        inp = VisionInput()
-
-        image = data["image"]
-
-        if ("image-base64" in image and "image-url" in image) or (
-            not "image-base64" in image and not "image-url" in image
-        ):
-            raise InvalidInputException
-        if "image-base64" in image and image["image-base64"] != "":
-            inp.image = base64_to_pil_image(image["image-base64"])
-        elif "image-url" in image and image["image-url"] != "":
-            inp.image = url_to_pil_image(image["image-url"])
-        else:
-            raise InvalidInputException
-
-        input_list.append(inp)
-
-    return input_list
+    return await _parse_vision_task_to_vision_input(request)
 
 
 def construct_task_instance_segmentation_output(
@@ -341,7 +265,7 @@ def construct_task_instance_segmentation_output(
         categories (List[List[str]]): for each image input, the list of detected object's category
         scores (List[List[float]]): for each image input, the list of detected text's score
         bounding_boxes (List[List[tuple]]): for each image input, the list of detected text's bbox, with the format
-        (top, left, width, height)
+        (top left x, top left y, width, height)
     """
     if not len(rles) == len(categories) == len(scores) == len(bounding_boxes):
         raise InvalidOutputShapeException
@@ -351,15 +275,18 @@ def construct_task_instance_segmentation_output(
         data = {}
         objects = []
         for r, cat, sc, bb in zip(rle, category, score, bbox):
-            if isinstance(bb, np.ndarray):
-                bb = bb.tolist()
-
+            bb_dict = {
+                "top": bb[1],
+                "left": bb[0],
+                "width": bb[2],
+                "height": bb[3],
+            }
             objects.append(
                 {
                     "rle": str(r),
                     "category": str(cat),
                     "score": float(sc),
-                    "bounding-box": list(bb),
+                    "bounding-box": bb_dict,
                 }
             )
 
@@ -380,38 +307,7 @@ async def parse_task_semantic_segmentation_to_vision_input(
     request: Union[CallRequest, Request],
 ) -> List[VisionInput]:
 
-    # http test input
-    if isinstance(request, Request):
-        data: dict = await request.json()
-
-        inp = VisionInput()
-        inp.image = url_to_pil_image(data["image_url"])
-        return [inp]
-
-    input_list = []
-    for task_input in request.task_inputs:
-        task_input_dict = json_format.MessageToDict(task_input)
-
-        data = task_input_dict["data"]
-
-        inp = VisionInput()
-
-        image = data["image"]
-
-        if ("image-base64" in image and "image-url" in image) or (
-            not "image-base64" in image and not "image-url" in image
-        ):
-            raise InvalidInputException
-        if "image-base64" in image and image["image-base64"] != "":
-            inp.image = base64_to_pil_image(image["image-base64"])
-        elif "image-url" in image and image["image-url"] != "":
-            inp.image = url_to_pil_image(image["image-url"])
-        else:
-            raise InvalidInputException
-
-        input_list.append(inp)
-
-    return input_list
+    return await _parse_vision_task_to_vision_input(request)
 
 
 def construct_task_semantic_segmentation_output(
@@ -453,38 +349,7 @@ async def parse_task_keypoint_to_vision_input(
     request: Union[CallRequest, Request],
 ) -> List[VisionInput]:
 
-    # http test input
-    if isinstance(request, Request):
-        data: dict = await request.json()
-
-        inp = VisionInput()
-        inp.image = url_to_pil_image(data["image_url"])
-        return [inp]
-
-    input_list = []
-    for task_input in request.task_inputs:
-        task_input_dict = json_format.MessageToDict(task_input)
-
-        data = task_input_dict["data"]
-
-        inp = VisionInput()
-
-        image = data["image"]
-
-        if ("image-base64" in image and "image-url" in image) or (
-            not "image-base64" in image and not "image-url" in image
-        ):
-            raise InvalidInputException
-        if "image-base64" in image and image["image-base64"] != "":
-            inp.image = base64_to_pil_image(image["image-base64"])
-        elif "image-url" in image and image["image-url"] != "":
-            inp.image = url_to_pil_image(image["image-url"])
-        else:
-            raise InvalidInputException
-
-        input_list.append(inp)
-
-    return input_list
+    return await _parse_vision_task_to_vision_input(request)
 
 
 def construct_task_keypoint_output(
@@ -500,7 +365,7 @@ def construct_task_keypoint_output(
         with the format (x_coordinate, y_coordinate, visibility)
         scores (List[List[float]]): for each image input, the list of detected object's score
         bounding_boxes (List[List[tuple]]): for each image input, the list of detected object's bbox, with the format
-        (top, left, width, height)
+        (top left x, top left y, width, height)
     """
 
     if not len(keypoints) == len(scores) == len(bounding_boxes):
@@ -513,19 +378,16 @@ def construct_task_keypoint_output(
         for kps, sc, bb in zip(keypoint, score, bbox):
             point_list = []
             for kp in kps:
-                if isinstance(kp, np.ndarray):
-                    kp = kp.tolist()
-                dd = {"x": kp[0], "y": kp[1], "v": kp[2]}
-                if isinstance(request, Request):
-                    point_list.append(dd)
-                else:
-                    point_list.append(dict_to_struct(dd))
+                point_list.append({"x": kp[0], "y": kp[1], "v": kp[2]})
 
-            if isinstance(bb, np.ndarray):
-                bb = bb.tolist()
-
+            bb_dict = {
+                "top": bb[1],
+                "left": bb[0],
+                "width": bb[2],
+                "height": bb[3],
+            }
             objects.append(
-                {"keypoints": point_list, "score": float(sc), "bounding-box": list(bb)}
+                {"keypoints": point_list, "score": float(sc), "bounding-box": bb_dict}
             )
 
         data["objects"] = objects

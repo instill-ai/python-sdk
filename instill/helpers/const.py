@@ -5,6 +5,9 @@ from PIL import Image
 
 PROMPT_ROLES = ["user", "assistant", "system"]
 
+IMAGE_INPUT_TYPE_URL = "url"
+IMAGE_INPUT_TYPE_BASE64 = "base64"
+
 
 class VisionInput:
     image: Image.Image
