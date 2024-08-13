@@ -24,12 +24,12 @@ import instill.protogen.model.model.v1alpha.task_text_generation_pb2 as textgene
 import instill.protogen.model.model.v1alpha.task_text_to_image_pb2 as texttoimagepb
 import instill.protogen.model.model.v1alpha.task_visual_question_answering_pb2 as visualquestionansweringpb
 from instill.helpers.const import (
-    IMAGE_INPUT_TYPE_URL,
     IMAGE_INPUT_TYPE_BASE64,
+    IMAGE_INPUT_TYPE_URL,
     PROMPT_ROLES,
-    CompletionInput,
     ChatInput,
     ChatMultiModalInput,
+    CompletionInput,
     ImageToImageInput,
     TextToImageInput,
     VisionInput,
@@ -867,11 +867,11 @@ async def parse_task_text_to_image_input(
 
         # negative prompt
         if "negative-prompt" in parameter:
-            inp.negative_prompt = int(parameter["negative-prompt"])
+            inp.negative_prompt = str(parameter["negative-prompt"])
 
         # aspect ratio
         if "aspect-ratio" in parameter:
-            inp.aspect_ratio = int(parameter["aspect-ratio"])
+            inp.aspect_ratio = str(parameter["aspect-ratio"])
 
         # number of generated outputs
         if "n" in parameter:
@@ -890,7 +890,7 @@ def construct_task_text_to_image_output(
     request: Union[CallRequest, Request],
     finish_reasons: List[List[str]],
     images: List[List[str]],
-) -> Union[CallResponse, List[List[str]]]:
+) -> Union[CallResponse, List]:
     """Construct trigger output for text to image task
 
     Args:
