@@ -19,8 +19,13 @@ class ModelConfigException(Exception):
 
 
 class InvalidInputException(Exception):
-    def __str__(self) -> str:
-        return "trigger request input error"
+    def __init__(self, field):
+        self.field = field
+
+    def __str__(
+        self,
+    ) -> str:
+        return f"trigger request input error: {self.field}"
 
 
 class InvalidOutputShapeException(Exception):

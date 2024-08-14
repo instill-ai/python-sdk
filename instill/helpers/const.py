@@ -8,6 +8,14 @@ PROMPT_ROLES = ["user", "assistant", "system"]
 IMAGE_INPUT_TYPE_URL = "url"
 IMAGE_INPUT_TYPE_BASE64 = "base64"
 
+EMBEDDING_FORMAT_FLOAT = "float"
+EMBEDDING_FORMAT_BASE64 = "base64"
+EMBEDDING_INPUT_TYPE_QUERY = "query"
+EMBEDDING_INPUT_TYPE_DOCUMENT = "document"
+EMBEDDING_TRUNCATE_NONE = "none"
+EMBEDDING_TRUNCATE_END = "end"
+EMBEDDING_TRUNCATE_START = "start"
+
 
 class VisionInput:
     image: Image.Image
@@ -43,6 +51,14 @@ class ChatMultiModalInput:
     temperature: float = 0.7
     top_p: int = 1
     stream: bool = False
+
+
+class TextEmbeddingInput:
+    contents: List[str]
+    format: str = EMBEDDING_FORMAT_FLOAT
+    dimensions: int = 512
+    input_type: str = EMBEDDING_INPUT_TYPE_QUERY
+    truncate: str = EMBEDDING_TRUNCATE_END
 
 
 class TextToImageInput:

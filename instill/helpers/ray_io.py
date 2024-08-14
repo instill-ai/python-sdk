@@ -31,6 +31,7 @@ from instill.helpers.const import (
     ChatMultiModalInput,
     CompletionInput,
     ImageToImageInput,
+    TextEmbeddingInput,
     TextToImageInput,
     VisionInput,
 )
@@ -86,7 +87,7 @@ async def _parse_vision_task_to_vision_input(
         elif image_type == IMAGE_INPUT_TYPE_BASE64:
             inp.image = base64_to_pil_image(image)
         else:
-            raise InvalidInputException
+            raise InvalidInputException("input image type not supported")
 
         return inp
 
@@ -792,15 +793,14 @@ async def parse_task_chat_to_multimodal_chat_input(
             imgs = []
             if role == PROMPT_ROLES[0]:
                 for c in content:
-                    if "text" in c:
+                    if c["type"] == "text":
                         messages.insert(0, {"role": role, "content": c["text"]})
-                    elif "datauri" in c:
-                        if c["datauri"].startswith("http"):
-                            imgs.append(url_to_pil_image(c["datauri"]))
-                        elif "base64" in c["datauri"]:
-                            imgs.append(base64_to_pil_image(c["datauri"]))
+                    elif c["type"] == "image-url":
+                        imgs.append(url_to_pil_image(c["image-url"]))
+                    elif c["type"] == "image-base64":
+                        imgs.append(base64_to_pil_image(c["image-base64"]))
                     else:
-                        raise InvalidInputException
+                        raise InvalidInputException("input content type not supported")
             else:
                 messages.insert(0, {"role": role, "content": content[0]["text"]})
 
@@ -1015,3 +1015,135 @@ def construct_task_text_to_image_output(
 #         )
 
 #     return CallResponse(task_outputs=task_outputs)
+
+
+async def parse_task_embedding_to_text_embedding_input(
+    request: Union[CallRequest, Request],
+) -> List[TextEmbeddingInput]:
+
+    # http test input
+    if isinstance(request, Request):
+        test_data: dict = await request.json()
+
+        test_prompt = test_data["prompt"]
+
+        inp = TextEmbeddingInput()
+        inp.contents = [test_prompt]
+
+        return [inp]
+
+    input_list = []
+    for task_input in request.task_inputs:
+        task_input_dict = json_format.MessageToDict(task_input)
+
+        data = task_input_dict["data"]
+        parameter = (
+            task_input_dict["parameter"] if "parameter" in task_input_dict else {}
+        )
+
+        inp = TextEmbeddingInput()
+
+        # messages and prompt images
+        contents: List[str] = []
+        for content in data["input"]:
+            if content["type"] == "text":
+                contents.append(content["text"])
+            else:
+                raise InvalidInputException("can only process text input")
+
+        inp.contents = contents
+
+        # max tokens
+        if "format" in parameter:
+            inp.format = str(parameter["format"])
+
+        # temperature
+        if "dimensions" in parameter:
+            inp.dimensions = int(parameter["dimensions"])
+
+        # number of generated outputs
+        if "input-type" in parameter:
+            inp.input_type = str(parameter["input-type"])
+
+        # seed
+        if "truncate" in parameter:
+            inp.truncate = str(parameter["truncate"])
+
+        input_list.append(inp)
+
+    return input_list
+
+
+def construct_task_embedding_output(
+    request: Union[CallRequest, Request],
+    indexes: List[List[int]],
+    created_timestamps: List[List[int]],
+    embeddings: List[List[dict]],
+) -> Union[CallResponse, List]:
+
+    if not len(embeddings) == len(indexes) == len(created_timestamps):
+        raise InvalidOutputShapeException
+    if not len(embeddings[0]) == len(indexes[0]) == len(created_timestamps[0]):
+        raise InvalidOutputShapeException
+
+    task_outputs = []
+    # data
+    for index_list, created_timestamp_list, embedding_list in zip(
+        indexes, created_timestamps, embeddings
+    ):
+        data = {}
+        embeds = []
+        for (
+            index,
+            created_timestamp,
+            embed,
+        ) in zip(index_list, created_timestamp_list, embedding_list):
+            embeds.append(
+                {
+                    "index": index,
+                    "vector": embed,
+                    "created": created_timestamp,
+                }
+            )
+        data["embeddings"] = embeds
+        task_outputs.append({"data": data})
+
+    if isinstance(request, Request):
+        return task_outputs
+
+    for i, o in enumerate(task_outputs):
+        task_outputs[i] = dict_to_struct(o)
+
+    return CallResponse(task_outputs=task_outputs)
+
+
+async def parse_custom_input(
+    request: Union[CallRequest, Request],
+) -> List[dict]:
+
+    # http test input
+    if isinstance(request, Request):
+        test_data: dict = await request.json()
+
+        return [test_data]
+
+    input_list = []
+    for task_input in request.task_inputs:
+        task_input_dict = json_format.MessageToDict(task_input)
+
+        input_list.append(task_input_dict)
+
+    return input_list
+
+
+def construct_custom_output(
+    request: Union[CallRequest, Request], outputs: List[dict]
+) -> Union[CallResponse, List]:
+
+    if isinstance(request, Request):
+        return outputs
+
+    for i, o in enumerate(outputs):
+        outputs[i] = dict_to_struct(o)
+
+    return CallResponse(task_outputs=outputs)
