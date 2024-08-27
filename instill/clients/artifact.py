@@ -298,18 +298,22 @@ class ArtifactClient(Client):
         self,
         namespace_id: str,
         catalog_id: str,
-        files_filter: artifact_interface.ListCatalogFilesFilter,
-        page_size: int = 100,
+        files_filter: list[str],
+        page_size: int = 10,
         page_token: str = "",
         async_enabled: bool = False,
     ) -> artifact_interface.ListCatalogFilesResponse:
+        list_catalog_files_filter = artifact_interface.ListCatalogFilesFilter()
+        for file_uid in files_filter:
+            list_catalog_files_filter.file_uids.append(file_uid)
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.ListCatalogFiles,
                 request=artifact_interface.ListCatalogFilesRequest(
                     namespace_id=namespace_id,
                     catalog_id=catalog_id,
-                    filter=files_filter,
+                    filter=list_catalog_files_filter,
                     page_size=page_size,
                     page_token=page_token,
                 ),
@@ -321,7 +325,7 @@ class ArtifactClient(Client):
             request=artifact_interface.ListCatalogFilesRequest(
                 namespace_id=namespace_id,
                 catalog_id=catalog_id,
-                filter=files_filter,
+                filter=list_catalog_files_filter,
                 page_size=page_size,
                 page_token=page_token,
             ),
@@ -542,7 +546,7 @@ class ArtifactClient(Client):
         self,
         namespace_id: str,
         catalog_id: str,
-        page_size: int = 100,
+        page_size: int = 10,
         page_token: str = "",
         async_enabled: bool = False,
     ) -> conversation_interface.ListConversationsResponse:
@@ -675,7 +679,7 @@ class ArtifactClient(Client):
         conversation_id: str,
         latest_k: int,
         include_system_messages: bool,
-        page_size: int = 100,
+        page_size: int = 10,
         page_token: str = "",
         async_enabled: bool = False,
     ) -> conversation_interface.ListMessagesResponse:

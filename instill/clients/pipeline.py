@@ -20,8 +20,6 @@ from instill.configuration import global_config
 from instill.protogen.vdp.pipeline.v1beta import common_pb2
 from instill.utils.error_handler import grpc_handler
 
-# from instill.utils.logger import Logger
-
 
 class PipelineClient(Client):
     def __init__(
@@ -342,24 +340,28 @@ class PipelineClient(Client):
         data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerAsyncUserPipelineResponse:
+        request = pipeline_interface.TriggerAsyncUserPipelineRequest(
+            name=f"{self.target_namespace}/pipelines/{name}",
+        )
+        for input_value in inputs:
+            trigger_inputs = Struct()
+            trigger_inputs.update(input_value)
+            request.inputs.append(trigger_inputs)
+        for d in data:
+            trigger_data = pipeline_interface.TriggerData()
+            trigger_data.variable.update(d)
+            request.data.append(trigger_data)
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.TriggerAsyncUserPipeline,
-                request=pipeline_interface.TriggerAsyncUserPipelineRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}",
-                    inputs=inputs,
-                    data=data,
-                ),
+                request=request,
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerAsyncUserPipeline,
-            request=pipeline_interface.TriggerAsyncUserPipelineRequest(
-                name=f"{self.target_namespace}/pipelines/{name}",
-                inputs=inputs,
-                data=data,
-            ),
+            request=request,
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
@@ -370,9 +372,12 @@ class PipelineClient(Client):
         pipeline_id: str,
         event: str,
         code: str,
-        data: Struct,
+        data: dict,
         async_enabled: bool = False,
     ) -> pipeline_interface.SendNamespacePipelineEventResponse:
+        trigger_data = Struct()
+        trigger_data.update(data)
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[
@@ -383,7 +388,7 @@ class PipelineClient(Client):
                     pipeline_id=pipeline_id,
                     event=event,
                     code=code,
-                    data=data,
+                    data=trigger_data,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -395,7 +400,7 @@ class PipelineClient(Client):
                 pipeline_id=pipeline_id,
                 event=event,
                 code=code,
-                data=data,
+                data=trigger_data,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -2022,26 +2027,32 @@ class PipelineClient(Client):
         data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerOrganizationPipelineReleaseResponse:
+        request = pipeline_interface.TriggerOrganizationPipelineReleaseRequest(
+            name=f"{self.target_namespace}/pipelines/{name}",
+            inputs=inputs,
+            data=data,
+        )
+        for input_value in inputs:
+            trigger_inputs = Struct()
+            trigger_inputs.update(input_value)
+            request.inputs.append(trigger_inputs)
+        for d in data:
+            trigger_data = pipeline_interface.TriggerData()
+            trigger_data.variable.update(d)
+            request.data.append(trigger_data)
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[
                     self.instance
                 ].async_client.TriggerOrganizationPipelineRelease,
-                request=pipeline_interface.TriggerOrganizationPipelineReleaseRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}",
-                    inputs=inputs,
-                    data=data,
-                ),
+                request=request,
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerOrganizationPipelineRelease,
-            request=pipeline_interface.TriggerOrganizationPipelineReleaseRequest(
-                name=f"{self.target_namespace}/pipelines/{name}",
-                inputs=inputs,
-                data=data,
-            ),
+            request=request,
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
