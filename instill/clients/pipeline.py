@@ -7,6 +7,7 @@ from google.protobuf.struct_pb2 import Struct
 # common
 import instill.protogen.common.healthcheck.v1beta.healthcheck_pb2 as healthcheck
 import instill.protogen.vdp.pipeline.v1beta.component_definition_pb2 as component_definition
+import instill.protogen.vdp.pipeline.v1beta.integration_pb2 as integration_interface
 
 # pipeline
 import instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 as pipeline_interface
@@ -18,8 +19,6 @@ from instill.clients.instance import InstillInstance
 from instill.configuration import global_config
 from instill.protogen.vdp.pipeline.v1beta import common_pb2
 from instill.utils.error_handler import grpc_handler
-
-# from instill.utils.logger import Logger
 
 
 class PipelineClient(Client):
@@ -341,11 +340,126 @@ class PipelineClient(Client):
         data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerAsyncUserPipelineResponse:
+        request = pipeline_interface.TriggerAsyncUserPipelineRequest(
+            name=f"{self.target_namespace}/pipelines/{name}",
+        )
+        for input_value in inputs:
+            trigger_inputs = Struct()
+            trigger_inputs.update(input_value)
+            request.inputs.append(trigger_inputs)
+        for d in data:
+            trigger_data = pipeline_interface.TriggerData()
+            trigger_data.variable.update(d)
+            request.data.append(trigger_data)
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.TriggerAsyncUserPipeline,
-                request=pipeline_interface.TriggerAsyncUserPipelineRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}",
+                request=request,
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TriggerAsyncUserPipeline,
+            request=request,
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def send_namespace_pipeline_event(
+        self,
+        namespace_id: str,
+        pipeline_id: str,
+        event: str,
+        code: str,
+        data: dict,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.SendNamespacePipelineEventResponse:
+        trigger_data = Struct()
+        trigger_data.update(data)
+
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.SendNamespacePipelineEvent,
+                request=pipeline_interface.SendNamespacePipelineEventRequest(
+                    namespace_id=namespace_id,
+                    pipeline_id=pipeline_id,
+                    event=event,
+                    code=code,
+                    data=trigger_data,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.SendNamespacePipelineEvent,
+            request=pipeline_interface.SendNamespacePipelineEventRequest(
+                namespace_id=namespace_id,
+                pipeline_id=pipeline_id,
+                event=event,
+                code=code,
+                data=trigger_data,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def send_namespace_pipeline_release_event(
+        self,
+        namespace_id: str,
+        pipeline_id: str,
+        release_id: str,
+        event: str,
+        code: str,
+        data: Struct,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.SendNamespacePipelineReleaseEventResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.SendNamespacePipelineReleaseEvent,
+                request=pipeline_interface.SendNamespacePipelineReleaseEventRequest(
+                    namespace_id=namespace_id,
+                    pipeline_id=pipeline_id,
+                    release_id=release_id,
+                    event=event,
+                    code=code,
+                    data=data,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.SendNamespacePipelineReleaseEvent,
+            request=pipeline_interface.SendNamespacePipelineReleaseEventRequest(
+                namespace_id=namespace_id,
+                pipeline_id=pipeline_id,
+                release_id=release_id,
+                event=event,
+                code=code,
+                data=data,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def trigger_namespace_pipeline(
+        self,
+        namespace_id: str,
+        pipeline_id: str,
+        inputs: list[Struct],
+        data: list[pipeline_interface.TriggerData],
+        async_enabled: bool = False,
+    ) -> pipeline_interface.TriggerNamespacePipelineResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.TriggerNamespacePipeline,
+                request=pipeline_interface.TriggerNamespacePipelineRequest(
+                    namespace_id=namespace_id,
+                    pipeline_id=pipeline_id,
                     inputs=inputs,
                     data=data,
                 ),
@@ -353,11 +467,509 @@ class PipelineClient(Client):
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.TriggerAsyncUserPipeline,
-            request=pipeline_interface.TriggerAsyncUserPipelineRequest(
-                name=f"{self.target_namespace}/pipelines/{name}",
+            method=self.hosts[self.instance].client.TriggerNamespacePipeline,
+            request=pipeline_interface.TriggerNamespacePipelineRequest(
+                namespace_id=namespace_id,
+                pipeline_id=pipeline_id,
                 inputs=inputs,
                 data=data,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def trigger_namespace_pipeline_with_stream(
+        self,
+        namespace_id: str,
+        pipeline_id: str,
+        inputs: list[Struct],
+        data: list[pipeline_interface.TriggerData],
+        async_enabled: bool = False,
+    ) -> pipeline_interface.TriggerNamespacePipelineWithStreamResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.TriggerNamespacePipelineWithStream,
+                request=pipeline_interface.TriggerNamespacePipelineWithStreamRequest(
+                    namespace_id=namespace_id,
+                    pipeline_id=pipeline_id,
+                    inputs=inputs,
+                    data=data,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TriggerNamespacePipelineWithStream,
+            request=pipeline_interface.TriggerNamespacePipelineWithStreamRequest(
+                namespace_id=namespace_id,
+                pipeline_id=pipeline_id,
+                inputs=inputs,
+                data=data,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def trigger_async_namespace_pipeline(
+        self,
+        namespace_id: str,
+        pipeline_id: str,
+        inputs: list[Struct],
+        data: list[pipeline_interface.TriggerData],
+        async_enabled: bool = False,
+    ) -> pipeline_interface.TriggerAsyncNamespacePipelineResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.TriggerAsyncNamespacePipeline,
+                request=pipeline_interface.TriggerAsyncNamespacePipelineRequest(
+                    namespace_id=namespace_id,
+                    pipeline_id=pipeline_id,
+                    inputs=inputs,
+                    data=data,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TriggerAsyncNamespacePipeline,
+            request=pipeline_interface.TriggerAsyncNamespacePipelineRequest(
+                namespace_id=namespace_id,
+                pipeline_id=pipeline_id,
+                inputs=inputs,
+                data=data,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def create_namespace_pipeline_release(
+        self,
+        namespace_id: str,
+        pipeline_id: str,
+        release: pipeline_interface.PipelineRelease,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.CreateNamespacePipelineReleaseResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.CreateNamespacePipelineRelease,
+                request=pipeline_interface.CreateNamespacePipelineReleaseRequest(
+                    namespace_id=namespace_id,
+                    pipeline_id=pipeline_id,
+                    release=release,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.CreateNamespacePipelineRelease,
+            request=pipeline_interface.CreateNamespacePipelineReleaseRequest(
+                namespace_id=namespace_id,
+                pipeline_id=pipeline_id,
+                release=release,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def list_namespace_pipeline_releases(
+        self,
+        namespace_id: str,
+        pipeline_id: str,
+        total_size: int = 10,
+        next_page_token: str = "",
+        filter_str: str = "",
+        show_deleted: bool = False,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.ListNamespacePipelineReleasesResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.ListNamespacePipelineReleases,
+                request=pipeline_interface.ListNamespacePipelineReleasesRequest(
+                    namespace_id=namespace_id,
+                    pipeline_id=pipeline_id,
+                    view=pipeline_interface.Pipeline.VIEW_RECIPE,
+                    page_size=total_size,
+                    page_token=next_page_token,
+                    filter=filter_str,
+                    show_deleted=show_deleted,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.ListNamespacePipelineReleases,
+            request=pipeline_interface.ListNamespacePipelineReleasesRequest(
+                namespace_id=namespace_id,
+                pipeline_id=pipeline_id,
+                view=pipeline_interface.Pipeline.VIEW_RECIPE,
+                page_size=total_size,
+                page_token=next_page_token,
+                filter=filter_str,
+                show_deleted=show_deleted,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def get_namespace_pipeline_release(
+        self,
+        namespace_id: str,
+        pipeline_id: str,
+        release_id: str,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.GetNamespacePipelineReleaseResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.GetNamespacePipelineRelease,
+                request=pipeline_interface.GetNamespacePipelineReleaseRequest(
+                    namespace_id=namespace_id,
+                    pipeline_id=pipeline_id,
+                    release_id=release_id,
+                    view=pipeline_interface.Pipeline.VIEW_RECIPE,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetNamespacePipelineRelease,
+            request=pipeline_interface.GetNamespacePipelineReleaseRequest(
+                namespace_id=namespace_id,
+                pipeline_id=pipeline_id,
+                release_id=release_id,
+                view=pipeline_interface.Pipeline.VIEW_RECIPE,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def update_namespace_pipeline_release(
+        self,
+        namespace_id: str,
+        pipeline_id: str,
+        release_id: str,
+        release: pipeline_interface.PipelineRelease,
+        mask: field_mask_pb2.FieldMask,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.UpdateNamespacePipelineReleaseResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.UpdateNamespacePipelineRelease,
+                request=pipeline_interface.UpdateNamespacePipelineReleaseRequest(
+                    namespace_id=namespace_id,
+                    pipeline_id=pipeline_id,
+                    release_id=release_id,
+                    release=release,
+                    update_mask=mask,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.UpdateNamespacePipelineRelease,
+            request=pipeline_interface.UpdateNamespacePipelineReleaseRequest(
+                namespace_id=namespace_id,
+                pipeline_id=pipeline_id,
+                release_id=release_id,
+                release=release,
+                update_mask=mask,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def delete_namespace_pipeline_release(
+        self,
+        namespace_id: str,
+        pipeline_id: str,
+        release_id: str,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.DeleteNamespacePipelineReleaseResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.DeleteNamespacePipelineRelease,
+                request=pipeline_interface.DeleteNamespacePipelineReleaseRequest(
+                    namespace_id=namespace_id,
+                    pipeline_id=pipeline_id,
+                    release_id=release_id,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.DeleteNamespacePipelineRelease,
+            request=pipeline_interface.DeleteNamespacePipelineReleaseRequest(
+                namespace_id=namespace_id,
+                pipeline_id=pipeline_id,
+                release_id=release_id,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def clone_namespace_pipeline_release(
+        self,
+        namespace_id: str,
+        pipeline_id: str,
+        release_id: str,
+        target: str,
+        description: str,
+        sharing: common_pb2.Sharing,
+        async_enabled: bool = False,
+    ) -> pipeline_interface.CloneNamespacePipelineReleaseResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.CloneNamespacePipelineRelease,
+                request=pipeline_interface.CloneNamespacePipelineReleaseRequest(
+                    namespace_id=namespace_id,
+                    pipeline_id=pipeline_id,
+                    release_id=release_id,
+                    target=f"{self.target_namespace}/pipelines/{target}",
+                    description=description,
+                    sharing=sharing,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.CloneNamespacePipelineRelease,
+            request=pipeline_interface.CloneNamespacePipelineReleaseRequest(
+                namespace_id=namespace_id,
+                pipeline_id=pipeline_id,
+                release_id=release_id,
+                target=f"{self.target_namespace}/pipelines/{target}",
+                description=description,
+                sharing=sharing,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def trigger_namespace_pipeline_release(
+        self,
+        namespace_id: str,
+        pipeline_id: str,
+        release_id: str,
+        inputs: list[Struct],
+        data: list[pipeline_interface.TriggerData],
+        async_enabled: bool = False,
+    ) -> pipeline_interface.TriggerNamespacePipelineReleaseResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.TriggerNamespacePipelineRelease,
+                request=pipeline_interface.TriggerNamespacePipelineReleaseRequest(
+                    namespace_id=namespace_id,
+                    pipeline_id=pipeline_id,
+                    release_id=release_id,
+                    inputs=inputs,
+                    data=data,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TriggerNamespacePipelineRelease,
+            request=pipeline_interface.TriggerNamespacePipelineReleaseRequest(
+                namespace_id=namespace_id,
+                pipeline_id=pipeline_id,
+                release_id=release_id,
+                inputs=inputs,
+                data=data,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def trigger_async_namespace_pipeline_release(
+        self,
+        namespace_id: str,
+        pipeline_id: str,
+        release_id: str,
+        inputs: list[Struct],
+        data: list[pipeline_interface.TriggerData],
+        async_enabled: bool = False,
+    ) -> pipeline_interface.TriggerAsyncNamespacePipelineReleaseResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[
+                    self.instance
+                ].async_client.TriggerAsyncNamespacePipelineRelease,
+                request=pipeline_interface.TriggerAsyncNamespacePipelineReleaseRequest(
+                    namespace_id=namespace_id,
+                    pipeline_id=pipeline_id,
+                    release_id=release_id,
+                    inputs=inputs,
+                    data=data,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[
+                self.instance
+            ].client.TriggerAsyncNamespacePipelineRelease,
+            request=pipeline_interface.TriggerAsyncNamespacePipelineReleaseRequest(
+                namespace_id=namespace_id,
+                pipeline_id=pipeline_id,
+                release_id=release_id,
+                inputs=inputs,
+                data=data,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def create_namespace_secret(
+        self,
+        namespace_id: str,
+        secret: secret_interface.Secret,
+        async_enabled: bool = False,
+    ) -> secret_interface.CreateNamespaceSecretResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.CreateNamespaceSecret,
+                request=secret_interface.CreateNamespaceSecretRequest(
+                    namespace_id=namespace_id,
+                    secret=secret,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.CreateNamespaceSecret,
+            request=secret_interface.CreateNamespaceSecretRequest(
+                namespace_id=namespace_id,
+                secret=secret,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def list_namespace_secrets(
+        self,
+        namespace_id: str,
+        total_size: int = 10,
+        next_page_token: str = "",
+        async_enabled: bool = False,
+    ) -> secret_interface.ListNamespaceSecretsResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.ListNamespaceSecrets,
+                request=secret_interface.ListNamespaceSecretsRequest(
+                    namespace_id=namespace_id,
+                    page_size=total_size,
+                    page_token=next_page_token,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.ListNamespaceSecrets,
+            request=secret_interface.ListNamespaceSecretsRequest(
+                namespace_id=namespace_id,
+                page_size=total_size,
+                page_token=next_page_token,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def get_namespace_secret(
+        self,
+        namespace_id: str,
+        secret_id: str,
+        async_enabled: bool = False,
+    ) -> secret_interface.GetNamespaceSecretResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.GetNamespaceSecret,
+                request=secret_interface.GetNamespaceSecretRequest(
+                    namespace_id=namespace_id,
+                    secret_id=secret_id,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetNamespaceSecret,
+            request=secret_interface.GetNamespaceSecretRequest(
+                namespace_id=namespace_id,
+                secret_id=secret_id,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def update_namespace_secret(
+        self,
+        namespace_id: str,
+        secret_id: str,
+        secret: secret_interface.Secret,
+        mask: field_mask_pb2.FieldMask,
+        async_enabled: bool = False,
+    ) -> secret_interface.UpdateNamespaceSecretResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.UpdateNamespaceSecret,
+                request=secret_interface.UpdateNamespaceSecretRequest(
+                    namespace_id=namespace_id,
+                    secret_id=secret_id,
+                    secret=secret,
+                    update_mask=mask,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.UpdateNamespaceSecret,
+            request=secret_interface.UpdateNamespaceSecretRequest(
+                namespace_id=namespace_id,
+                secret_id=secret_id,
+                secret=secret,
+                update_mask=mask,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def delete_namespace_secret(
+        self,
+        namespace_id: str,
+        secret_id: str,
+        async_enabled: bool = False,
+    ) -> secret_interface.DeleteNamespaceSecretResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.DeleteNamespaceSecret,
+                request=secret_interface.DeleteNamespaceSecretRequest(
+                    namespace_id=namespace_id,
+                    secret_id=secret_id,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.DeleteNamespaceSecret,
+            request=secret_interface.DeleteNamespaceSecretRequest(
+                namespace_id=namespace_id,
+                secret_id=secret_id,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -1415,26 +2027,32 @@ class PipelineClient(Client):
         data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerOrganizationPipelineReleaseResponse:
+        request = pipeline_interface.TriggerOrganizationPipelineReleaseRequest(
+            name=f"{self.target_namespace}/pipelines/{name}",
+            inputs=inputs,
+            data=data,
+        )
+        for input_value in inputs:
+            trigger_inputs = Struct()
+            trigger_inputs.update(input_value)
+            request.inputs.append(trigger_inputs)
+        for d in data:
+            trigger_data = pipeline_interface.TriggerData()
+            trigger_data.variable.update(d)
+            request.data.append(trigger_data)
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[
                     self.instance
                 ].async_client.TriggerOrganizationPipelineRelease,
-                request=pipeline_interface.TriggerOrganizationPipelineReleaseRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}",
-                    inputs=inputs,
-                    data=data,
-                ),
+                request=request,
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerOrganizationPipelineRelease,
-            request=pipeline_interface.TriggerOrganizationPipelineReleaseRequest(
-                name=f"{self.target_namespace}/pipelines/{name}",
-                inputs=inputs,
-                data=data,
-            ),
+            request=request,
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
@@ -1905,6 +2523,298 @@ class PipelineClient(Client):
             method=self.hosts[self.instance].client.CheckName,
             request=common_pb2.CheckNameRequest(
                 name=f"{self.target_namespace}/pipelines/{name}",
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def list_pipeline_runs(
+        self,
+        namespace_id: str,
+        pipeline_id: str,
+        page: int = 0,
+        total_size: int = 10,
+        filter_str: str = "",
+        order_by: str = "",
+        async_enabled: bool = False,
+    ) -> pipeline_interface.ListPipelineRunsResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.ListPipelineRuns,
+                request=pipeline_interface.ListPipelineRunsRequest(
+                    namespace_id=namespace_id,
+                    pipeline_id=pipeline_id,
+                    view=pipeline_interface.Pipeline.VIEW_RECIPE,
+                    page=page,
+                    page_size=total_size,
+                    filter=filter_str,
+                    order_by=order_by,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.ListPipelineRuns,
+            request=pipeline_interface.ListPipelineRunsRequest(
+                namespace_id=namespace_id,
+                pipeline_id=pipeline_id,
+                view=pipeline_interface.Pipeline.VIEW_RECIPE,
+                page=page,
+                page_size=total_size,
+                filter=filter_str,
+                order_by=order_by,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def list_component_runs(
+        self,
+        pipeline_run_id: str,
+        page: int = 0,
+        total_size: int = 10,
+        filter_str: str = "",
+        order_by: str = "",
+        async_enabled: bool = False,
+    ) -> pipeline_interface.ListComponentRunsResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.ListComponentRuns,
+                request=pipeline_interface.ListComponentRunsRequest(
+                    pipeline_run_id=pipeline_run_id,
+                    view=pipeline_interface.Pipeline.VIEW_RECIPE,
+                    page=page,
+                    page_size=total_size,
+                    filter=filter_str,
+                    order_by=order_by,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.ListComponentRuns,
+            request=pipeline_interface.ListComponentRunsRequest(
+                pipeline_run_id=pipeline_run_id,
+                view=pipeline_interface.Pipeline.VIEW_RECIPE,
+                page=page,
+                page_size=total_size,
+                filter=filter_str,
+                order_by=order_by,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def list_namespace_connections(
+        self,
+        namespace_id: str,
+        total_size: int = 10,
+        next_page_token: str = "",
+        filter_str: str = "",
+        async_enabled: bool = False,
+    ) -> integration_interface.ListNamespaceConnectionsResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.ListNamespaceConnections,
+                request=integration_interface.ListNamespaceConnectionsRequest(
+                    namespace_id=namespace_id,
+                    page_size=total_size,
+                    page_token=next_page_token,
+                    filter=filter_str,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.ListNamespaceConnections,
+            request=integration_interface.ListNamespaceConnectionsRequest(
+                namespace_id=namespace_id,
+                page_size=total_size,
+                page_token=next_page_token,
+                filter=filter_str,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def get_namespace_connection(
+        self,
+        namespace_id: str,
+        connection_id: str,
+        async_enabled: bool = False,
+    ) -> integration_interface.GetNamespaceConnectionResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.GetNamespaceConnection,
+                request=integration_interface.GetNamespaceConnectionRequest(
+                    namespace_id=namespace_id,
+                    connection_id=connection_id,
+                    view=pipeline_interface.Pipeline.VIEW_RECIPE,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetNamespaceConnection,
+            request=integration_interface.GetNamespaceConnectionRequest(
+                namespace_id=namespace_id,
+                connection_id=connection_id,
+                view=pipeline_interface.Pipeline.VIEW_RECIPE,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def create_namespace_connection(
+        self,
+        connection: integration_interface.Connection,
+        async_enabled: bool = False,
+    ) -> integration_interface.CreateNamespaceConnectionResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.CreateNamespaceConnection,
+                request=integration_interface.CreateNamespaceConnectionRequest(
+                    connection=connection,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.CreateNamespaceConnection,
+            request=integration_interface.CreateNamespaceConnectionRequest(
+                connection=connection,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def update_namespace_connection(
+        self,
+        connection: integration_interface.Connection,
+        mask: field_mask_pb2.FieldMask,
+        async_enabled: bool = False,
+    ) -> integration_interface.UpdateNamespaceConnectionResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.UpdateNamespaceConnection,
+                request=integration_interface.UpdateNamespaceConnectionRequest(
+                    connection=connection,
+                    update_mask=mask,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.UpdateNamespaceConnection,
+            request=integration_interface.UpdateNamespaceConnectionRequest(
+                connection=connection,
+                update_mask=mask,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def delete_namespace_connection(
+        self,
+        namespace_id: str,
+        connection_id: str,
+        async_enabled: bool = False,
+    ) -> integration_interface.DeleteNamespaceConnectionResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.DeleteNamespaceConnection,
+                request=integration_interface.DeleteNamespaceConnectionRequest(
+                    namespace_id=namespace_id,
+                    connection_id=connection_id,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.DeleteNamespaceConnection,
+            request=integration_interface.DeleteNamespaceConnectionRequest(
+                namespace_id=namespace_id,
+                connection_id=connection_id,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def test_namespace_connection(
+        self,
+        namespace_id: str,
+        connection_id: str,
+        async_enabled: bool = False,
+    ) -> integration_interface.TestNamespaceConnectionResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.TestNamespaceConnection,
+                request=integration_interface.TestNamespaceConnectionRequest(
+                    namespace_id=namespace_id,
+                    connection_id=connection_id,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.TestNamespaceConnection,
+            request=integration_interface.TestNamespaceConnectionRequest(
+                namespace_id=namespace_id,
+                connection_id=connection_id,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def list_integrations(
+        self,
+        total_size: int = 10,
+        next_page_token: str = "",
+        filter_str: str = "",
+        async_enabled: bool = False,
+    ) -> integration_interface.ListIntegrationsResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.ListIntegrations,
+                request=integration_interface.ListIntegrationsRequest(
+                    page_size=total_size,
+                    page_token=next_page_token,
+                    filter=filter_str,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.ListIntegrations,
+            request=integration_interface.ListIntegrationsRequest(
+                page_size=total_size,
+                page_token=next_page_token,
+                filter=filter_str,
+            ),
+            metadata=self.hosts[self.instance].metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def get_integration(
+        self,
+        integration_id: str,
+        async_enabled: bool = False,
+    ) -> integration_interface.GetIntegrationResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.hosts[self.instance].async_client.GetIntegration,
+                request=integration_interface.GetIntegrationRequest(
+                    integration_id=integration_id,
+                    view=pipeline_interface.Pipeline.VIEW_RECIPE,
+                ),
+                metadata=self.hosts[self.instance].metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.hosts[self.instance].client.GetIntegration,
+            request=integration_interface.GetIntegrationRequest(
+                integration_id=integration_id,
+                view=pipeline_interface.Pipeline.VIEW_RECIPE,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
