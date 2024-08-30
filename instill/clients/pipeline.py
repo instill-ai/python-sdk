@@ -254,7 +254,7 @@ class PipelineClient(Client):
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.ValidateUserPipeline,
                 request=pipeline_interface.ValidateUserPipelineRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}"
+                    name=f"users/{self.target_namespace}/pipelines/{name}"
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -262,7 +262,7 @@ class PipelineClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.ValidateUserPipeline,
             request=pipeline_interface.ValidateUserPipelineRequest(
-                name=f"{self.target_namespace}/pipelines/{name}"
+                name=f"users/{self.target_namespace}/pipelines/{name}"
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -1313,30 +1313,35 @@ class PipelineClient(Client):
     def trigger_pipeline_release(
         self,
         name: str,
+        release_id: str,
         inputs: list,
         data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerUserPipelineReleaseResponse:
+        request = pipeline_interface.TriggerUserPipelineReleaseRequest(
+            name=f"users/{self.target_namespace}/pipelines/{name}/releases/{release_id}",
+        )
+        for input_value in inputs:
+            trigger_inputs = Struct()
+            trigger_inputs.update(input_value)
+            request.inputs.append(trigger_inputs)
+        for d in data:
+            trigger_data = pipeline_interface.TriggerData()
+            trigger_data.variable.update(d)
+            request.data.append(trigger_data)
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[
                     self.instance
                 ].async_client.TriggerUserPipelineRelease,
-                request=pipeline_interface.TriggerUserPipelineReleaseRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}",
-                    inputs=inputs,
-                    data=data,
-                ),
+                request=request,
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerUserPipelineRelease,
-            request=pipeline_interface.TriggerUserPipelineReleaseRequest(
-                name=f"{self.target_namespace}/pipelines/{name}",
-                inputs=inputs,
-                data=data,
-            ),
+            request=request,
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
@@ -2023,14 +2028,13 @@ class PipelineClient(Client):
     def trigger_org_pipeline_release(
         self,
         name: str,
+        release_id: str,
         inputs: list,
         data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerOrganizationPipelineReleaseResponse:
         request = pipeline_interface.TriggerOrganizationPipelineReleaseRequest(
-            name=f"{self.target_namespace}/pipelines/{name}",
-            inputs=inputs,
-            data=data,
+            name=f"{self.target_namespace}/pipelines/{name}/releases/{release_id}",
         )
         for input_value in inputs:
             trigger_inputs = Struct()
