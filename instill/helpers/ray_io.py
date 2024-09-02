@@ -30,6 +30,7 @@ from instill.helpers.const import (
     ChatInput,
     ChatMultiModalInput,
     CompletionInput,
+    ImageEmbeddingInput,
     ImageToImageInput,
     TextEmbeddingInput,
     TextToImageInput,
@@ -78,14 +79,13 @@ async def _parse_vision_task_to_vision_input(
 ) -> List[VisionInput]:
 
     def extract_data(data: dict) -> VisionInput:
-        image = data["image"]
         image_type = data["type"]
 
         inp = VisionInput()
         if image_type == IMAGE_INPUT_TYPE_URL:
-            inp.image = url_to_pil_image(image)
+            inp.image = url_to_pil_image(data[image_type])
         elif image_type == IMAGE_INPUT_TYPE_BASE64:
-            inp.image = base64_to_pil_image(image)
+            inp.image = base64_to_pil_image(data[image_type])
         else:
             raise InvalidInputException("input image type not supported")
 
@@ -1045,27 +1045,28 @@ async def parse_task_embedding_to_text_embedding_input(
 
         # messages and prompt images
         contents: List[str] = []
-        for content in data["input"]:
-            if content["type"] == "text":
-                contents.append(content["text"])
-            else:
-                raise InvalidInputException("can only process text input")
+        for inputs in data["input"]:
+            for content in inputs["content"]:
+                if content["type"] == "text":
+                    contents.append(content["text"])
+                else:
+                    raise InvalidInputException("can only process text input")
 
         inp.contents = contents
 
-        # max tokens
+        # format
         if "format" in parameter:
             inp.format = str(parameter["format"])
 
-        # temperature
+        # dimensions
         if "dimensions" in parameter:
             inp.dimensions = int(parameter["dimensions"])
 
-        # number of generated outputs
+        # input-type
         if "input-type" in parameter:
             inp.input_type = str(parameter["input-type"])
 
-        # seed
+        # truncate
         if "truncate" in parameter:
             inp.truncate = str(parameter["truncate"])
 
@@ -1098,10 +1099,12 @@ def construct_task_embedding_output(
             created_timestamp,
             embed,
         ) in zip(index_list, created_timestamp_list, embedding_list):
+            if isinstance(embed, np.ndarray):
+                embed = embed.tolist()
             embeds.append(
                 {
                     "index": index,
-                    "vector": embed,
+                    "vector": list(embed),
                     "created": created_timestamp,
                 }
             )
@@ -1115,6 +1118,50 @@ def construct_task_embedding_output(
         task_outputs[i] = dict_to_struct(o)
 
     return CallResponse(task_outputs=task_outputs)
+
+
+async def parse_task_embedding_to_image_embedding_input(
+    request: Union[CallRequest, Request],
+) -> List[ImageEmbeddingInput]:
+
+    # http test input
+    if isinstance(request, Request):
+        test_data: dict = await request.json()
+
+        test_img = test_data["image"]
+
+        inp = ImageEmbeddingInput()
+        inp.images = [url_to_pil_image(test_img)]
+
+        return [inp]
+
+    input_list = []
+    for task_input in request.task_inputs:
+        task_input_dict = json_format.MessageToDict(task_input)
+
+        data = task_input_dict["data"]
+        parameter = (
+            task_input_dict["parameter"] if "parameter" in task_input_dict else {}
+        )
+
+        inp = ImageEmbeddingInput()
+
+        # messages and prompt images
+        images: List[str] = []
+        for inputs in data["input"]:
+            for content in inputs["content"]:
+                if content["type"] == "image-url":
+                    images.append(url_to_pil_image(content[content["type"]]))
+                elif content["type"] == "image-base64":
+                    images.append(base64_to_pil_image(content[content["type"]]))
+                else:
+                    raise InvalidInputException("can only process image input")
+
+        inp.images = images
+
+        input_list.append(inp)
+
+    return input_list
 
 
 async def parse_custom_input(

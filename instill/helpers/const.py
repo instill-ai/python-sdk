@@ -5,8 +5,8 @@ from PIL import Image
 
 PROMPT_ROLES = ["user", "assistant", "system"]
 
-IMAGE_INPUT_TYPE_URL = "url"
-IMAGE_INPUT_TYPE_BASE64 = "base64"
+IMAGE_INPUT_TYPE_URL = "image-url"
+IMAGE_INPUT_TYPE_BASE64 = "image-base64"
 
 EMBEDDING_FORMAT_FLOAT = "float"
 EMBEDDING_FORMAT_BASE64 = "base64"
@@ -59,6 +59,10 @@ class TextEmbeddingInput:
     dimensions: int = 512
     input_type: str = EMBEDDING_INPUT_TYPE_QUERY
     truncate: str = EMBEDDING_TRUNCATE_END
+
+
+class ImageEmbeddingInput:
+    images: List[Image.Image]
 
 
 class TextToImageInput:
