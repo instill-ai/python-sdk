@@ -1147,7 +1147,7 @@ async def parse_task_embedding_to_image_embedding_input(
         inp = ImageEmbeddingInput()
 
         # messages and prompt images
-        images: List[str] = []
+        images: List[Image.Image] = []
         for inputs in data["input"]:
             for content in inputs["content"]:
                 if content["type"] == "image-url":
@@ -1158,6 +1158,22 @@ async def parse_task_embedding_to_image_embedding_input(
                     raise InvalidInputException("can only process image input")
 
         inp.images = images
+
+        # format
+        if "format" in parameter:
+            inp.format = str(parameter["format"])
+
+        # dimensions
+        if "dimensions" in parameter:
+            inp.dimensions = int(parameter["dimensions"])
+
+        # input-type
+        if "input-type" in parameter:
+            inp.input_type = str(parameter["input-type"])
+
+        # truncate
+        if "truncate" in parameter:
+            inp.truncate = str(parameter["truncate"])
 
         input_list.append(inp)
 
