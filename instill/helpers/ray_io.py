@@ -610,7 +610,11 @@ async def parse_task_chat_to_chat_input(
                         f"No message found in chat_history. {chat_message}"
                     )
 
-                if len(messages) == 1 and chat_entity["role"] != PROMPT_ROLES[0]:
+                if (
+                    len(messages) > 0
+                    and messages[-1]["role"] != PROMPT_ROLES[0]
+                    and chat_entity["role"] != PROMPT_ROLES[0]
+                ):
                     messages.append({"role": "user", "content": " "})
 
                 if len(messages) > 0 and messages[-1]["role"] == chat_entity["role"]:
@@ -760,7 +764,7 @@ async def parse_task_chat_to_multimodal_chat_input(
         test_data: dict = await request.json()
 
         test_prompt = test_data["prompt"]
-        image_url = test_data["image_url"]
+        image_url = test_data["image-url"]
 
         inp = ChatMultiModalInput()
         inp.messages = [
@@ -801,10 +805,30 @@ async def parse_task_chat_to_multimodal_chat_input(
                         imgs.append(base64_to_pil_image(c["image-base64"]))
                     else:
                         raise InvalidInputException("input content type not supported")
-            else:
+            elif role == PROMPT_ROLES[1]:
+                messages.append({"role": role, "content": content[0]["text"]})
+            elif role == PROMPT_ROLES[-1] and messages[0]["role"] != PROMPT_ROLES[-1]:
                 messages.insert(0, {"role": role, "content": content[0]["text"]})
 
             images.append(imgs)
+
+        if messages[0]["role"] != PROMPT_ROLES[-1]:
+            messages.insert(
+                0,
+                {
+                    "role": PROMPT_ROLES[-1],
+                    "content": (
+                        "You are a helpful, respectful and honest assistant. "
+                        "Always answer as helpfully as possible, while being safe.  "
+                        "Your answers should not include any harmful, unethical, racist, "
+                        "sexist, toxic, dangerous, or illegal content. Please ensure that "
+                        "your responses are socially unbiased and positive in nature. "
+                        "If a question does not make any sense, or is not factually coherent, "
+                        "explain why instead of answering something not correct. If you don't "
+                        "know the answer to a question, please don't share false information."
+                    ),
+                },
+            )
 
         inp.messages = messages
         inp.prompt_images = images
@@ -1079,7 +1103,7 @@ def construct_task_embedding_output(
     request: Union[CallRequest, Request],
     indexes: List[List[int]],
     created_timestamps: List[List[int]],
-    embeddings: List[List[dict]],
+    embeddings: List[List[list]],
 ) -> Union[CallResponse, List]:
 
     if not len(embeddings) == len(indexes) == len(created_timestamps):
