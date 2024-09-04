@@ -19,7 +19,7 @@ from instill.utils.error_handler import grpc_handler
 
 
 class ArtifactClient(Client):
-    def __init__(self, async_enabled: bool) -> None:
+    def __init__(self, async_enabled: bool = False, api_token: str = "") -> None:
         self.hosts: Dict[str, InstillInstance] = {}
         if DEFAULT_INSTANCE in global_config.hosts:
             self.instance = DEFAULT_INSTANCE
@@ -30,13 +30,26 @@ class ArtifactClient(Client):
 
         if global_config.hosts is not None:
             for instance, config in global_config.hosts.items():
+                token = config.token
+                if api_token != "" and instance == self.instance:
+                    token = api_token
                 self.hosts[instance] = InstillInstance(
                     artifact_service.ArtifactPublicServiceStub,
                     url=config.url,
-                    token=config.token,
+                    token=token,
                     secure=config.secure,
                     async_enabled=async_enabled,
                 )
+
+    def close(self):
+        if self.is_serving():
+            for host in self.hosts.values():
+                host.channel.close()
+
+    async def async_close(self):
+        if self.is_serving():
+            for host in self.hosts.values():
+                await host.async_channel.close()
 
     @property
     def hosts(self):
@@ -52,6 +65,9 @@ class ArtifactClient(Client):
 
     @instance.setter
     def instance(self, instance: str):
+        self._instance = instance
+
+    def set_instance(self, instance: str):
         self._instance = instance
 
     @property

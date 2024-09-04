@@ -16,11 +16,9 @@ from instill.clients.instance import InstillInstance
 from instill.configuration import global_config
 from instill.utils.error_handler import grpc_handler
 
-# from instill.utils.logger import Logger
-
 
 class MgmtClient(Client):
-    def __init__(self, async_enabled: bool) -> None:
+    def __init__(self, async_enabled: bool = False, api_token: str = "") -> None:
         self.hosts: Dict[str, InstillInstance] = {}
         if DEFAULT_INSTANCE in global_config.hosts:
             self.instance = DEFAULT_INSTANCE
@@ -31,10 +29,13 @@ class MgmtClient(Client):
 
         if global_config.hosts is not None:
             for instance, config in global_config.hosts.items():
+                token = config.token
+                if api_token != "" and instance == self.instance:
+                    token = api_token
                 self.hosts[instance] = InstillInstance(
                     mgmt_service.MgmtPublicServiceStub,
                     url=config.url,
-                    token=config.token,
+                    token=token,
                     secure=config.secure,
                     async_enabled=async_enabled,
                 )
@@ -53,6 +54,9 @@ class MgmtClient(Client):
 
     @instance.setter
     def instance(self, instance: str):
+        self._instance = instance
+
+    def set_instance(self, instance: str):
         self._instance = instance
 
     @property

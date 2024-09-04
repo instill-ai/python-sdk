@@ -23,7 +23,11 @@ from instill.utils.error_handler import grpc_handler
 
 class PipelineClient(Client):
     def __init__(
-        self, namespace: str, async_enabled: bool, target_namespace: str = ""
+        self,
+        namespace: str,
+        async_enabled: bool = False,
+        target_namespace: str = "",
+        api_token: str = "",
     ) -> None:
         self.hosts: Dict[str, InstillInstance] = {}
         self.namespace: str = namespace
@@ -39,13 +43,26 @@ class PipelineClient(Client):
 
         if global_config.hosts is not None:
             for instance, config in global_config.hosts.items():
+                token = config.token
+                if api_token != "" and instance == self.instance:
+                    token = api_token
                 self.hosts[instance] = InstillInstance(
                     pipeline_service.PipelinePublicServiceStub,
                     url=config.url,
-                    token=config.token,
+                    token=token,
                     secure=config.secure,
                     async_enabled=async_enabled,
                 )
+
+    def close(self):
+        if self.is_serving():
+            for host in self.hosts.values():
+                host.channel.close()
+
+    async def async_close(self):
+        if self.is_serving():
+            for host in self.hosts.values():
+                await host.async_channel.close()
 
     @property
     def hosts(self):
@@ -61,6 +78,9 @@ class PipelineClient(Client):
 
     @instance.setter
     def instance(self, instance: str):
+        self._instance = instance
+
+    def set_instance(self, instance: str):
         self._instance = instance
 
     @property
@@ -303,17 +323,12 @@ class PipelineClient(Client):
     def trigger_pipeline(
         self,
         name: str,
-        inputs: list,
         data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerUserPipelineResponse:
         request = pipeline_interface.TriggerUserPipelineRequest(
             name=f"{self.target_namespace}/pipelines/{name}",
         )
-        for input_value in inputs:
-            trigger_inputs = Struct()
-            trigger_inputs.update(input_value)
-            request.inputs.append(trigger_inputs)
         for d in data:
             trigger_data = pipeline_interface.TriggerData()
             trigger_data.variable.update(d)
@@ -336,17 +351,12 @@ class PipelineClient(Client):
     def trigger_async_pipeline(
         self,
         name: str,
-        inputs: list,
         data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerAsyncUserPipelineResponse:
         request = pipeline_interface.TriggerAsyncUserPipelineRequest(
             name=f"{self.target_namespace}/pipelines/{name}",
         )
-        for input_value in inputs:
-            trigger_inputs = Struct()
-            trigger_inputs.update(input_value)
-            request.inputs.append(trigger_inputs)
         for d in data:
             trigger_data = pipeline_interface.TriggerData()
             trigger_data.variable.update(d)
@@ -450,30 +460,28 @@ class PipelineClient(Client):
         self,
         namespace_id: str,
         pipeline_id: str,
-        inputs: list[Struct],
-        data: list[pipeline_interface.TriggerData],
+        data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerNamespacePipelineResponse:
+        request = pipeline_interface.TriggerNamespacePipelineRequest(
+            namespace_id=namespace_id,
+            pipeline_id=pipeline_id,
+        )
+        for d in data:
+            trigger_data = pipeline_interface.TriggerData()
+            trigger_data.variable.update(d)
+            request.data.append(trigger_data)
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.TriggerNamespacePipeline,
-                request=pipeline_interface.TriggerNamespacePipelineRequest(
-                    namespace_id=namespace_id,
-                    pipeline_id=pipeline_id,
-                    inputs=inputs,
-                    data=data,
-                ),
+                request=request,
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerNamespacePipeline,
-            request=pipeline_interface.TriggerNamespacePipelineRequest(
-                namespace_id=namespace_id,
-                pipeline_id=pipeline_id,
-                inputs=inputs,
-                data=data,
-            ),
+            request=request,
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
@@ -482,32 +490,30 @@ class PipelineClient(Client):
         self,
         namespace_id: str,
         pipeline_id: str,
-        inputs: list[Struct],
-        data: list[pipeline_interface.TriggerData],
+        data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerNamespacePipelineWithStreamResponse:
+        request = pipeline_interface.TriggerNamespacePipelineWithStreamRequest(
+            namespace_id=namespace_id,
+            pipeline_id=pipeline_id,
+        )
+        for d in data:
+            trigger_data = pipeline_interface.TriggerData()
+            trigger_data.variable.update(d)
+            request.data.append(trigger_data)
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[
                     self.instance
                 ].async_client.TriggerNamespacePipelineWithStream,
-                request=pipeline_interface.TriggerNamespacePipelineWithStreamRequest(
-                    namespace_id=namespace_id,
-                    pipeline_id=pipeline_id,
-                    inputs=inputs,
-                    data=data,
-                ),
+                request=request,
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerNamespacePipelineWithStream,
-            request=pipeline_interface.TriggerNamespacePipelineWithStreamRequest(
-                namespace_id=namespace_id,
-                pipeline_id=pipeline_id,
-                inputs=inputs,
-                data=data,
-            ),
+            request=request,
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
@@ -516,32 +522,30 @@ class PipelineClient(Client):
         self,
         namespace_id: str,
         pipeline_id: str,
-        inputs: list[Struct],
-        data: list[pipeline_interface.TriggerData],
+        data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerAsyncNamespacePipelineResponse:
+        request = pipeline_interface.TriggerAsyncNamespacePipelineRequest(
+            namespace_id=namespace_id,
+            pipeline_id=pipeline_id,
+        )
+        for d in data:
+            trigger_data = pipeline_interface.TriggerData()
+            trigger_data.variable.update(d)
+            request.data.append(trigger_data)
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[
                     self.instance
                 ].async_client.TriggerAsyncNamespacePipeline,
-                request=pipeline_interface.TriggerAsyncNamespacePipelineRequest(
-                    namespace_id=namespace_id,
-                    pipeline_id=pipeline_id,
-                    inputs=inputs,
-                    data=data,
-                ),
+                request=request,
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerAsyncNamespacePipeline,
-            request=pipeline_interface.TriggerAsyncNamespacePipelineRequest(
-                namespace_id=namespace_id,
-                pipeline_id=pipeline_id,
-                inputs=inputs,
-                data=data,
-            ),
+            request=request,
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
@@ -765,34 +769,31 @@ class PipelineClient(Client):
         namespace_id: str,
         pipeline_id: str,
         release_id: str,
-        inputs: list[Struct],
-        data: list[pipeline_interface.TriggerData],
+        data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerNamespacePipelineReleaseResponse:
+        request = pipeline_interface.TriggerNamespacePipelineReleaseRequest(
+            namespace_id=namespace_id,
+            pipeline_id=pipeline_id,
+            release_id=release_id,
+        )
+        for d in data:
+            trigger_data = pipeline_interface.TriggerData()
+            trigger_data.variable.update(d)
+            request.data.append(trigger_data)
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[
                     self.instance
                 ].async_client.TriggerNamespacePipelineRelease,
-                request=pipeline_interface.TriggerNamespacePipelineReleaseRequest(
-                    namespace_id=namespace_id,
-                    pipeline_id=pipeline_id,
-                    release_id=release_id,
-                    inputs=inputs,
-                    data=data,
-                ),
+                request=request,
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerNamespacePipelineRelease,
-            request=pipeline_interface.TriggerNamespacePipelineReleaseRequest(
-                namespace_id=namespace_id,
-                pipeline_id=pipeline_id,
-                release_id=release_id,
-                inputs=inputs,
-                data=data,
-            ),
+            request=request,
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
@@ -802,22 +803,25 @@ class PipelineClient(Client):
         namespace_id: str,
         pipeline_id: str,
         release_id: str,
-        inputs: list[Struct],
-        data: list[pipeline_interface.TriggerData],
+        data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerAsyncNamespacePipelineReleaseResponse:
+        request = pipeline_interface.TriggerAsyncNamespacePipelineReleaseRequest(
+            namespace_id=namespace_id,
+            pipeline_id=pipeline_id,
+            release_id=release_id,
+        )
+        for d in data:
+            trigger_data = pipeline_interface.TriggerData()
+            trigger_data.variable.update(d)
+            request.data.append(trigger_data)
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[
                     self.instance
                 ].async_client.TriggerAsyncNamespacePipelineRelease,
-                request=pipeline_interface.TriggerAsyncNamespacePipelineReleaseRequest(
-                    namespace_id=namespace_id,
-                    pipeline_id=pipeline_id,
-                    release_id=release_id,
-                    inputs=inputs,
-                    data=data,
-                ),
+                request=request,
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
@@ -825,13 +829,7 @@ class PipelineClient(Client):
             method=self.hosts[
                 self.instance
             ].client.TriggerAsyncNamespacePipelineRelease,
-            request=pipeline_interface.TriggerAsyncNamespacePipelineReleaseRequest(
-                namespace_id=namespace_id,
-                pipeline_id=pipeline_id,
-                release_id=release_id,
-                inputs=inputs,
-                data=data,
-            ),
+            request=request,
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 

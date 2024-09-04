@@ -19,7 +19,9 @@ from instill.utils.error_handler import grpc_handler
 
 
 class ModelClient(Client):
-    def __init__(self, namespace: str, async_enabled: bool) -> None:
+    def __init__(
+        self, namespace: str, async_enabled: bool = False, api_token: str = ""
+    ) -> None:
         self.hosts: Dict[str, InstillInstance] = {}
         self.namespace: str = namespace
         if DEFAULT_INSTANCE in global_config.hosts:
@@ -31,13 +33,26 @@ class ModelClient(Client):
 
         if global_config.hosts is not None:
             for instance, config in global_config.hosts.items():
+                token = config.token
+                if api_token != "" and instance == self.instance:
+                    token = api_token
                 self.hosts[instance] = InstillInstance(
                     model_service.ModelPublicServiceStub,
                     url=config.url,
-                    token=config.token,
+                    token=token,
                     secure=config.secure,
                     async_enabled=async_enabled,
                 )
+
+    def close(self):
+        if self.is_serving():
+            for host in self.hosts.values():
+                host.channel.close()
+
+    async def async_close(self):
+        if self.is_serving():
+            for host in self.hosts.values():
+                await host.async_channel.close()
 
     @property
     def hosts(self):
@@ -53,6 +68,9 @@ class ModelClient(Client):
 
     @instance.setter
     def instance(self, instance: str):
+        self._instance = instance
+
+    def set_instance(self, instance: str):
         self._instance = instance
 
     @property
@@ -200,7 +218,7 @@ class ModelClient(Client):
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.TriggerUserModel,
                 request=model_interface.TriggerUserModelRequest(
-                    name=f"{self.namespace}/models/{model_name}",
+                    name=f"namespaces/{self.namespace}/models/{model_name}",
                     task_inputs=task_inputs,
                     version=version,
                 ),
@@ -210,7 +228,7 @@ class ModelClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerUserModel,
             request=model_interface.TriggerUserModelRequest(
-                name=f"{self.namespace}/models/{model_name}",
+                name=f"namespaces/{self.namespace}/models/{model_name}",
                 task_inputs=task_inputs,
                 version=version,
             ),

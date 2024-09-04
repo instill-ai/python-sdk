@@ -4,6 +4,7 @@ import instill.protogen.core.mgmt.v1beta.mgmt_public_service_pb2_grpc as mgmt_se
 import instill.protogen.model.model.v1alpha.model_public_service_pb2_grpc as model_service
 import instill.protogen.vdp.pipeline.v1beta.pipeline_public_service_pb2_grpc as pipeline_service
 from instill.clients import MgmtClient, ModelClient, PipelineClient
+from instill.clients.constant import DEFAULT_INSTANCE
 from instill.clients.instance import InstillInstance
 
 
@@ -11,11 +12,11 @@ def describe_client():
     def describe_instance():
         def when_not_set(expect):
             mgmt_client = MgmtClient(False)
-            expect(mgmt_client.instance) == ""
+            expect(mgmt_client.instance) == DEFAULT_INSTANCE
             model_client = ModelClient(namespace="", async_enabled=False)
-            expect(model_client.instance) == ""
+            expect(model_client.instance) == DEFAULT_INSTANCE
             pipeline_client = PipelineClient(namespace="", async_enabled=False)
-            expect(pipeline_client.instance) == ""
+            expect(pipeline_client.instance) == DEFAULT_INSTANCE
 
         def when_set_correct_type(expect):
             mgmt_client = MgmtClient(False)
