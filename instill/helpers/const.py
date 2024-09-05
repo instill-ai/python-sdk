@@ -1,83 +1,90 @@
 import os
-from enum import Enum
-from typing import Any, Dict, List, Union
+from typing import Dict, List
 
-import numpy as np
+from PIL import Image
 
+PROMPT_ROLES = ["user", "assistant", "system"]
 
-class DataType(Enum):
-    TYPE_BOOL = 1
-    TYPE_UINT8 = 2
-    TYPE_UINT16 = 3
-    TYPE_UINT32 = 4
-    TYPE_UINT64 = 5
-    TYPE_INT8 = 6
-    TYPE_INT16 = 7
-    TYPE_INT32 = 8
-    TYPE_INT64 = 9
-    TYPE_FP16 = 10
-    TYPE_FP32 = 11
-    TYPE_FP64 = 12
-    TYPE_STRING = 13
+IMAGE_INPUT_TYPE_URL = "image-url"
+IMAGE_INPUT_TYPE_BASE64 = "image-base64"
+
+EMBEDDING_FORMAT_FLOAT = "float"
+EMBEDDING_FORMAT_BASE64 = "base64"
+EMBEDDING_INPUT_TYPE_QUERY = "query"
+EMBEDDING_INPUT_TYPE_DOCUMENT = "document"
+EMBEDDING_TRUNCATE_NONE = "none"
+EMBEDDING_TRUNCATE_END = "end"
+EMBEDDING_TRUNCATE_START = "start"
 
 
-class TextGenerationInput:
-    prompt = ""
-    prompt_images: Union[List[np.ndarray], None] = None
-    chat_history: Union[List[str], None] = None
-    system_message: Union[str, None] = None
-    max_new_tokens = 100
-    temperature = 0.8
-    top_k = 1
-    random_seed = 0
-    stop_words: Any = ""  # Optional
-    extra_params: Dict[str, str] = {}
+class VisionInput:
+    image: Image.Image
+
+
+class CompletionInput:
+    prompt: str
+    system_message: str = ""
+    max_tokens: int = 50
+    n: int = 1
+    seed: int = 0
+    temperature: float = 0.7
+    top_p: int = 1
+    stream: bool = False
+
+
+class ChatInput:
+    messages: List[Dict[str, str]]
+    max_tokens: int = 50
+    n: int = 1
+    seed: int = 0
+    temperature: float = 0.7
+    top_p: int = 1
+    stream: bool = False
+
+
+class ChatMultiModalInput:
+    messages: List[Dict[str, str]]
+    prompt_images: List[List[Image.Image]]
+    max_tokens: int = 50
+    n: int = 1
+    seed: int = 0
+    temperature: float = 0.7
+    top_p: int = 1
+    stream: bool = False
+
+
+class TextEmbeddingInput:
+    contents: List[str]
+    format: str = EMBEDDING_FORMAT_FLOAT
+    dimensions: int = 512
+    input_type: str = EMBEDDING_INPUT_TYPE_QUERY
+    truncate: str = EMBEDDING_TRUNCATE_END
+
+
+class ImageEmbeddingInput:
+    images: List[Image.Image]
+    format: str = EMBEDDING_FORMAT_FLOAT
+    dimensions: int = 512
+    input_type: str = EMBEDDING_INPUT_TYPE_QUERY
+    truncate: str = EMBEDDING_TRUNCATE_END
 
 
 class TextToImageInput:
-    prompt_image: Union[np.ndarray, None] = None
-    prompt = ""
-    negative_prompt = ""
-    steps = 5
-    guidance_scale = 7.5
-    seed = 0
-    samples = 1
-    extra_params: Dict[str, str] = {}
+    prompt: str
+    negative_prompt: str = ""
+    n: int = 1
+    aspect_ratio: str = "1:1"
+    seed: int = 0
 
 
 class ImageToImageInput:
-    prompt_image: Union[np.ndarray, None] = None
     prompt = ""
-    steps = 5
-    guidance_scale = 7.5
-    seed = 0
-    samples = 1
-    extra_params: Dict[str, str] = {}
-
-
-class TextGenerationChatInput:
-    prompt = ""
-    prompt_images: Union[List[np.ndarray], None] = None
-    chat_history: Union[List[str], None] = None
-    system_message: Union[str, None] = None
-    max_new_tokens = 100
-    temperature = 0.8
-    top_k = 1
-    random_seed = 0
-    stop_words: Any = ""  # Optional
-    extra_params: Dict[str, str] = {}
-
-
-class VisualQuestionAnsweringInput:
-    prompt = ""
-    prompt_images: Union[List[np.ndarray], None] = None
-    chat_history: Union[List[str], None] = None
-    system_message: Union[str, None] = None
-    max_new_tokens = 100
-    temperature = 0.8
-    top_k = 1
-    random_seed = 0
-    stop_words: Any = ""  # Optional
+    steps: int = 5
+    cfg_scale: float = 7.5
+    seed: int = 0
+    samples: int = 1
+    low_threshold = 100
+    high_threshold = 200
     extra_params: Dict[str, str] = {}
 
 

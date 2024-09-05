@@ -1,4 +1,4 @@
-# pylint: disable=no-name-in-module
+# pylint: disable=no-name-in-module,wrong-import-position
 import os
 import sys
 from importlib.metadata import PackageNotFoundError, version
@@ -7,7 +7,7 @@ from instill.utils.logger import Logger
 
 Logger.initialize()
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "protogen"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "protogen"))
 
 try:
     __version__ = version("instill-sdk")

@@ -32,15 +32,18 @@ grpcio = "^1.59.0"
 pyyaml = "^6.0.1"
 numpy = "^1.21.0"
 protobuf = "^4.24.2"
-types-protobuf = "^4.24.0.1"
-types-pyyaml = "^6.0.12.11"
+requests = "^2.32.3"
+fastapi = "^0.109.2"
 google-api-core = "^2.11.1"
 googleapis-common-protos = "^1.60.0"
 protoc-gen-openapiv2 = "^0.0.1"
 pydantic = ">=1.10.13"
 pillow = "^10.1.0"
-ray = {version = "2.21.0", extras = ["serve"]}
+ray = { version = "2.21.0", extras = ["serve"] }
 jsonschema = "^4.20.0"
+types-requests = "^2.32.0.20240712"
+types-protobuf = "^4.24.0.1"
+types-pyyaml = "^6.0.12.11"
 
 [tool.poetry.dev-dependencies]
 

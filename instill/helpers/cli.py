@@ -6,6 +6,8 @@ import platform
 import shutil
 import subprocess
 import tempfile
+import time
+import uuid
 
 import ray
 import yaml
@@ -53,16 +55,25 @@ def cli():
         required=False,
     )
     build_parser.add_argument(
+        "-n",
         "--no-cache",
         help="build the image without cache",
         action="store_true",
         required=False,
     )
     build_parser.add_argument(
+        "-a",
         "--target-arch",
         help="target platform architecture for the model image, default to host",
         default=default_platform,
         choices=["arm64", "amd64"],
+        required=False,
+    )
+    build_parser.add_argument(
+        "-w",
+        "--sdk-wheel",
+        help="instill sdk wheel absolute path for debug purpose",
+        default=None,
         required=False,
     )
 
@@ -88,6 +99,34 @@ def cli():
         required=False,
     )
 
+    # run
+    run_parser = subcommands.add_parser("run", help="Run inference on model image")
+    run_parser.set_defaults(func=run)
+    run_parser.add_argument(
+        "name",
+        help="user and model namespace, in the format of <user-id>/<model-id>",
+    )
+    run_parser.add_argument(
+        "-g",
+        "--gpu",
+        help="whether the model needs gpu",
+        action="store_true",
+        required=False,
+    )
+    run_parser.add_argument(
+        "-t",
+        "--tag",
+        help="tag for the model image, default to `latest`",
+        default="latest",
+        required=False,
+    )
+    run_parser.add_argument(
+        "-i",
+        "--input",
+        help="inference input json",
+        required=True,
+    )
+
     args = parser.parse_args()
     args.func(args)
 
@@ -109,9 +148,9 @@ def init(_):
 
 def build(args):
     try:
-        Logger.i("[Instill Builder] Loading config file...")
+        Logger.i("[Instill] Loading config file...")
         with open("instill.yaml", "r", encoding="utf8") as f:
-            Logger.i("[Instill Builder] Parsing config file...")
+            Logger.i("[Instill] Parsing config file...")
             config = yaml.safe_load(f)
 
         config_check_required_fields(config)
@@ -148,7 +187,6 @@ def build(args):
                 packages_str += p + " "
         for p in DEFAULT_DEPENDENCIES:
             packages_str += p + " "
-        packages_str += f"instill-sdk=={instill_version}"
 
         with tempfile.TemporaryDirectory() as tmpdir:
             shutil.copyfile(
@@ -157,9 +195,15 @@ def build(args):
             )
             shutil.copytree(os.getcwd(), tmpdir, dirs_exist_ok=True)
 
+            if args.sdk_wheel is not None:
+                shutil.copyfile(
+                    args.sdk_wheel,
+                    f"{tmpdir}/instill_sdk-{instill_version}dev-py3-none-any.whl",
+                )
+
             target_arch_suffix = "-aarch64" if args.target_arch == "arm64" else ""
 
-            Logger.i("[Instill Builder] Building model image...")
+            Logger.i("[Instill] Building model image...")
             command = [
                 "docker",
                 "buildx",
@@ -176,6 +220,8 @@ def build(args):
                 f"PACKAGES={packages_str}",
                 "--build-arg",
                 f"SYSTEM_PACKAGES={system_str}",
+                "--build-arg",
+                f"SDK_VERSION={instill_version}",
                 "--platform",
                 f"linux/{args.target_arch}",
                 "-t",
@@ -189,14 +235,14 @@ def build(args):
                 command,
                 check=True,
             )
-            Logger.i(f"[Instill Builder] {args.name}:{args.tag} built")
+            Logger.i(f"[Instill] {args.name}:{args.tag} built")
     except subprocess.CalledProcessError:
-        Logger.e("[Instill Builder] Build failed")
+        Logger.e("[Instill] Build failed")
     except Exception as e:
-        Logger.e("[Instill Builder] Prepare failed")
+        Logger.e("[Instill] Prepare failed")
         Logger.e(e)
     finally:
-        Logger.i("[Instill Builder] Done")
+        Logger.i("[Instill] Done")
 
 
 def push(args):
@@ -212,18 +258,99 @@ def push(args):
             ],
             check=True,
         )
-        Logger.i("[Instill Builder] Pushing model image...")
+        Logger.i("[Instill] Pushing model image...")
         subprocess.run(
             ["docker", "push", f"{registry}/{args.name}:{args.tag}"], check=True
         )
-        Logger.i(f"[Instill Builder] {registry}/{args.name}:{args.tag} pushed")
+        Logger.i(f"[Instill] {registry}/{args.name}:{args.tag} pushed")
     except subprocess.CalledProcessError:
-        Logger.e("[Instill Builder] Push failed")
+        Logger.e("[Instill] Push failed")
     except Exception as e:
-        Logger.e("[Instill Builder] Prepare failed")
+        Logger.e("[Instill] Prepare failed")
         Logger.e(e)
     finally:
-        Logger.i("[Instill Builder] Done")
+        Logger.i("[Instill] Done")
+
+
+def run(args):
+    docker_run = False
+    try:
+        name = uuid.uuid4()
+
+        Logger.i("[Instill] Starting model image...")
+        if not args.gpu:
+            subprocess.run(
+                [
+                    "docker",
+                    "run",
+                    "--rm",
+                    "-d",
+                    "--name",
+                    str(name),
+                    f"{args.name}:{args.tag}",
+                    "serve",
+                    "run",
+                    "_model:entrypoint",
+                ],
+                check=True,
+                stdout=subprocess.DEVNULL,
+            )
+        else:
+            subprocess.run(
+                f"docker run --rm -d --name {str(name)} --gpus all {args.name}:{args.tag} /bin/bash -c \
+                    \"serve build _model:entrypoint -o serve.yaml && \
+                    sed -i 's/app1/default/' serve.yaml && \
+                    sed -i 's/num_cpus: 0.0/num_gpus: 1.0/' serve.yaml && \
+                    serve run serve.yaml\"",
+                shell=True,
+                check=True,
+                stdout=subprocess.DEVNULL,
+            )
+        docker_run = True
+        time.sleep(10)
+        Logger.i("[Instill] Deploying model...")
+        subprocess.run(
+            [
+                "docker",
+                "exec",
+                str(name),
+                "/bin/bash",
+                "-c",
+                "until serve status --name default | grep 'RUNNING: 1' > /dev/null; do sleep 1; done;",
+            ],
+            check=True,
+        )
+        Logger.i("[Instill] Running inference...")
+        subprocess.run(
+            [
+                "docker",
+                "exec",
+                str(name),
+                "python",
+                "-m",
+                "instill.helpers.test",
+                "-i",
+                args.input,
+            ],
+            check=True,
+        )
+    except subprocess.CalledProcessError:
+        Logger.e("[Instill] Run failed")
+    except Exception as e:
+        Logger.e("[Instill] Prepare failed")
+        Logger.e(e)
+    finally:
+        if docker_run:
+            subprocess.run(
+                [
+                    "docker",
+                    "stop",
+                    str(name),
+                ],
+                check=True,
+                stdout=subprocess.DEVNULL,
+            )
+        Logger.i("[Instill] Done")
 
 
 if __name__ == "__main__":
