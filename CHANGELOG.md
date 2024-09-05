@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.11.0](https://github.com/instill-ai/python-sdk/compare/v0.10.2...v0.11.0) (2024-09-04)
+
+
+### Features
+
+* **artifact:** updated proto and client code ([#193](https://github.com/instill-ai/python-sdk/issues/193)) ([e6e54b1](https://github.com/instill-ai/python-sdk/commit/e6e54b1de71536564c729b77fdc556989756a9db))
+
+
+### Bug Fixes
+
+* **vdp:** fix trigger pipeline release input ([#198](https://github.com/instill-ai/python-sdk/issues/198)) ([db5224e](https://github.com/instill-ai/python-sdk/commit/db5224e995ff95ff43bb49030de43f3c1e78295a))
+
 ## [0.10.2](https://github.com/instill-ai/python-sdk/compare/v0.10.1...v0.10.2) (2024-07-31)
 
 
