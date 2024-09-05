@@ -16,6 +16,7 @@ from instill.clients.constant import DEFAULT_INSTANCE
 from instill.clients.instance import InstillInstance
 from instill.configuration import global_config
 from instill.utils.error_handler import grpc_handler
+from instill.utils.process_file import process_file
 
 
 class ArtifactClient(Client):
@@ -239,9 +240,11 @@ class ArtifactClient(Client):
         self,
         namespace_id: str,
         catalog_id: str,
-        file: artifact_interface.File,
+        file_path: str,
         async_enabled: bool = False,
     ) -> artifact_interface.UploadCatalogFileResponse:
+        file = process_file(file_path)
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.UploadCatalogFile,
