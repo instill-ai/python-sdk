@@ -1,7 +1,6 @@
 # pylint: disable=no-member,wrong-import-position,too-many-lines,no-name-in-module
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
-from google.protobuf import field_mask_pb2
 from google.protobuf.struct_pb2 import Struct
 
 # common
@@ -241,16 +240,35 @@ class PipelineClient(Client):
     @grpc_handler
     def update_pipeline(
         self,
-        pipeline: pipeline_interface.Pipeline,
-        mask: field_mask_pb2.FieldMask,
+        pipeline_id: str,
+        pipeline_description: str,
+        pipeline_documentation_url: str,
+        pipeline_license: str,
+        pipeline_profile_image: str,
+        pipeline_sharing_enabled: bool = False,
+        tags: Optional[list[str]] = None,
         async_enabled: bool = False,
     ) -> pipeline_interface.UpdateUserPipelineResponse:
+        tags = tags if tags is not None else []
+        sharing = common_pb2.Sharing()
+        sharing.User.enabled = pipeline_sharing_enabled
+        sharing.User.role = common_pb2.Role.ROLE_EXECUTOR
+
+        pipeline = pipeline_interface.Pipeline(
+            id=pipeline_id,
+            description=pipeline_description,
+            documentation_url=pipeline_documentation_url,
+            license=pipeline_license,
+            profile_image=pipeline_profile_image,
+            sharing=sharing,
+            tags=tags,
+        )
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.UpdateUserPipeline,
                 request=pipeline_interface.UpdateUserPipelineRequest(
                     pipeline=pipeline,
-                    update_mask=mask,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -259,7 +277,6 @@ class PipelineClient(Client):
             method=self.hosts[self.instance].client.UpdateUserPipeline,
             request=pipeline_interface.UpdateUserPipelineRequest(
                 pipeline=pipeline,
-                update_mask=mask,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -274,7 +291,7 @@ class PipelineClient(Client):
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.ValidateUserPipeline,
                 request=pipeline_interface.ValidateUserPipelineRequest(
-                    name=f"users/{self.target_namespace}/pipelines/{name}"
+                    name=f"{self.target_namespace}/pipelines/{name}"
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -282,7 +299,7 @@ class PipelineClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.ValidateUserPipeline,
             request=pipeline_interface.ValidateUserPipelineRequest(
-                name=f"users/{self.target_namespace}/pipelines/{name}"
+                name=f"{self.target_namespace}/pipelines/{name}"
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -293,15 +310,21 @@ class PipelineClient(Client):
         name: str,
         target: str,
         description: str,
-        sharing: common_pb2.Sharing,
+        sharing_enabled: bool = False,
+        sharing_role_executor: bool = True,
         async_enabled: bool = False,
     ) -> pipeline_interface.CloneUserPipelineResponse:
+        sharing = common_pb2.Sharing()
+        sharing.User.enabled = sharing_enabled
+        if sharing_role_executor:
+            sharing.User.role = common_pb2.Role.ROLE_EXECUTOR
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.CloneUserPipeline,
                 request=pipeline_interface.CloneUserPipelineRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}",
-                    target=f"{self.target_namespace}/pipelines/{target}",
+                    name=f"users/{self.target_namespace}/pipelines/{name}",
+                    target=f"{self.target_namespace}/{target}",
                     description=description,
                     sharing=sharing,
                 ),
@@ -311,8 +334,8 @@ class PipelineClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.CloneUserPipeline,
             request=pipeline_interface.CloneUserPipelineRequest(
-                name=f"{self.target_namespace}/pipelines/{name}",
-                target=f"{self.target_namespace}/pipelines/{target}",
+                name=f"users/{self.target_namespace}/pipelines/{name}",
+                target=f"{self.target_namespace}/{target}",
                 description=description,
                 sharing=sharing,
             ),
@@ -662,7 +685,6 @@ class PipelineClient(Client):
         pipeline_id: str,
         release_id: str,
         release: pipeline_interface.PipelineRelease,
-        mask: field_mask_pb2.FieldMask,
         async_enabled: bool = False,
     ) -> pipeline_interface.UpdateNamespacePipelineReleaseResponse:
         if async_enabled:
@@ -675,7 +697,6 @@ class PipelineClient(Client):
                     pipeline_id=pipeline_id,
                     release_id=release_id,
                     release=release,
-                    update_mask=mask,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -687,7 +708,6 @@ class PipelineClient(Client):
                 pipeline_id=pipeline_id,
                 release_id=release_id,
                 release=release,
-                update_mask=mask,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -731,9 +751,15 @@ class PipelineClient(Client):
         release_id: str,
         target: str,
         description: str,
-        sharing: common_pb2.Sharing,
+        sharing_enabled: bool = False,
+        sharing_role_executor: bool = True,
         async_enabled: bool = False,
     ) -> pipeline_interface.CloneNamespacePipelineReleaseResponse:
+        sharing = common_pb2.Sharing()
+        sharing.User.enabled = sharing_enabled
+        if sharing_role_executor:
+            sharing.User.role = common_pb2.Role.ROLE_EXECUTOR
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[
@@ -920,7 +946,6 @@ class PipelineClient(Client):
         namespace_id: str,
         secret_id: str,
         secret: secret_interface.Secret,
-        mask: field_mask_pb2.FieldMask,
         async_enabled: bool = False,
     ) -> secret_interface.UpdateNamespaceSecretResponse:
         if async_enabled:
@@ -930,7 +955,6 @@ class PipelineClient(Client):
                     namespace_id=namespace_id,
                     secret_id=secret_id,
                     secret=secret,
-                    update_mask=mask,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -941,7 +965,6 @@ class PipelineClient(Client):
                 namespace_id=namespace_id,
                 secret_id=secret_id,
                 secret=secret,
-                update_mask=mask,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -982,7 +1005,7 @@ class PipelineClient(Client):
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.DeleteUserPipeline,
                 request=pipeline_interface.DeleteUserPipelineRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}"
+                    name=f"{self.target_namespace}/pipelines/{name}/releases/latest"
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -990,7 +1013,7 @@ class PipelineClient(Client):
         return RequestFactory(
             method=self.hosts[self.instance].client.DeleteUserPipeline,
             request=pipeline_interface.DeleteUserPipelineRequest(
-                name=f"{self.target_namespace}/pipelines/{name}"
+                name=f"{self.target_namespace}/pipelines/{name}/releases/latest"
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -1201,7 +1224,6 @@ class PipelineClient(Client):
     def update_pipeline_release(
         self,
         pipeline_release: pipeline_interface.PipelineRelease,
-        mask: field_mask_pb2.FieldMask,
         async_enabled: bool = False,
     ) -> pipeline_interface.UpdateUserPipelineReleaseResponse:
         if async_enabled:
@@ -1209,7 +1231,6 @@ class PipelineClient(Client):
                 method=self.hosts[self.instance].async_client.UpdateUserPipelineRelease,
                 request=pipeline_interface.UpdateUserPipelineReleaseRequest(
                     release=pipeline_release,
-                    update_mask=mask,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -1218,7 +1239,6 @@ class PipelineClient(Client):
             method=self.hosts[self.instance].client.UpdateUserPipelineRelease,
             request=pipeline_interface.UpdateUserPipelineReleaseRequest(
                 release=pipeline_release,
-                update_mask=mask,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -1428,7 +1448,6 @@ class PipelineClient(Client):
     def update_secrets(
         self,
         secret: secret_interface.Secret,
-        mask: field_mask_pb2.FieldMask,
         async_enabled: bool = False,
     ) -> secret_interface.UpdateUserSecretResponse:
         if async_enabled:
@@ -1436,7 +1455,6 @@ class PipelineClient(Client):
                 method=self.hosts[self.instance].async_client.UpdateUserSecret,
                 request=secret_interface.UpdateUserSecretRequest(
                     secret=secret,
-                    update_mask=mask,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -1445,7 +1463,6 @@ class PipelineClient(Client):
             method=self.hosts[self.instance].client.UpdateUserSecret,
             request=secret_interface.UpdateUserSecretRequest(
                 secret=secret,
-                update_mask=mask,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -1506,13 +1523,16 @@ class PipelineClient(Client):
     def create_org_pipeline(
         self,
         name: str,
-        recipe: Struct,
+        description: str,
+        recipe: dict,
         async_enabled: bool = False,
     ) -> pipeline_interface.CreateOrganizationPipelineResponse:
         pipeline = pipeline_interface.Pipeline(
             id=name,
-            recipe=recipe,
+            description=description,
         )
+        pipeline.recipe.update(recipe)
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[
@@ -1588,10 +1608,30 @@ class PipelineClient(Client):
     @grpc_handler
     def update_org_pipeline(
         self,
-        pipeline: pipeline_interface.Pipeline,
-        mask: field_mask_pb2.FieldMask,
+        pipeline_id: str,
+        pipeline_description: str,
+        pipeline_documentation_url: str,
+        pipeline_license: str,
+        pipeline_profile_image: str,
+        pipeline_sharing_enabled: bool = False,
+        tags: Optional[list[str]] = None,
         async_enabled: bool = False,
     ) -> pipeline_interface.UpdateOrganizationPipelineResponse:
+        tags = tags if tags is not None else []
+        sharing = common_pb2.Sharing()
+        sharing.User.enabled = pipeline_sharing_enabled
+        sharing.User.role = common_pb2.Role.ROLE_EXECUTOR
+
+        pipeline = pipeline_interface.Pipeline(
+            id=pipeline_id,
+            description=pipeline_description,
+            documentation_url=pipeline_documentation_url,
+            license=pipeline_license,
+            profile_image=pipeline_profile_image,
+            sharing=sharing,
+            tags=tags,
+        )
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[
@@ -1599,7 +1639,6 @@ class PipelineClient(Client):
                 ].async_client.UpdateOrganizationPipeline,
                 request=pipeline_interface.UpdateOrganizationPipelineRequest(
                     pipeline=pipeline,
-                    update_mask=mask,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -1608,7 +1647,6 @@ class PipelineClient(Client):
             method=self.hosts[self.instance].client.UpdateOrganizationPipeline,
             request=pipeline_interface.UpdateOrganizationPipelineRequest(
                 pipeline=pipeline,
-                update_mask=mask,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -1644,9 +1682,15 @@ class PipelineClient(Client):
         name: str,
         target: str,
         description: str,
-        sharing: common_pb2.Sharing,
+        sharing_enabled: bool = False,
+        sharing_role_executor: bool = True,
         async_enabled: bool = False,
     ) -> pipeline_interface.CloneOrganizationPipelineResponse:
+        sharing = common_pb2.Sharing()
+        sharing.User.enabled = sharing_enabled
+        if sharing_role_executor:
+            sharing.User.role = common_pb2.Role.ROLE_EXECUTOR
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.CloneOrganizationPipeline,
@@ -1674,30 +1718,30 @@ class PipelineClient(Client):
     def trigger_org_pipeline(
         self,
         name: str,
-        inputs: list,
         data: list,
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerOrganizationPipelineResponse:
+        request = pipeline_interface.TriggerOrganizationPipelineRequest(
+            name=f"{self.target_namespace}/pipelines/{name}",
+        )
+
+        for d in data:
+            trigger_data = pipeline_interface.TriggerData()
+            trigger_data.variable.update(d)
+            request.data.append(trigger_data)
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[
                     self.instance
                 ].async_client.TriggerOrganizationPipeline,
-                request=pipeline_interface.TriggerOrganizationPipelineRequest(
-                    name=f"{self.target_namespace}/pipelines/{name}",
-                    inputs=inputs,
-                    data=data,
-                ),
+                request=request,
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerOrganizationPipeline,
-            request=pipeline_interface.TriggerOrganizationPipelineRequest(
-                name=f"{self.target_namespace}/pipelines/{name}",
-                inputs=inputs,
-                data=data,
-            ),
+            request=request,
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
 
@@ -1910,7 +1954,6 @@ class PipelineClient(Client):
     def update_org_pipeline_release(
         self,
         pipeline_release: pipeline_interface.PipelineRelease,
-        mask: field_mask_pb2.FieldMask,
         async_enabled: bool = False,
     ) -> pipeline_interface.UpdateOrganizationPipelineReleaseResponse:
         if async_enabled:
@@ -1920,7 +1963,6 @@ class PipelineClient(Client):
                 ].async_client.UpdateOrganizationPipelineRelease,
                 request=pipeline_interface.UpdateOrganizationPipelineReleaseRequest(
                     release=pipeline_release,
-                    update_mask=mask,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -1929,7 +1971,6 @@ class PipelineClient(Client):
             method=self.hosts[self.instance].client.UpdateOrganizationPipelineRelease,
             request=pipeline_interface.UpdateOrganizationPipelineReleaseRequest(
                 release=pipeline_release,
-                update_mask=mask,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -2145,7 +2186,6 @@ class PipelineClient(Client):
     def update_org_secrets(
         self,
         secret: secret_interface.Secret,
-        mask: field_mask_pb2.FieldMask,
         async_enabled: bool = False,
     ) -> secret_interface.UpdateOrganizationSecretResponse:
         if async_enabled:
@@ -2153,7 +2193,6 @@ class PipelineClient(Client):
                 method=self.hosts[self.instance].async_client.UpdateOrganizationSecret,
                 request=secret_interface.UpdateOrganizationSecretRequest(
                     secret=secret,
-                    update_mask=mask,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -2162,7 +2201,6 @@ class PipelineClient(Client):
             method=self.hosts[self.instance].client.UpdateOrganizationSecret,
             request=secret_interface.UpdateOrganizationSecretRequest(
                 secret=secret,
-                update_mask=mask,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()
@@ -2241,9 +2279,15 @@ class PipelineClient(Client):
         name: str,
         target: str,
         description: str,
-        sharing: common_pb2.Sharing,
+        sharing_enabled: bool = False,
+        sharing_role_executor: bool = True,
         async_enabled: bool = False,
     ) -> pipeline_interface.CloneUserPipelineReleaseResponse:
+        sharing = common_pb2.Sharing()
+        sharing.User.enabled = sharing_enabled
+        if sharing_role_executor:
+            sharing.User.role = common_pb2.Role.ROLE_EXECUTOR
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.CloneUserPipelineRelease,
@@ -2304,9 +2348,15 @@ class PipelineClient(Client):
         name: str,
         target: str,
         description: str,
-        sharing: common_pb2.Sharing,
+        sharing_enabled: bool = False,
+        sharing_role_executor: bool = True,
         async_enabled: bool = False,
     ) -> pipeline_interface.CloneOrganizationPipelineReleaseResponse:
+        sharing = common_pb2.Sharing()
+        sharing.User.enabled = sharing_enabled
+        if sharing_role_executor:
+            sharing.User.role = common_pb2.Role.ROLE_EXECUTOR
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[
@@ -2693,7 +2743,6 @@ class PipelineClient(Client):
     def update_namespace_connection(
         self,
         connection: integration_interface.Connection,
-        mask: field_mask_pb2.FieldMask,
         async_enabled: bool = False,
     ) -> integration_interface.UpdateNamespaceConnectionResponse:
         if async_enabled:
@@ -2701,7 +2750,6 @@ class PipelineClient(Client):
                 method=self.hosts[self.instance].async_client.UpdateNamespaceConnection,
                 request=integration_interface.UpdateNamespaceConnectionRequest(
                     connection=connection,
-                    update_mask=mask,
                 ),
                 metadata=self.hosts[self.instance].metadata,
             ).send_async()
@@ -2710,7 +2758,6 @@ class PipelineClient(Client):
             method=self.hosts[self.instance].client.UpdateNamespaceConnection,
             request=integration_interface.UpdateNamespaceConnectionRequest(
                 connection=connection,
-                update_mask=mask,
             ),
             metadata=self.hosts[self.instance].metadata,
         ).send_sync()

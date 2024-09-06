@@ -97,11 +97,11 @@ def init_model_client(api_token: str = "", async_enabled: bool = False) -> Model
         Logger.w("Instill Core is required")
         raise NotServingException
 
-    user_id = mgmt_service.get_user().user.id
+    user_name = mgmt_service.get_user().user.name
     mgmt_service.close()
 
     client = ModelClient(
-        namespace=user_id, api_token=api_token, async_enabled=async_enabled
+        namespace=user_name, api_token=api_token, async_enabled=async_enabled
     )
     if not client.is_serving():
         Logger.w("Instill Model is not serving, Model functionalities will not work")
@@ -111,18 +111,21 @@ def init_model_client(api_token: str = "", async_enabled: bool = False) -> Model
 
 
 def init_pipeline_client(
-    api_token: str = "", async_enabled: bool = False
+    namespace: str = "", api_token: str = "", async_enabled: bool = False
 ) -> PipelineClient:
-    mgmt_service = MgmtClient(api_token=api_token, async_enabled=False)
-    if not mgmt_service.is_serving():
-        Logger.w("Instill Core is required")
-        raise NotServingException
+    if namespace == "":
+        mgmt_service = MgmtClient(api_token=api_token, async_enabled=False)
+        if not mgmt_service.is_serving():
+            Logger.w("Instill Core is required")
+            raise NotServingException
 
-    user_id = mgmt_service.get_user().user.id
-    mgmt_service.close()
+        namespace = mgmt_service.get_user().user.name
+        mgmt_service.close()
+    else:
+        namespace = f"organizations/{namespace}"
 
     client = PipelineClient(
-        namespace=user_id, api_token=api_token, async_enabled=async_enabled
+        namespace=namespace, api_token=api_token, async_enabled=async_enabled
     )
     if not client.is_serving():
         Logger.w("Instill VDP is not serving, VDP functionalities will not work")

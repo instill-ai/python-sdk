@@ -327,6 +327,7 @@ class ArtifactClient(Client):
         async_enabled: bool = False,
     ) -> artifact_interface.ListCatalogFilesResponse:
         list_catalog_files_filter = artifact_interface.ListCatalogFilesFilter()
+        files_filter = files_filter if files_filter is not None else []
         for file_uid in files_filter:
             list_catalog_files_filter.file_uids.append(file_uid)
 
