@@ -235,8 +235,8 @@ files = [
 lazy-object-proxy = ">=1.4.0"
 typing-extensions = {version = ">=4.0.0", markers = "python_version < \"3.11\""}
 wrapt = [
-    {version = ">=1.11,<2", markers = "python_version < \"3.11\""},
     {version = ">=1.14,<2", markers = "python_version >= \"3.11\""},
+    {version = ">=1.11,<2", markers = "python_version < \"3.11\""},
 ]
 
 [[package]]
@@ -778,9 +778,9 @@ isort = ">=4.3.21,<6.0"
 jinja2 = ">=2.10.1,<4.0"
 packaging = "*"
 pydantic = [
+    {version = ">=1.10.0,<2.4.0 || >2.4.0,<3.0", extras = ["email"], markers = "python_version >= \"3.11\" and python_version < \"4.0\""},
     {version = ">=1.5.1,<2.4.0 || >2.4.0,<3.0", extras = ["email"], markers = "python_version < \"3.10\""},
     {version = ">=1.9.0,<2.4.0 || >2.4.0,<3.0", extras = ["email"], markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
-    {version = ">=1.10.0,<2.4.0 || >2.4.0,<3.0", extras = ["email"], markers = "python_version >= \"3.11\" and python_version < \"4.0\""},
 ]
 pyyaml = ">=6.0.1"
 toml = {version = ">=0.10.0,<1.0.0", markers = "python_version < \"3.11\""}
@@ -2793,6 +2793,17 @@ files = [
 ]
 
 [[package]]
+name = "py-xid"
+version = "1.0.0"
+description = "Globally unique identifier generator library"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "py-xid-1.0.0.tar.gz", hash = "sha256:82e5bbdab92d104fcc2bcb95a169ecaf126e72f838f0da6900efd9a1323ed05f"},
+    {file = "py_xid-1.0.0-py3-none-any.whl", hash = "sha256:759375239460ff9bebbf277fb469b2147236049268295a3708280818b806476b"},
+]
+
+[[package]]
 name = "pyasn1"
 version = "0.6.0"
 description = "Pure-Python implementation of ASN.1 types and DER/BER/CER codecs (X.208)"
@@ -3044,8 +3055,8 @@ files = [
 astroid = ">=2.12.13,<=2.14.0-dev0"
 colorama = {version = ">=0.4.5", markers = "sys_platform == \"win32\""}
 dill = [
-    {version = ">=0.2", markers = "python_version < \"3.11\""},
     {version = ">=0.3.6", markers = "python_version >= \"3.11\""},
+    {version = ">=0.2", markers = "python_version < \"3.11\""},
 ]
 isort = ">=4.2.5,<6"
 mccabe = ">=0.6,<0.8"
@@ -3450,8 +3461,8 @@ fastapi = {version = "*", optional = true, markers = "extra == \"serve\""}
 filelock = "*"
 frozenlist = "*"
 grpcio = [
-    {version = ">=1.32.0", optional = true, markers = "python_version < \"3.10\" and extra == \"serve\""},
     {version = ">=1.42.0", optional = true, markers = "python_version >= \"3.10\" and extra == \"serve\""},
+    {version = ">=1.32.0", optional = true, markers = "python_version < \"3.10\" and extra == \"serve\""},
 ]
 jsonschema = "*"
 memray = {version = "*", optional = true, markers = "sys_platform != \"win32\" and extra == \"serve\""}
@@ -4590,4 +4601,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.12"
-content-hash = "80128d293301daa62bb447364fe9bd927780b1ba97063d921dde6b2d8eabe972"
+content-hash = "a291f10eabecd3a99b3c666a89e02353d6aa56bb83285a7785793d27952909fa"

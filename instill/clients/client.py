@@ -60,9 +60,22 @@ class InstillClient:
         self.model_service.async_close()
         self.artifact_service.async_close()
 
+    def get_artifact(self) -> ArtifactClient:
+        return self.artifact_service
+
+    def get_pipeline(self) -> PipelineClient:
+        return self.pipeline_service
+
+    def get_model(self) -> ModelClient:
+        return self.model_service
+
 
 def get_client(async_enabled: bool = False) -> InstillClient:
     return InstillClient(async_enabled=async_enabled)
+
+
+def init_core_client(api_token: str = "", async_enabled: bool = False) -> InstillClient:
+    return InstillClient(api_token=api_token, async_enabled=async_enabled)
 
 
 def init_artifact_client(

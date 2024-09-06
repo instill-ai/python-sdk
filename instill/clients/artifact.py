@@ -1,5 +1,5 @@
 # pylint: disable=no-member,wrong-import-position,too-many-lines,no-name-in-module
-from typing import Dict
+from typing import Dict, Optional
 
 # artifact
 import instill.protogen.artifact.artifact.v1alpha.artifact_pb2 as artifact_interface
@@ -128,9 +128,11 @@ class ArtifactClient(Client):
         namespace_id: str,
         name: str,
         description: str,
-        tags: list[str],
+        tags: Optional[list[str]] = None,
         async_enabled: bool = False,
     ) -> artifact_interface.CreateCatalogResponse:
+        tags = tags if tags is not None else []
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.CreateCatalog,
@@ -182,10 +184,12 @@ class ArtifactClient(Client):
         self,
         catalog_id: str,
         description: str,
-        tags: list[str],
         namespace_id: str,
+        tags: Optional[list[str]] = None,
         async_enabled: bool = False,
     ) -> artifact_interface.UpdateCatalogResponse:
+        tags = tags if tags is not None else []
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.UpdateCatalog,
@@ -317,7 +321,7 @@ class ArtifactClient(Client):
         self,
         namespace_id: str,
         catalog_id: str,
-        files_filter: list[str],
+        files_filter: Optional[list[str]] = None,
         page_size: int = 10,
         page_token: str = "",
         async_enabled: bool = False,
