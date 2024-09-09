@@ -158,10 +158,10 @@ def construct_task_detection_output(
         objects = []
         for cat, sc, bb in zip(category, score, bbox):
             bb_dict = {
-                "top": bb[1],
-                "left": bb[0],
-                "width": bb[2],
-                "height": bb[3],
+                "top": float(bb[1]),
+                "left": float(bb[0]),
+                "width": float(bb[2]),
+                "height": float(bb[3]),
             }
             objects.append(
                 {"category": str(cat), "score": float(sc), "bounding-box": bb_dict}
@@ -210,10 +210,10 @@ def construct_task_ocr_output(
         objects = []
         for txt, sc, bb in zip(text, score, bbox):
             bb_dict = {
-                "top": bb[1],
-                "left": bb[0],
-                "width": bb[2],
-                "height": bb[3],
+                "top": float(bb[1]),
+                "left": float(bb[0]),
+                "width": float(bb[2]),
+                "height": float(bb[3]),
             }
             objects.append(
                 {"text": str(txt), "score": float(sc), "bounding-box": bb_dict}
@@ -264,10 +264,10 @@ def construct_task_instance_segmentation_output(
         objects = []
         for r, cat, sc, bb in zip(rle, category, score, bbox):
             bb_dict = {
-                "top": bb[1],
-                "left": bb[0],
-                "width": bb[2],
-                "height": bb[3],
+                "top": float(bb[1]),
+                "left": float(bb[0]),
+                "width": float(bb[2]),
+                "height": float(bb[3]),
             }
             objects.append(
                 {
@@ -369,10 +369,10 @@ def construct_task_keypoint_output(
                 point_list.append({"x": kp[0], "y": kp[1], "v": kp[2]})
 
             bb_dict = {
-                "top": bb[1],
-                "left": bb[0],
-                "width": bb[2],
-                "height": bb[3],
+                "top": float(bb[1]),
+                "left": float(bb[0]),
+                "width": float(bb[2]),
+                "height": float(bb[3]),
             }
             objects.append(
                 {"keypoints": point_list, "score": float(sc), "bounding-box": bb_dict}
