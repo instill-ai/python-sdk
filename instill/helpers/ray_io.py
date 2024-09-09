@@ -910,7 +910,7 @@ def construct_task_text_to_image_output(
 
     if not len(finish_reasons) == len(images):
         raise InvalidOutputShapeException
-    if len(images) > 0 and not (len(finish_reasons[0]) == len(images[0])):
+    if len(images) > 0 and not len(finish_reasons[0]) == len(images[0]):
         raise InvalidOutputShapeException
 
     task_outputs = []
@@ -1187,15 +1187,11 @@ async def parse_task_embedding_to_multimodal_embedding_input(
                 contents.append(
                     {
                         "type": "image",
-                        "image": base64_to_pil_image(
-                            embedding[embedding["type"]]
-                        ),
+                        "image": base64_to_pil_image(embedding[embedding["type"]]),
                     }
                 )
             elif embedding["type"] == "text":
-                contents.append(
-                    {"type": "text", "text": embedding[embedding["type"]]}
-                )
+                contents.append({"type": "text", "text": embedding[embedding["type"]]})
             else:
                 raise InvalidInputException("non supported input type")
 
