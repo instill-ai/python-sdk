@@ -15,7 +15,7 @@ RUN for package in ${SYSTEM_PACKAGES}; do \
 
 ARG PACKAGES
 RUN for package in ${PACKAGES}; do \
-    pip install --default-timeout=1000 --no-cache-dir $package; \
+    pip install --default-timeout=1000 $package; \
     done;
 
 COPY --chown=ray:users --exclude=model.py . .
