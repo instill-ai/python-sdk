@@ -441,7 +441,7 @@ async def parse_task_completion_to_completion_input(
 
         # number of generated outputs
         if "n" in parameter:
-            inp.n = parameter["n"]
+            inp.n = int(parameter["n"])
 
         # top p
         if "top-p" in parameter:
@@ -640,7 +640,7 @@ async def parse_task_chat_to_chat_input(
 
         # number of generated outputs
         if "n" in parameter:
-            inp.n = parameter["n"]
+            inp.n = int(parameter["n"])
 
         # top p
         if "top-p" in parameter:
@@ -830,7 +830,7 @@ async def parse_task_chat_to_multimodal_chat_input(
 
         # number of generated outputs
         if "n" in parameter:
-            inp.n = parameter["n"]
+            inp.n = int(parameter["n"])
 
         # top p
         if "top-p" in parameter:
@@ -886,7 +886,7 @@ async def parse_task_text_to_image_input(
 
         # number of generated outputs
         if "n" in parameter:
-            inp.n = parameter["n"]
+            inp.n = int(parameter["n"])
 
         # seed
         if "seed" in parameter:
