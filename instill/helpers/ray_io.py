@@ -18,6 +18,7 @@ from instill.helpers.const import (
     ChatMultiModalInput,
     CompletionInput,
     ImageEmbeddingInput,
+    MultimodalEmbeddingInput,
     TextEmbeddingInput,
     TextToImageInput,
     VisionInput,
@@ -477,8 +478,8 @@ def construct_task_completion_output(
         == len(contents)
     ):
         raise InvalidOutputShapeException
-    if (
-        not len(finish_reasons[0])
+    if len(contents) > 0 and not (
+        len(finish_reasons[0])
         == len(indexes[0])
         == len(created_timestamps[0])
         == len(contents[0])
@@ -676,8 +677,8 @@ def construct_task_chat_output(
         == len(messages)
     ):
         raise InvalidOutputShapeException
-    if (
-        not len(finish_reasons[0])
+    if len(messages) > 0 and not (
+        len(finish_reasons[0])
         == len(indexes[0])
         == len(created_timestamps[0])
         == len(messages[0])
@@ -909,7 +910,7 @@ def construct_task_text_to_image_output(
 
     if not len(finish_reasons) == len(images):
         raise InvalidOutputShapeException
-    if not len(finish_reasons[0]) == len(images[0]):
+    if len(images) > 0 and not len(finish_reasons[0]) == len(images[0]):
         raise InvalidOutputShapeException
 
     task_outputs = []
@@ -1055,12 +1056,144 @@ async def parse_task_embedding_to_text_embedding_input(
 
         # messages and prompt images
         contents: List[str] = []
-        for inputs in data["input"]:
-            for content in inputs["content"]:
-                if content["type"] == "text":
-                    contents.append(content["text"])
-                else:
-                    raise InvalidInputException("can only process text input")
+        for embedding in data["embeddings"]:
+            if embedding["type"] == "text":
+                contents.append(embedding["text"])
+            else:
+                raise InvalidInputException("this model can only process text input")
+
+        inp.contents = contents
+
+        # format
+        if "format" in parameter:
+            inp.format = str(parameter["format"])
+
+        # dimensions
+        if "dimensions" in parameter:
+            inp.dimensions = int(parameter["dimensions"])
+
+        # input-type
+        if "input-type" in parameter:
+            inp.input_type = str(parameter["input-type"])
+
+        # truncate
+        if "truncate" in parameter:
+            inp.truncate = str(parameter["truncate"])
+
+        input_list.append(inp)
+
+    return input_list
+
+
+async def parse_task_embedding_to_image_embedding_input(
+    request: Union[CallRequest, Request],
+) -> List[ImageEmbeddingInput]:
+
+    # http test input
+    if isinstance(request, Request):
+        test_data: dict = await request.json()
+
+        test_img = test_data["image"]
+
+        inp = ImageEmbeddingInput()
+        inp.images = [url_to_pil_image(test_img)]
+
+        return [inp]
+
+    input_list = []
+    for task_input in request.task_inputs:
+        task_input_dict = json_format.MessageToDict(task_input)
+
+        data = task_input_dict["data"]
+        parameter = (
+            task_input_dict["parameter"] if "parameter" in task_input_dict else {}
+        )
+
+        inp = ImageEmbeddingInput()
+
+        # messages and prompt images
+        images: List[Image.Image] = []
+        for embedding in data["embeddings"]:
+            if embedding["type"] == "image-url":
+                images.append(url_to_pil_image(embedding[embedding["type"]]))
+            elif embedding["type"] == "image-base64":
+                images.append(base64_to_pil_image(embedding[embedding["type"]]))
+            else:
+                raise InvalidInputException("can only process image input")
+
+        inp.images = images
+
+        # format
+        if "format" in parameter:
+            inp.format = str(parameter["format"])
+
+        # dimensions
+        if "dimensions" in parameter:
+            inp.dimensions = int(parameter["dimensions"])
+
+        # input-type
+        if "input-type" in parameter:
+            inp.input_type = str(parameter["input-type"])
+
+        # truncate
+        if "truncate" in parameter:
+            inp.truncate = str(parameter["truncate"])
+
+        input_list.append(inp)
+
+    return input_list
+
+
+async def parse_task_embedding_to_multimodal_embedding_input(
+    request: Union[CallRequest, Request],
+) -> List[MultimodalEmbeddingInput]:
+
+    # http test input
+    if isinstance(request, Request):
+        test_data: dict = await request.json()
+
+        inp = MultimodalEmbeddingInput()
+        inp.contents = []
+        if "image" in test_data:
+            inp.contents.append(
+                {"type": "image", "image": url_to_pil_image(test_data["image"])}
+            )
+        if "text" in test_data:
+            inp.contents.append({"type": "text", "text": test_data["text"]})
+
+        return [inp]
+
+    input_list = []
+    for task_input in request.task_inputs:
+        task_input_dict = json_format.MessageToDict(task_input)
+
+        data = task_input_dict["data"]
+        parameter = (
+            task_input_dict["parameter"] if "parameter" in task_input_dict else {}
+        )
+
+        inp = MultimodalEmbeddingInput()
+
+        contents: List[dict] = []
+        for embedding in data["embeddings"]:
+            if embedding["type"] == "image-url":
+                contents.append(
+                    {
+                        "type": "image",
+                        "image": url_to_pil_image(embedding[embedding["type"]]),
+                    }
+                )
+            elif embedding["type"] == "image-base64":
+                contents.append(
+                    {
+                        "type": "image",
+                        "image": base64_to_pil_image(embedding[embedding["type"]]),
+                    }
+                )
+            elif embedding["type"] == "text":
+                contents.append({"type": "text", "text": embedding[embedding["type"]]})
+            else:
+                raise InvalidInputException("non supported input type")
 
         inp.contents = contents
 
@@ -1094,7 +1227,9 @@ def construct_task_embedding_output(
 
     if not len(embeddings) == len(indexes) == len(created_timestamps):
         raise InvalidOutputShapeException
-    if not len(embeddings[0]) == len(indexes[0]) == len(created_timestamps[0]):
+    if len(embeddings) > 0 and not (
+        len(embeddings[0]) == len(indexes[0]) == len(created_timestamps[0])
+    ):
         raise InvalidOutputShapeException
 
     task_outputs = []
@@ -1128,66 +1263,6 @@ def construct_task_embedding_output(
         task_outputs[i] = dict_to_struct(o)
 
     return CallResponse(task_outputs=task_outputs)
-
-
-async def parse_task_embedding_to_image_embedding_input(
-    request: Union[CallRequest, Request],
-) -> List[ImageEmbeddingInput]:
-
-    # http test input
-    if isinstance(request, Request):
-        test_data: dict = await request.json()
-
-        test_img = test_data["image"]
-
-        inp = ImageEmbeddingInput()
-        inp.images = [url_to_pil_image(test_img)]
-
-        return [inp]
-
-    input_list = []
-    for task_input in request.task_inputs:
-        task_input_dict = json_format.MessageToDict(task_input)
-
-        data = task_input_dict["data"]
-        parameter = (
-            task_input_dict["parameter"] if "parameter" in task_input_dict else {}
-        )
-
-        inp = ImageEmbeddingInput()
-
-        # messages and prompt images
-        images: List[Image.Image] = []
-        for inputs in data["input"]:
-            for content in inputs["content"]:
-                if content["type"] == "image-url":
-                    images.append(url_to_pil_image(content[content["type"]]))
-                elif content["type"] == "image-base64":
-                    images.append(base64_to_pil_image(content[content["type"]]))
-                else:
-                    raise InvalidInputException("can only process image input")
-
-        inp.images = images
-
-        # format
-        if "format" in parameter:
-            inp.format = str(parameter["format"])
-
-        # dimensions
-        if "dimensions" in parameter:
-            inp.dimensions = int(parameter["dimensions"])
-
-        # input-type
-        if "input-type" in parameter:
-            inp.input_type = str(parameter["input-type"])
-
-        # truncate
-        if "truncate" in parameter:
-            inp.truncate = str(parameter["truncate"])
-
-        input_list.append(inp)
-
-    return input_list
 
 
 async def parse_custom_input(
