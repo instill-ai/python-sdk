@@ -69,6 +69,14 @@ class ImageEmbeddingInput:
     truncate: str = EMBEDDING_TRUNCATE_END
 
 
+class MultimodalEmbeddingInput:
+    contents: List[dict]
+    format: str = EMBEDDING_FORMAT_FLOAT
+    dimensions: int = 512
+    input_type: str = EMBEDDING_INPUT_TYPE_QUERY
+    truncate: str = EMBEDDING_TRUNCATE_END
+
+
 class TextToImageInput:
     prompt: str
     negative_prompt: str = ""
