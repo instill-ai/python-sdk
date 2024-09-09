@@ -509,8 +509,8 @@ class ArtifactClient(Client):
         self,
         namespace_id: str,
         catalog_id: str,
-        file_id: str,
-        file_uid: str,
+        file_id: str = "",
+        file_uid: str = "",
         async_enabled: bool = False,
     ) -> file_catalog_interface.GetFileCatalogResponse:
         if async_enabled:
