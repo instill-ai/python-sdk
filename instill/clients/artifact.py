@@ -1,5 +1,5 @@
 # pylint: disable=no-member,wrong-import-position,too-many-lines,no-name-in-module
-from typing import Dict
+from typing import Dict, Optional
 
 # artifact
 import instill.protogen.artifact.artifact.v1alpha.artifact_pb2 as artifact_interface
@@ -16,6 +16,7 @@ from instill.clients.constant import DEFAULT_INSTANCE
 from instill.clients.instance import InstillInstance
 from instill.configuration import global_config
 from instill.utils.error_handler import grpc_handler
+from instill.utils.process_file import process_file
 
 
 class ArtifactClient(Client):
@@ -127,9 +128,11 @@ class ArtifactClient(Client):
         namespace_id: str,
         name: str,
         description: str,
-        tags: list[str],
+        tags: Optional[list[str]] = None,
         async_enabled: bool = False,
     ) -> artifact_interface.CreateCatalogResponse:
+        tags = tags if tags is not None else []
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.CreateCatalog,
@@ -181,10 +184,12 @@ class ArtifactClient(Client):
         self,
         catalog_id: str,
         description: str,
-        tags: list[str],
         namespace_id: str,
+        tags: Optional[list[str]] = None,
         async_enabled: bool = False,
     ) -> artifact_interface.UpdateCatalogResponse:
+        tags = tags if tags is not None else []
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.UpdateCatalog,
@@ -239,9 +244,11 @@ class ArtifactClient(Client):
         self,
         namespace_id: str,
         catalog_id: str,
-        file: artifact_interface.File,
+        file_path: str,
         async_enabled: bool = False,
     ) -> artifact_interface.UploadCatalogFileResponse:
+        file = process_file(file_path)
+
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.UploadCatalogFile,
@@ -314,12 +321,13 @@ class ArtifactClient(Client):
         self,
         namespace_id: str,
         catalog_id: str,
-        files_filter: list[str],
+        files_filter: Optional[list[str]] = None,
         page_size: int = 10,
         page_token: str = "",
         async_enabled: bool = False,
     ) -> artifact_interface.ListCatalogFilesResponse:
         list_catalog_files_filter = artifact_interface.ListCatalogFilesFilter()
+        files_filter = files_filter if files_filter is not None else []
         for file_uid in files_filter:
             list_catalog_files_filter.file_uids.append(file_uid)
 

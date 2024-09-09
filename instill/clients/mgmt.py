@@ -40,6 +40,16 @@ class MgmtClient(Client):
                     async_enabled=async_enabled,
                 )
 
+    def close(self):
+        if self.is_serving():
+            for host in self.hosts.values():
+                host.channel.close()
+
+    async def async_close(self):
+        if self.is_serving():
+            for host in self.hosts.values():
+                await host.async_channel.close()
+
     @property
     def hosts(self):
         return self._hosts

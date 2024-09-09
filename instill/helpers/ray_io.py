@@ -2,7 +2,7 @@
 import base64
 import io
 import re
-from typing import Any, Dict, List, Union
+from typing import Dict, List, Union
 
 import numpy as np
 import requests
@@ -10,19 +10,6 @@ from google.protobuf import json_format, struct_pb2
 from PIL import Image
 from starlette.requests import Request
 
-import instill.protogen.model.model.v1alpha.common_pb2 as commonpb
-import instill.protogen.model.model.v1alpha.model_pb2 as modelpb
-import instill.protogen.model.model.v1alpha.task_classification_pb2 as classificationpb
-import instill.protogen.model.model.v1alpha.task_detection_pb2 as detectionpb
-import instill.protogen.model.model.v1alpha.task_image_to_image_pb2 as imagetoimagepb
-import instill.protogen.model.model.v1alpha.task_instance_segmentation_pb2 as instancesegmentationpb
-import instill.protogen.model.model.v1alpha.task_keypoint_pb2 as keypointpb
-import instill.protogen.model.model.v1alpha.task_ocr_pb2 as ocrpb
-import instill.protogen.model.model.v1alpha.task_semantic_segmentation_pb2 as semanticsegmentationpb
-import instill.protogen.model.model.v1alpha.task_text_generation_chat_pb2 as textgenerationchatpb
-import instill.protogen.model.model.v1alpha.task_text_generation_pb2 as textgenerationpb
-import instill.protogen.model.model.v1alpha.task_text_to_image_pb2 as texttoimagepb
-import instill.protogen.model.model.v1alpha.task_visual_question_answering_pb2 as visualquestionansweringpb
 from instill.helpers.const import (
     IMAGE_INPUT_TYPE_BASE64,
     IMAGE_INPUT_TYPE_URL,
@@ -31,7 +18,6 @@ from instill.helpers.const import (
     ChatMultiModalInput,
     CompletionInput,
     ImageEmbeddingInput,
-    ImageToImageInput,
     TextEmbeddingInput,
     TextToImageInput,
     VisionInput,

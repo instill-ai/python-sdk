@@ -8,8 +8,8 @@ from instill.utils.logger import Logger
 
 
 class InstillClient:
-    def __init__(self, async_enabled: bool = False) -> None:
-        self.mgmt_service = MgmtClient(async_enabled=async_enabled)
+    def __init__(self, api_token: str = "", async_enabled: bool = False) -> None:
+        self.mgmt_service = MgmtClient(api_token=api_token, async_enabled=async_enabled)
         if not self.mgmt_service.is_serving():
             Logger.w("Instill Core is required")
             raise NotServingException
@@ -19,6 +19,7 @@ class InstillClient:
         self.pipeline_service = PipelineClient(
             namespace=user_name,
             async_enabled=async_enabled,
+            api_token=api_token,
         )
         if not self.pipeline_service.is_serving():
             Logger.w("Instill VDP is not serving, VDP functionalities will not work")
@@ -26,13 +27,16 @@ class InstillClient:
         self.model_service = ModelClient(
             namespace=user_name,
             async_enabled=async_enabled,
+            api_token=api_token,
         )
         if not self.model_service.is_serving():
             Logger.w(
                 "Instill Model is not serving, Model functionalities will not work"
             )
 
-        self.artifact_service = ArtifactClient(async_enabled=async_enabled)
+        self.artifact_service = ArtifactClient(
+            async_enabled=async_enabled, api_token=api_token
+        )
         if not self.artifact_service.is_serving():
             Logger.w(
                 "Instill Artifact is not serving, Artifact functionalities will not work"
@@ -45,36 +49,33 @@ class InstillClient:
         self.artifact_service.instance = instance
 
     def close(self):
-        if self.mgmt_service.is_serving():
-            for host in self.mgmt_service.hosts.values():
-                host.channel.close()
-        if self.pipeline_service.is_serving():
-            for host in self.pipeline_service.hosts.values():
-                host.channel.close()
-        if self.model_service.is_serving():
-            for host in self.model_service.hosts.values():
-                host.channel.close()
-        if self.artifact_service.is_serving():
-            for host in self.artifact_service.hosts.values():
-                host.channel.close()
+        self.mgmt_service.close()
+        self.pipeline_service.close()
+        self.model_service.close()
+        self.artifact_service.close()
 
     async def async_close(self):
-        if self.mgmt_service.is_serving():
-            for host in self.mgmt_service.hosts.values():
-                await host.async_channel.close()
-        if self.pipeline_service.is_serving():
-            for host in self.pipeline_service.hosts.values():
-                await host.async_channel.close()
-        if self.model_service.is_serving():
-            for host in self.model_service.hosts.values():
-                await host.async_channel.close()
-        if self.artifact_service.is_serving():
-            for host in self.artifact_service.hosts.values():
-                await host.async_channel.close()
+        self.mgmt_service.async_close()
+        self.pipeline_service.async_close()
+        self.model_service.async_close()
+        self.artifact_service.async_close()
+
+    def get_artifact(self) -> ArtifactClient:
+        return self.artifact_service
+
+    def get_pipeline(self) -> PipelineClient:
+        return self.pipeline_service
+
+    def get_model(self) -> ModelClient:
+        return self.model_service
 
 
 def get_client(async_enabled: bool = False) -> InstillClient:
     return InstillClient(async_enabled=async_enabled)
+
+
+def init_core_client(api_token: str = "", async_enabled: bool = False) -> InstillClient:
+    return InstillClient(api_token=api_token, async_enabled=async_enabled)
 
 
 def init_artifact_client(
@@ -91,15 +92,16 @@ def init_artifact_client(
 
 
 def init_model_client(api_token: str = "", async_enabled: bool = False) -> ModelClient:
-    mgmt_service = MgmtClient(api_token=api_token, async_enabled=async_enabled)
+    mgmt_service = MgmtClient(api_token=api_token, async_enabled=False)
     if not mgmt_service.is_serving():
         Logger.w("Instill Core is required")
         raise NotServingException
 
-    user_id = mgmt_service.get_user().user.id
+    user_name = mgmt_service.get_user().user.name
+    mgmt_service.close()
 
     client = ModelClient(
-        namespace=user_id, api_token=api_token, async_enabled=async_enabled
+        namespace=user_name, api_token=api_token, async_enabled=async_enabled
     )
     if not client.is_serving():
         Logger.w("Instill Model is not serving, Model functionalities will not work")
@@ -109,20 +111,33 @@ def init_model_client(api_token: str = "", async_enabled: bool = False) -> Model
 
 
 def init_pipeline_client(
-    api_token: str = "", async_enabled: bool = False
+    namespace: str = "", api_token: str = "", async_enabled: bool = False
 ) -> PipelineClient:
-    mgmt_service = MgmtClient(api_token=api_token, async_enabled=async_enabled)
-    if not mgmt_service.is_serving():
-        Logger.w("Instill Core is required")
-        raise NotServingException
+    if namespace == "":
+        mgmt_service = MgmtClient(api_token=api_token, async_enabled=False)
+        if not mgmt_service.is_serving():
+            Logger.w("Instill Core is required")
+            raise NotServingException
 
-    user_id = mgmt_service.get_user().user.id
+        namespace = mgmt_service.get_user().user.name
+        mgmt_service.close()
+    else:
+        namespace = f"organizations/{namespace}"
 
     client = PipelineClient(
-        namespace=user_id, api_token=api_token, async_enabled=async_enabled
+        namespace=namespace, api_token=api_token, async_enabled=async_enabled
     )
     if not client.is_serving():
         Logger.w("Instill VDP is not serving, VDP functionalities will not work")
+        raise NotServingException
+
+    return client
+
+
+def init_mgmt_client(api_token: str = "", async_enabled: bool = False) -> MgmtClient:
+    client = MgmtClient(api_token=api_token, async_enabled=async_enabled)
+    if not client.is_serving():
+        Logger.w("Instill Core is required")
         raise NotServingException
 
     return client
