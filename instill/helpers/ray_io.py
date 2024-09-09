@@ -905,7 +905,8 @@ def construct_task_text_to_image_output(
     """Construct trigger output for text to image task
 
     Args:
-        images (List[List[str]]): for each input prompt, the generated images with the length of `samples`
+        images (List[List[str]]): for each input prompt,
+        the generated jpeg image base64 string with the length of `samples`
     """
 
     if not len(finish_reasons) == len(images):
@@ -922,7 +923,7 @@ def construct_task_text_to_image_output(
             choices.append(
                 {
                     "finish-reason": finish,
-                    "image": img,
+                    "image": f"data:image/jpeg;base64,{img}",
                 }
             )
         data["choices"] = choices
