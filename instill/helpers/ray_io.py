@@ -778,7 +778,7 @@ async def parse_task_chat_to_multimodal_chat_input(
         # messages and prompt images
         messages: List[Dict[str, str]] = []
         images: List[List[Image.Image]] = []
-        for message in data["messages"]:
+        for i, message in enumerate(data["messages"]):
             role = message["role"]
             content = message["content"]
 
@@ -786,7 +786,11 @@ async def parse_task_chat_to_multimodal_chat_input(
             if role == PROMPT_ROLES[0]:
                 for c in content:
                     if c["type"] == "text":
-                        messages.insert(0, {"role": role, "content": c["text"]})
+                        if len(messages) > i:
+                            raise InvalidInputException(
+                                "can only have single text from user in each round"
+                            )
+                        messages.insert(i, {"role": role, "content": c["text"]})
                     elif c["type"] == "image-url":
                         imgs.append(url_to_pil_image(c["image-url"]))
                     elif c["type"] == "image-base64":
