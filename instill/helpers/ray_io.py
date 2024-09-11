@@ -11,6 +11,7 @@ from PIL import Image
 from starlette.requests import Request
 
 from instill.helpers.const import (
+    HEADERS,
     IMAGE_INPUT_TYPE_BASE64,
     IMAGE_INPUT_TYPE_URL,
     PROMPT_ROLES,
@@ -42,7 +43,7 @@ def base64_to_pil_image(base64_str):
 
 
 def url_to_pil_image(url):
-    resp = requests.get(url, timeout=10)
+    resp = requests.get(url, headers=HEADERS, timeout=10)
     resp.raise_for_status()
     return Image.open(io.BytesIO(resp.content))
 
