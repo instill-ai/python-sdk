@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.12.0](https://github.com/instill-ai/python-sdk/compare/v0.11.0...v0.12.0) (2024-09-11)
+
+
+### Features
+
+* **artifact:** update get_file_catalog input parameter default values ([#203](https://github.com/instill-ai/python-sdk/issues/203)) ([f5da73f](https://github.com/instill-ai/python-sdk/commit/f5da73f03035dcb3022c5d212fc1c351e6c5350f))
+* **ray:** implement model local run and adopt latest task spec ([#196](https://github.com/instill-ai/python-sdk/issues/196)) ([5b67b56](https://github.com/instill-ai/python-sdk/commit/5b67b569672c16d12428c82baece882e948f0d56))
+* **ray:** support multimodal embedding input ([#204](https://github.com/instill-ai/python-sdk/issues/204)) ([e150ad1](https://github.com/instill-ai/python-sdk/commit/e150ad1a70fedeb743bab882c6b07ccc912a269f))
+
+
+### Bug Fixes
+
+* **dockerfile:** revert storing cache dir ([#207](https://github.com/instill-ai/python-sdk/issues/207)) ([297f1f1](https://github.com/instill-ai/python-sdk/commit/297f1f102d1fbab936b345bd3633c7005f536963))
+* **ray:** append mime type for image output ([#208](https://github.com/instill-ai/python-sdk/issues/208)) ([9e38b70](https://github.com/instill-ai/python-sdk/commit/9e38b70402f3902428554750d5dfe800b8cca301))
+* **ray:** fix bounding box output type ([#205](https://github.com/instill-ai/python-sdk/issues/205)) ([22242df](https://github.com/instill-ai/python-sdk/commit/22242df4d32f2605f0fb30818c49fc42ae940e85))
+* **ray:** fix multimodal chat input ([#210](https://github.com/instill-ai/python-sdk/issues/210)) ([37aa13a](https://github.com/instill-ai/python-sdk/commit/37aa13a99ad725e36aa9797ce53aaf90b0a7830c))
+* **ray:** fix number of sample type ([#206](https://github.com/instill-ai/python-sdk/issues/206)) ([c87527d](https://github.com/instill-ai/python-sdk/commit/c87527da2cb2f36532edfe59dbe10c587402da88))
+* **ray:** replace user-agent header ([#209](https://github.com/instill-ai/python-sdk/issues/209)) ([e18b217](https://github.com/instill-ai/python-sdk/commit/e18b21734d6d64cc62b2b25017c03f6b8c00dd54))
+
 ## [0.11.0](https://github.com/instill-ai/python-sdk/compare/v0.10.2...v0.11.0) (2024-09-04)
 
 
