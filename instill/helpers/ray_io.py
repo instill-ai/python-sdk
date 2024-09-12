@@ -805,6 +805,7 @@ async def parse_task_chat_to_multimodal_chat_input(
             images.append(imgs)
 
         if messages[0]["role"] != PROMPT_ROLES[-1]:
+            images.insert(0, [])
             messages.insert(
                 0,
                 {
