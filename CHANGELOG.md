@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.1](https://github.com/instill-ai/python-sdk/compare/v0.12.0...v0.12.1) (2024-09-12)
+
+
+### Bug Fixes
+
+* **ray:** fix misaligned message and image length ([#211](https://github.com/instill-ai/python-sdk/issues/211)) ([dd8ceeb](https://github.com/instill-ai/python-sdk/commit/dd8ceeb9ad216bd204c478d6b20b7afbfeed12c5))
+
 ## [0.12.0](https://github.com/instill-ai/python-sdk/compare/v0.11.0...v0.12.0) (2024-09-11)
 
 
