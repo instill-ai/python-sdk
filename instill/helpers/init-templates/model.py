@@ -1,81 +1,69 @@
 # type: ignore
+# you can find a list of supported task in the helpers module
 from instill.helpers import (
-    construct_text_generation_chat_infer_response,
-    construct_text_generation_chat_metadata_response,
+    construct_task_chat_output,
+    parse_task_chat_to_multimodal_chat_input,
 )
-from instill.helpers.const import TextGenerationChatInput
 from instill.helpers.ray_config import InstillDeployable, instill_deployment
-from instill.helpers.ray_io import StandardTaskIO
 
 
 @instill_deployment
-class Phimini:
+class ModelName:
     """Custom model implementation"""
 
     def __init__(self):
         """Load model into memory"""
-        # model = AutoModelForCausalLM.from_pretrained(
-        #     "microsoft/Phi-3-mini-4k-instruct",
-        #     device_map="cuda",
-        #     torch_dtype="auto",
-        #     trust_remote_code=True,
-        # )
-        # tokenizer = AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-4k-instruct")
-
         # self.pipeline = pipeline(
         #     "text-generation",
-        #     model=model,
-        #     tokenizer=tokenizer,
+        #     model="tinyllama",
+        #     torch_dtype=torch.float16,
+        #     device_map="cuda:0",
         # )
-
-    def ModelMetadata(self, req):
-        """Define model input and output shape base on task type"""
-        # return construct_text_generation_chat_metadata_response(req=req)
 
     async def __call__(self, request):
         """Run inference logic"""
 
-        # deserialize input base on task type
-        # task_text_generation_chat_input: TextGenerationChatInput = (
-        #     StandardTaskIO.parse_task_text_generation_chat_input(request=request)
-        # )
+        # parse request into conversation chat input
 
-        # preprocess
-        # conv = [
-        #     {
-        #         "role": "system",
-        #         "content": task_text_generation_chat_input.system_message,
-        #     },
-        #     {
-        #         "role": "user",
-        #         "content": task_text_generation_chat_input.prompt,
-        #     },
-        # ]
-        # generation_args = {
-        #     "max_new_tokens": task_text_generation_chat_input.max_new_tokens,
-        #     "return_full_text": False,
-        #     "temperature": task_text_generation_chat_input.temperature,
-        #     "top_k": task_text_generation_chat_input.top_k,
-        #     "top_p": 0.95,
-        #     "do_sample": False,
-        # }
+        # conversation_inputs = await parse_task_chat_to_chat_input(request=request)
 
-        # inference
-        # sequences = self.pipeline(conv, **generation_args)
+        # finish_reasons = []
+        # indexes = []
+        # created = []
+        # messages = []
+        # for i, inp in enumerate(conversation_inputs):
+        #     prompt = self.pipeline.tokenizer.apply_chat_template(
+        #         inp.messages,
+        #         tokenize=False,
+        #         add_generation_prompt=True,
+        #     )
 
-        # convert the model output into response output using StandardTaskIO
-        # task_text_generation_chat_output = (
-        #     StandardTaskIO.parse_task_text_generation_chat_output(sequences=sequences)
-        # )
+        #     # inference
+        #     sequences = self.pipeline(
+        #         prompt,
+        #         max_new_tokens=inp.max_tokens,
+        #         do_sample=True,
+        #         temperature=inp.temperature,
+        #         top_p=inp.top_p,
+        #     )
 
-        # return response
-        # return construct_text_generation_chat_infer_response(
-        #     req=request,
-        #     # specify the output dimension
-        #     shape=[1, len(sequences)],
-        #     raw_outputs=[task_text_generation_chat_output],
+        #     output = sequences[0]["generated_text"].split("<|assistant|>\n")[-1].strip()
+
+        #     messages.append([{"content": output, "role": "assistant"}])
+        #     finish_reasons.append(["length"])
+        #     indexes.append([i])
+        #     created.append([int(time.time())])
+
+        # construct chat output
+
+        # return construct_task_chat_output(
+        #     request=request,
+        #     finish_reasons=finish_reasons,
+        #     indexes=indexes,
+        #     messages=messages,
+        #     created_timestamps=created,
         # )
 
 
 # define model deployment entrypoint
-entrypoint = InstillDeployable(Phimini).get_deployment_handle()
+entrypoint = InstillDeployable(ModelName).get_deployment_handle()
