@@ -1,5 +1,5 @@
 # pylint: disable=no-member,wrong-import-position,too-many-lines,no-name-in-module
-from typing import Dict, Optional, List
+from typing import Dict, List, Optional
 
 from google.protobuf import field_mask_pb2
 from google.protobuf.struct_pb2 import Struct
@@ -381,7 +381,7 @@ class ModelClient(Client):
         for input_value in task_inputs:
             trigger_inputs = Struct()
             trigger_inputs.update(input_value)
-            request.task_inputs.append(trigger_inputs)
+            request.task_input.append(trigger_inputs)
 
         if async_enabled:
             return RequestFactory(
@@ -734,7 +734,7 @@ class ModelClient(Client):
             return RequestFactory(
                 method=method,
                 request=model_interface.ListNamespaceModelsRequest(
-                    parent=self.namespace_id,
+                    namespace_id=self.namespace_id,
                     page_size=total_size,
                     page_token=next_page_token,
                     show_deleted=show_deleted,
@@ -764,7 +764,7 @@ class ModelClient(Client):
         return RequestFactory(
             method=method,
             request=model_interface.ListNamespaceModelsRequest(
-                parent=self.namespace_id,
+                namespace_id=self.namespace_id,
                 page_size=total_size,
                 page_token=next_page_token,
                 show_deleted=show_deleted,
