@@ -15,21 +15,21 @@ class InstillInstance:
         self.url: str = url
         self.token: str = token
         self.async_enabled: bool = async_enabled
-        self.metadata: Union[str, tuple] = ""
+        self.metadata: list = []
 
-        channel_options = (
+        channel_options = [
             ("grpc.max_send_message_length", 32 * MB),
             ("grpc.max_receive_message_length", 32 * MB),
-        )
+        ]
 
         if not secure:
             channel = grpc.insecure_channel(url, options=channel_options)
-            self.metadata = (
+            self.metadata = [
                 (
                     "authorization",
                     f"Bearer {token}",
                 ),
-            )
+            ]
             if async_enabled:
                 async_channel = grpc.aio.insecure_channel(url, options=channel_options)
         else:

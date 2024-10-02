@@ -25,7 +25,7 @@ class InstillClient:
             Logger.w("Instill VDP is not serving, VDP functionalities will not work")
 
         self.model_service = ModelClient(
-            namespace=user_name,
+            namespace_id=user_name.split("/")[1],
             async_enabled=async_enabled,
             api_token=api_token,
         )
@@ -101,7 +101,9 @@ def init_model_client(api_token: str = "", async_enabled: bool = False) -> Model
     mgmt_service.close()
 
     client = ModelClient(
-        namespace=user_name, api_token=api_token, async_enabled=async_enabled
+        namespace_id=user_name.split("/")[1],
+        api_token=api_token,
+        async_enabled=async_enabled,
     )
     if not client.is_serving():
         Logger.w("Instill Model is not serving, Model functionalities will not work")
