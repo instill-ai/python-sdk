@@ -13,7 +13,7 @@ def describe_client():
         def when_not_set(expect):
             mgmt_client = MgmtClient(False)
             expect(mgmt_client.instance) == DEFAULT_INSTANCE
-            model_client = ModelClient(namespace="", async_enabled=False)
+            model_client = ModelClient(namespace_id="", async_enabled=False)
             expect(model_client.instance) == DEFAULT_INSTANCE
             pipeline_client = PipelineClient(namespace="", async_enabled=False)
             expect(pipeline_client.instance) == DEFAULT_INSTANCE
@@ -22,7 +22,7 @@ def describe_client():
             mgmt_client = MgmtClient(False)
             mgmt_client.instance = "staging"
             expect(mgmt_client.instance) == "staging"
-            model_client = ModelClient(namespace="", async_enabled=False)
+            model_client = ModelClient(namespace_id="", async_enabled=False)
             model_client.instance = "staging"
             expect(model_client.instance) == "staging"
             pipeline_client = PipelineClient(namespace="", async_enabled=False)
@@ -33,7 +33,7 @@ def describe_client():
         def when_not_set(expect):
             mgmt_client = MgmtClient(False)
             expect(mgmt_client.hosts) is None
-            model_client = ModelClient(namespace="", async_enabled=False)
+            model_client = ModelClient(namespace_id="", async_enabled=False)
             expect(model_client.hosts) is None
             pipeline_client = PipelineClient(namespace="", async_enabled=False)
             expect(pipeline_client.hosts) is None
@@ -61,7 +61,7 @@ def describe_client():
                     False,
                 )
             }
-            model_client = ModelClient(namespace="", async_enabled=False)
+            model_client = ModelClient(namespace_id="", async_enabled=False)
             model_client.hosts = model_instance
             expect(model_client.hosts["test_instance"].url) == "test_url"
 
@@ -101,7 +101,7 @@ def describe_client():
                     False,
                 )
             }
-            model_client = ModelClient(namespace="", async_enabled=False)
+            model_client = ModelClient(namespace_id="", async_enabled=False)
             model_client.hosts = model_instance
             expect(model_client.hosts["test_instance"].token) == "token"
 

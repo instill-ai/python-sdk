@@ -1,5 +1,5 @@
 # pylint: disable=no-member,wrong-import-position,too-many-lines,no-name-in-module
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from google.protobuf import field_mask_pb2
 from google.protobuf.struct_pb2 import Struct
@@ -21,10 +21,13 @@ from instill.utils.error_handler import grpc_handler
 
 class ModelClient(Client):
     def __init__(
-        self, namespace: str, async_enabled: bool = False, api_token: str = ""
+        self,
+        namespace_id: str,
+        async_enabled: bool = False,
+        api_token: str = "",
     ) -> None:
         self.hosts: Dict[str, InstillInstance] = {}
-        self.namespace: str = namespace
+        self.namespace_id: str = namespace_id
         if DEFAULT_INSTANCE in global_config.hosts:
             self.instance = DEFAULT_INSTANCE
         elif len(global_config.hosts) == 0:
@@ -44,6 +47,7 @@ class ModelClient(Client):
                     secure=config.secure,
                     async_enabled=async_enabled,
                 )
+        self.metadata = ()
 
     def close(self):
         if self.is_serving():
@@ -79,7 +83,7 @@ class ModelClient(Client):
         return self._metadata
 
     @metadata.setter
-    def metadata(self, metadata: str):
+    def metadata(self, metadata: List[tuple]):
         self._metadata = metadata
 
     def liveness(self, async_enabled: bool = False) -> model_interface.LivenessResponse:
@@ -87,13 +91,13 @@ class ModelClient(Client):
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.Liveness,
                 request=model_interface.LivenessRequest(),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.Liveness,
             request=model_interface.LivenessRequest(),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     def readiness(
@@ -103,13 +107,13 @@ class ModelClient(Client):
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.Readiness,
                 request=model_interface.ReadinessRequest(),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.Readiness,
             request=model_interface.ReadinessRequest(),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     def is_serving(self) -> bool:
@@ -124,49 +128,60 @@ class ModelClient(Client):
     @grpc_handler
     def watch_model(
         self,
-        model_name: str,
+        model_id: str,
         version: str,
         async_enabled: bool = False,
-    ) -> model_interface.WatchUserModelResponse:
+        namespace_id: str = "",
+    ) -> model_interface.WatchNamespaceModelResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.WatchUserModel,
-                request=model_interface.WatchUserModelRequest(
-                    name=f"{self.namespace}/models/{model_name}",
+                method=self.hosts[self.instance].async_client.WatchNamespaceModel,
+                request=model_interface.WatchNamespaceModelRequest(
+                    namespace_id=(
+                        namespace_id if namespace_id != "" else self.namespace_id
+                    ),
+                    model_id=model_id,
                     version=version,
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.WatchUserModel,
-            request=model_interface.WatchUserModelRequest(
-                name=f"{self.namespace}/models/{model_name}"
+            method=self.hosts[self.instance].client.WatchNamespaceModel,
+            request=model_interface.WatchNamespaceModelRequest(
+                namespace_id=namespace_id if namespace_id != "" else self.namespace_id,
+                model_id=model_id,
+                version=version,
             ),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
     def watch_latest_model(
         self,
-        model_name: str,
+        model_id: str,
         async_enabled: bool = False,
-    ) -> model_interface.WatchUserLatestModelResponse:
+        namespace_id: str = "",
+    ) -> model_interface.WatchNamespaceLatestModelResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.WatchUserLatestModel,
-                request=model_interface.WatchUserLatestModelRequest(
-                    name=f"{self.namespace}/models/{model_name}",
+                method=self.hosts[self.instance].async_client.WatchNamespaceLatestModel,
+                request=model_interface.WatchNamespaceLatestModelRequest(
+                    namespace_id=(
+                        namespace_id if namespace_id != "" else self.namespace_id
+                    ),
+                    model_id=model_id,
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.WatchUserLatestModel,
-            request=model_interface.WatchUserLatestModelRequest(
-                name=f"{self.namespace}/models/{model_name}",
+            method=self.hosts[self.instance].client.WatchNamespaceLatestModel,
+            request=model_interface.WatchNamespaceLatestModelRequest(
+                namespace_id=namespace_id if namespace_id != "" else self.namespace_id,
+                model_id=model_id,
             ),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
@@ -180,7 +195,8 @@ class ModelClient(Client):
         configuration: Optional[dict] = None,
         is_public: bool = True,
         async_enabled: bool = False,
-    ) -> model_interface.CreateUserModelResponse:
+        namespace_id: str = "",
+    ) -> model_interface.CreateNamespaceModelResponse:
         model = model_interface.Model()
         model.id = name
         model.task = task
@@ -198,31 +214,37 @@ class ModelClient(Client):
         model.configuration.update(configuration)
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.CreateUserModel,
-                request=model_interface.CreateUserModelRequest(
-                    model=model, parent=self.namespace
+                method=self.hosts[self.instance].async_client.CreateNamespaceModel,
+                request=model_interface.CreateNamespaceModelRequest(
+                    namespace_id=(
+                        namespace_id if namespace_id != "" else self.namespace_id
+                    ),
+                    model=model,
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.CreateUserModel,
-            request=model_interface.CreateUserModelRequest(
-                model=model, parent=self.namespace
+            method=self.hosts[self.instance].client.CreateNamespaceModel,
+            request=model_interface.CreateNamespaceModelRequest(
+                namespace_id=namespace_id if namespace_id != "" else self.namespace_id,
+                model=model,
             ),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
     def trigger_model(
         self,
-        model_name: str,
+        model_id: str,
         task_inputs: list,
         version: str,
         async_enabled: bool = False,
-    ) -> model_interface.TriggerUserModelResponse:
-        request = model_interface.TriggerUserModelRequest(
-            name=f"{self.namespace}/models/{model_name}",
+        namespace_id: str = "",
+    ) -> model_interface.TriggerNamespaceModelResponse:
+        request = model_interface.TriggerNamespaceModelRequest(
+            namespace_id=namespace_id if namespace_id != "" else self.namespace_id,
+            model_id=model_id,
             version=version,
         )
         for input_value in task_inputs:
@@ -232,146 +254,28 @@ class ModelClient(Client):
 
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.TriggerUserModel,
+                method=self.hosts[self.instance].async_client.TriggerNamespaceModel,
                 request=request,
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.TriggerUserModel,
+            method=self.hosts[self.instance].client.TriggerNamespaceModel,
             request=request,
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
     def trigger_async_model(
         self,
-        model_name: str,
-        task_inputs: list,
-        version: str,
-        async_enabled: bool = False,
-    ) -> model_interface.TriggerAsyncUserModelResponse:
-        request = model_interface.TriggerAsyncUserModelRequest(
-            name=f"{self.namespace}/models/{model_name}",
-            version=version,
-        )
-        for input_value in task_inputs:
-            trigger_inputs = Struct()
-            trigger_inputs.update(input_value)
-            request.task_inputs.append(trigger_inputs)
-
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.TriggerAsyncUserModel,
-                request=request,
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.TriggerAsyncUserModel,
-            request=request,
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def trigger_latest_model(
-        self,
-        model_name: str,
-        task_inputs: list,
-        async_enabled: bool = False,
-    ) -> model_interface.TriggerUserLatestModelResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.TriggerUserLatestModel,
-                request=model_interface.TriggerUserLatestModelRequest(
-                    name=f"{self.namespace}/models/{model_name}",
-                    task_inputs=task_inputs,
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.TriggerUserLatestModel,
-            request=model_interface.TriggerUserLatestModelRequest(
-                name=f"{self.namespace}/models/{model_name}",
-                task_inputs=task_inputs,
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def trigger_async_latest_model(
-        self,
-        model_name: str,
-        task_inputs: list,
-        async_enabled: bool = False,
-    ) -> model_interface.TriggerAsyncUserLatestModelResponse:
-        request = model_interface.TriggerAsyncUserLatestModelRequest(
-            name=f"{self.namespace}/models/{model_name}"
-        )
-        for input_value in task_inputs:
-            trigger_inputs = Struct()
-            trigger_inputs.update(input_value)
-            request.task_inputs.append(trigger_inputs)
-
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.TriggerAsyncUserLatestModel,
-                request=request,
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.TriggerAsyncUserLatestModel,
-            request=request,
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def trigger_model_binary_file_upload(
-        self,
-        model_name: str,
-        task_inputs: list,
-        version: str,
-        async_enabled: bool = False,
-    ) -> model_interface.TriggerUserModelBinaryFileUploadResponse:
-        request = model_interface.TriggerUserModelBinaryFileUploadRequest(
-            name=f"{self.namespace}/models/{model_name}",
-            version=version,
-        )
-        for input_value in task_inputs:
-            trigger_inputs = Struct()
-            trigger_inputs.update(input_value)
-            request.task_inputs.append(trigger_inputs)
-
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.TriggerUserModelBinaryFileUpload,
-                request=request,
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.TriggerUserModelBinaryFileUpload,
-            request=request,
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def trigger_async_namespace_model(
-        self,
-        namespace_id: str,
         model_id: str,
         task_inputs: list,
         version: str,
         async_enabled: bool = False,
+        namespace_id: str = "",
     ) -> model_interface.TriggerAsyncNamespaceModelResponse:
         request = model_interface.TriggerAsyncNamespaceModelRequest(
-            namespace_id=namespace_id,
+            namespace_id=namespace_id if namespace_id != "" else self.namespace_id,
             model_id=model_id,
             version=version,
         )
@@ -386,57 +290,58 @@ class ModelClient(Client):
                     self.instance
                 ].async_client.TriggerAsyncNamespaceModel,
                 request=request,
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerAsyncNamespaceModel,
             request=request,
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
-    def trigger_namespace_latest_model(
+    def trigger_latest_model(
         self,
-        namespace_id: str,
         model_id: str,
         task_inputs: list,
         async_enabled: bool = False,
+        namespace_id: str = "",
     ) -> model_interface.TriggerNamespaceLatestModelResponse:
-        request = model_interface.TriggerNamespaceLatestModelRequest(
-            namespace_id=namespace_id,
-            model_id=model_id,
-        )
-        for input_value in task_inputs:
-            trigger_inputs = Struct()
-            trigger_inputs.update(input_value)
-            request.task_inputs.append(trigger_inputs)
-
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[
                     self.instance
                 ].async_client.TriggerNamespaceLatestModel,
-                request=request,
-                metadata=self.hosts[self.instance].metadata,
+                request=model_interface.TriggerNamespaceLatestModelRequest(
+                    namespace_id=(
+                        namespace_id if namespace_id != "" else self.namespace_id
+                    ),
+                    model_id=model_id,
+                    task_inputs=task_inputs,
+                ),
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerNamespaceLatestModel,
-            request=request,
-            metadata=self.hosts[self.instance].metadata,
+            request=model_interface.TriggerNamespaceLatestModelRequest(
+                namespace_id=namespace_id if namespace_id != "" else self.namespace_id,
+                model_id=model_id,
+                task_inputs=task_inputs,
+            ),
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
-    def trigger_async_namespace_latest_model(
+    def trigger_async_latest_model(
         self,
-        namespace_id: str,
         model_id: str,
         task_inputs: list,
         async_enabled: bool = False,
+        namespace_id: str = "",
     ) -> model_interface.TriggerAsyncNamespaceLatestModelResponse:
         request = model_interface.TriggerAsyncNamespaceLatestModelRequest(
-            namespace_id=namespace_id,
+            namespace_id=namespace_id if namespace_id != "" else self.namespace_id,
             model_id=model_id,
         )
         for input_value in task_inputs:
@@ -450,30 +355,30 @@ class ModelClient(Client):
                     self.instance
                 ].async_client.TriggerAsyncNamespaceLatestModel,
                 request=request,
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.TriggerAsyncNamespaceLatestModel,
             request=request,
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
-    def trigger_namespace_model_binary_file_upload(
+    def trigger_model_binary_file_upload(
         self,
-        namespace_id: str,
         model_id: str,
-        task_input: list,
+        task_inputs: list,
         version: str,
         async_enabled: bool = False,
+        namespace_id: str = "",
     ) -> model_interface.TriggerNamespaceModelBinaryFileUploadResponse:
         request = model_interface.TriggerNamespaceModelBinaryFileUploadRequest(
-            namespace_id=namespace_id,
+            namespace_id=namespace_id if namespace_id != "" else self.namespace_id,
             model_id=model_id,
             version=version,
         )
-        for input_value in task_input:
+        for input_value in task_inputs:
             trigger_inputs = Struct()
             trigger_inputs.update(input_value)
             request.task_input.append(trigger_inputs)
@@ -484,7 +389,7 @@ class ModelClient(Client):
                     self.instance
                 ].async_client.TriggerNamespaceModelBinaryFileUpload,
                 request=request,
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
@@ -492,19 +397,19 @@ class ModelClient(Client):
                 self.instance
             ].client.TriggerNamespaceModelBinaryFileUpload,
             request=request,
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
     def trigger_namespace_latest_model_binary_file_upload(
         self,
-        namespace_id: str,
         model_id: str,
         task_input: list,
         async_enabled: bool = False,
+        namespace_id: str = "",
     ) -> model_interface.TriggerNamespaceLatestModelBinaryFileUploadResponse:
         request = model_interface.TriggerNamespaceLatestModelBinaryFileUploadRequest(
-            namespace_id=namespace_id,
+            namespace_id=namespace_id if namespace_id != "" else self.namespace_id,
             model_id=model_id,
         )
         for input_value in task_input:
@@ -518,7 +423,7 @@ class ModelClient(Client):
                     self.instance
                 ].async_client.TriggerNamespaceLatestModelBinaryFileUpload,
                 request=request,
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
@@ -526,16 +431,16 @@ class ModelClient(Client):
                 self.instance
             ].client.TriggerNamespaceLatestModelBinaryFileUpload,
             request=request,
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
     def get_namespace_model_operation(
         self,
-        namespace_id: str,
         model_id: str,
         version: str,
         async_enabled: bool = False,
+        namespace_id: str = "",
     ) -> model_interface.GetNamespaceModelOperationResponse:
         if async_enabled:
             return RequestFactory(
@@ -543,31 +448,33 @@ class ModelClient(Client):
                     self.instance
                 ].async_client.GetNamespaceModelOperation,
                 request=model_interface.GetNamespaceModelOperationRequest(
-                    namespace_id=namespace_id,
+                    namespace_id=(
+                        namespace_id if namespace_id != "" else self.namespace_id
+                    ),
                     model_id=model_id,
                     version=version,
                     view=model_definition_interface.VIEW_FULL,
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.GetNamespaceModelOperation,
             request=model_interface.GetNamespaceModelOperationRequest(
-                namespace_id=namespace_id,
+                namespace_id=namespace_id if namespace_id != "" else self.namespace_id,
                 model_id=model_id,
                 version=version,
                 view=model_definition_interface.VIEW_FULL,
             ),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
     def get_namespace_latest_model_operation(
         self,
-        namespace_id: str,
         model_id: str,
         async_enabled: bool = False,
+        namespace_id: str = "",
     ) -> model_interface.GetNamespaceLatestModelOperationResponse:
         if async_enabled:
             return RequestFactory(
@@ -575,21 +482,23 @@ class ModelClient(Client):
                     self.instance
                 ].async_client.GetNamespaceLatestModelOperation,
                 request=model_interface.GetNamespaceLatestModelOperationRequest(
-                    namespace_id=namespace_id,
+                    namespace_id=(
+                        namespace_id if namespace_id != "" else self.namespace_id
+                    ),
                     model_id=model_id,
                     view=model_definition_interface.VIEW_FULL,
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.GetNamespaceLatestModelOperation,
             request=model_interface.GetNamespaceLatestModelOperationRequest(
-                namespace_id=namespace_id,
+                namespace_id=namespace_id if namespace_id != "" else self.namespace_id,
                 model_id=model_id,
                 view=model_definition_interface.VIEW_FULL,
             ),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
@@ -605,7 +514,7 @@ class ModelClient(Client):
                     operation_id=operation_id,
                     view=model_definition_interface.VIEW_FULL,
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
@@ -614,96 +523,112 @@ class ModelClient(Client):
                 operation_id=operation_id,
                 view=model_definition_interface.VIEW_FULL,
             ),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
     def delete_model(
         self,
-        model_name: str,
+        model_id: str,
         async_enabled: bool = False,
-    ) -> model_interface.DeleteUserModelResponse:
+        namespace_id: str = "",
+    ) -> model_interface.DeleteNamespaceModelResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.DeleteUserModel,
-                request=model_interface.DeleteUserModelRequest(
-                    name=f"{self.namespace}/models/{model_name}"
+                method=self.hosts[self.instance].async_client.DeleteNamespaceModel,
+                request=model_interface.DeleteNamespaceModelRequest(
+                    namespace_id=(
+                        namespace_id if namespace_id != "" else self.namespace_id
+                    ),
+                    model_id=model_id,
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.DeleteUserModel,
-            request=model_interface.DeleteUserModelRequest(
-                name=f"{self.namespace}/models/{model_name}"
+            method=self.hosts[self.instance].client.DeleteNamespaceModel,
+            request=model_interface.DeleteNamespaceModelRequest(
+                namespace_id=namespace_id if namespace_id != "" else self.namespace_id,
+                model_id=model_id,
             ),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
     def rename_model(
         self,
-        model_name: str,
+        model_id: str,
         new_model_id: str,
         async_enabled: bool = False,
-    ) -> model_interface.RenameUserModelResponse:
+        namespace_id: str = "",
+    ) -> model_interface.RenameNamespaceModelResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.RenameUserModel,
-                request=model_interface.RenameUserModelRequest(
-                    name=f"{self.namespace}/models/{model_name}",
+                method=self.hosts[self.instance].async_client.RenameNamespaceModel,
+                request=model_interface.RenameNamespaceModelRequest(
+                    namespace_id=(
+                        namespace_id if namespace_id != "" else self.namespace_id
+                    ),
+                    model_id=model_id,
                     new_model_id=new_model_id,
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.RenameUserModel,
-            request=model_interface.RenameUserModelRequest(
-                name=f"{self.namespace}/models/{model_name}",
+            method=self.hosts[self.instance].client.RenameNamespaceModel,
+            request=model_interface.RenameNamespaceModelRequest(
+                namespace_id=namespace_id if namespace_id != "" else self.namespace_id,
+                model_id=model_id,
                 new_model_id=new_model_id,
             ),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
     def get_model(
         self,
-        model_name: str,
+        model_id: str,
         async_enabled: bool = False,
-    ) -> model_interface.GetUserModelResponse:
+        namespace_id: str = "",
+    ) -> model_interface.GetNamespaceModelResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.GetUserModel,
-                request=model_interface.GetUserModelRequest(
-                    name=f"{self.namespace}/models/{model_name}",
+                method=self.hosts[self.instance].async_client.GetNamespaceModel,
+                request=model_interface.GetNamespaceModelRequest(
+                    namespace_id=(
+                        namespace_id if namespace_id != "" else self.namespace_id
+                    ),
+                    model_id=model_id,
                     view=model_definition_interface.VIEW_FULL,
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.GetUserModel,
-            request=model_interface.GetUserModelRequest(
-                name=f"{self.namespace}/models/{model_name}",
+            method=self.hosts[self.instance].client.GetNamespaceModel,
+            request=model_interface.GetNamespaceModelRequest(
+                namespace_id=namespace_id if namespace_id != "" else self.namespace_id,
+                model_id=model_id,
                 view=model_definition_interface.VIEW_FULL,
             ),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
     def update_model(
         self,
-        name: str,
+        model_id: str,
         description: str,
         documentation_url: str,
         hardware: str,
         model_license: str = "",
         is_public: bool = True,
         async_enabled: bool = False,
-    ) -> model_interface.UpdateUserModelResponse:
+        namespace_id: str = "",
+    ) -> model_interface.UpdateNamespaceModelResponse:
         model = model_interface.Model(
-            name=f"{self.namespace}/models/{name}",
+            name=f"namespaces/{self.namespace_id}/models/{model_id}",
             description=description,
             documentation_url=documentation_url,
             hardware=hardware,
@@ -727,19 +652,27 @@ class ModelClient(Client):
 
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.UpdateUserModel,
-                request=model_interface.UpdateUserModelRequest(
-                    model=model, update_mask=update_mask
+                method=self.hosts[self.instance].async_client.UpdateNamespaceModel,
+                request=model_interface.UpdateNamespaceModelRequest(
+                    namespace_id=(
+                        namespace_id if namespace_id != "" else self.namespace_id
+                    ),
+                    model_id=model_id,
+                    model=model,
+                    update_mask=update_mask,
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.UpdateUserModel,
-            request=model_interface.UpdateUserModelRequest(
-                model=model, update_mask=update_mask
+            method=self.hosts[self.instance].client.UpdateNamespaceModel,
+            request=model_interface.UpdateNamespaceModelRequest(
+                namespace_id=namespace_id if namespace_id != "" else self.namespace_id,
+                model_id=model_id,
+                model=model,
+                update_mask=update_mask,
             ),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
@@ -754,13 +687,13 @@ class ModelClient(Client):
                 request=model_interface.LookUpModelRequest(
                     permalink=f"models/{model_uid}"
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.LookUpModel,
             request=model_interface.LookUpModelRequest(permalink=f"models/{model_uid}"),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
@@ -774,7 +707,7 @@ class ModelClient(Client):
         filter_str: str = "",
         order_by: str = "",
         async_enabled: bool = False,
-    ) -> model_interface.ListUserModelsResponse:
+    ) -> model_interface.ListNamespaceModelsResponse:
         visibility = (
             model_interface.Model.VISIBILITY_PUBLIC
             if is_public
@@ -795,13 +728,13 @@ class ModelClient(Client):
                         visibility=visibility,
                         order_by=order_by,
                     ),
-                    metadata=self.hosts[self.instance].metadata,
+                    metadata=self.hosts[self.instance].metadata.extend(self.metadata),
                 ).send_async()
-            method = self.hosts[self.instance].async_client.ListUserModels
+            method = self.hosts[self.instance].async_client.ListNamespaceModels
             return RequestFactory(
                 method=method,
-                request=model_interface.ListUserModelsRequest(
-                    parent=self.namespace,
+                request=model_interface.ListNamespaceModelsRequest(
+                    namespace_id=self.namespace_id,
                     page_size=total_size,
                     page_token=next_page_token,
                     show_deleted=show_deleted,
@@ -810,7 +743,7 @@ class ModelClient(Client):
                     visibility=visibility,
                     order_by=order_by,
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
         if public:
             method = self.hosts[self.instance].client.ListModels
@@ -825,13 +758,13 @@ class ModelClient(Client):
                     visibility=visibility,
                     order_by=order_by,
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_sync()
-        method = self.hosts[self.instance].client.ListUserModels
+        method = self.hosts[self.instance].client.ListNamespaceModels
         return RequestFactory(
             method=method,
-            request=model_interface.ListUserModelsRequest(
-                parent=self.namespace,
+            request=model_interface.ListNamespaceModelsRequest(
+                namespace_id=self.namespace_id,
                 page_size=total_size,
                 page_token=next_page_token,
                 show_deleted=show_deleted,
@@ -840,7 +773,7 @@ class ModelClient(Client):
                 visibility=visibility,
                 order_by=order_by,
             ),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
@@ -858,7 +791,7 @@ class ModelClient(Client):
                     page_token=page_token,
                     view=model_definition_interface.VIEW_FULL,
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
@@ -868,7 +801,7 @@ class ModelClient(Client):
                 page_token=page_token,
                 view=model_definition_interface.VIEW_FULL,
             ),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
@@ -880,13 +813,13 @@ class ModelClient(Client):
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.ListAvailableRegions,
                 request=model_interface.ListAvailableRegionsRequest(),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.ListAvailableRegions,
             request=model_interface.ListAvailableRegionsRequest(),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
@@ -902,7 +835,7 @@ class ModelClient(Client):
                     view=model_definition_interface.VIEW_FULL,
                     model_definition_id=model_definition_id,
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
@@ -911,7 +844,7 @@ class ModelClient(Client):
                 view=model_definition_interface.VIEW_FULL,
                 model_definition_id=model_definition_id,
             ),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
@@ -927,7 +860,7 @@ class ModelClient(Client):
                     operation_id=operation_id,
                     view=model_definition_interface.VIEW_FULL,
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
@@ -936,630 +869,148 @@ class ModelClient(Client):
                 operation_id=operation_id,
                 view=model_definition_interface.VIEW_FULL,
             ),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
     def get_latest_model_operation(
         self,
-        model_name: str,
+        model_id: str,
         async_enabled: bool = False,
-    ) -> model_interface.GetUserLatestModelOperationResponse:
+        namespace_id: str = "",
+    ) -> model_interface.GetNamespaceLatestModelOperationResponse:
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[
                     self.instance
-                ].async_client.GetUserLatestModelOperation,
-                request=model_interface.GetUserLatestModelOperationRequest(
-                    name=f"{self.namespace}/models/{model_name}",
+                ].async_client.GetNamespaceLatestModelOperation,
+                request=model_interface.GetNamespaceLatestModelOperationRequest(
+                    namespace_id=(
+                        namespace_id if namespace_id != "" else self.namespace_id
+                    ),
+                    model_id=model_id,
                     view=model_definition_interface.VIEW_FULL,
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.GetUserLatestModelOperation,
-            request=model_interface.GetUserLatestModelOperationRequest(
-                name=f"{self.namespace}/models/{model_name}",
+            method=self.hosts[self.instance].client.GetNamespaceLatestModelOperation,
+            request=model_interface.GetNamespaceLatestModelOperationRequest(
+                namespace_id=namespace_id if namespace_id != "" else self.namespace_id,
+                model_id=model_id,
                 view=model_definition_interface.VIEW_FULL,
             ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def get_organization_latest_model_operation(
-        self,
-        model_name: str,
-        async_enabled: bool = False,
-    ) -> model_interface.GetOrganizationLatestModelOperationResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.GetOrganizationLatestModelOperation,
-                request=model_interface.GetOrganizationLatestModelOperationRequest(
-                    name=f"{self.namespace}/models/{model_name}",
-                    view=model_definition_interface.VIEW_FULL,
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.GetOrganizationLatestModelOperation,
-            request=model_interface.GetOrganizationLatestModelOperationRequest(
-                name=f"{self.namespace}/models/{model_name}",
-                view=model_definition_interface.VIEW_FULL,
-            ),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
     def list_model_versions(
         self,
         page: int,
-        model_name: str,
+        model_id: str,
         page_size: int = 10,
         async_enabled: bool = False,
-    ) -> model_interface.ListUserModelVersionsResponse:
+        namespace_id: str = "",
+    ) -> model_interface.ListNamespaceModelVersionsResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.ListUserModelVersions,
-                request=model_interface.ListUserModelVersionsRequest(
+                method=self.hosts[
+                    self.instance
+                ].async_client.ListNamespaceModelVersions,
+                request=model_interface.ListNamespaceModelVersionsRequest(
+                    namespace_id=(
+                        namespace_id if namespace_id != "" else self.namespace_id
+                    ),
+                    model_id=model_id,
                     page_size=page_size,
                     page=page,
-                    name=f"{self.namespace}/models/{model_name}",
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.ListUserModelVersions,
-            request=model_interface.ListUserModelVersionsRequest(
+            method=self.hosts[self.instance].client.ListNamespaceModelVersions,
+            request=model_interface.ListNamespaceModelVersionsRequest(
+                namespace_id=namespace_id if namespace_id != "" else self.namespace_id,
+                model_id=model_id,
                 page_size=page_size,
                 page=page,
-                name=f"{self.namespace}/models/{model_name}",
             ),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
     def delete_model_version(
         self,
-        model_name: str,
+        model_id: str,
         version: str,
         async_enabled: bool = False,
-    ) -> model_interface.DeleteUserModelVersionResponse:
+        namespace_id: str = "",
+    ) -> model_interface.DeleteNamespaceModelVersionResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.DeleteUserModelVersion,
-                request=model_interface.DeleteUserModelVersionRequest(
-                    name=f"{self.namespace}/models/{model_name}",
+                method=self.hosts[
+                    self.instance
+                ].async_client.DeleteNamespaceModelVersion,
+                request=model_interface.DeleteNamespaceModelVersionRequest(
+                    namespace_id=(
+                        namespace_id if namespace_id != "" else self.namespace_id
+                    ),
+                    model_id=model_id,
                     version=version,
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.DeleteUserModelVersion,
-            request=model_interface.DeleteUserModelVersionRequest(
-                name=f"{self.namespace}/models/{model_name}",
+            method=self.hosts[self.instance].client.DeleteNamespaceModelVersion,
+            request=model_interface.DeleteNamespaceModelVersionRequest(
+                namespace_id=namespace_id if namespace_id != "" else self.namespace_id,
+                model_id=model_id,
                 version=version,
             ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def list_organization_models(
-        self,
-        page_size: int = 10,
-        page_token: str = "",
-        parent: str = "",
-        show_deleted: bool = False,
-        filter_str: str = "",
-        order_by: str = "",
-        async_enabled: bool = False,
-    ) -> model_interface.ListOrganizationModelsResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.ListOrganizationModels,
-                request=model_interface.ListOrganizationModelsRequest(
-                    view=model_definition_interface.VIEW_FULL,
-                    visibility=model_interface.Model.VISIBILITY_PUBLIC,
-                    page_size=page_size,
-                    page_token=page_token,
-                    parent=parent,
-                    show_deleted=show_deleted,
-                    filter=filter_str,
-                    order_by=order_by,
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.ListOrganizationModels,
-            request=model_interface.ListOrganizationModelsRequest(
-                view=model_definition_interface.VIEW_FULL,
-                visibility=model_interface.Model.VISIBILITY_PUBLIC,
-                page_size=page_size,
-                page_token=page_token,
-                parent=parent,
-                show_deleted=show_deleted,
-                filter=filter_str,
-                order_by=order_by,
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def create_organization_model(
-        self,
-        name: str,
-        task: task_interface.Task.ValueType,
-        region: str,
-        hardware: str,
-        is_public: bool = True,
-        definition: str = "model-definitions/container",
-        configuration: Optional[dict] = None,
-        async_enabled: bool = False,
-    ) -> model_interface.CreateOrganizationModelResponse:
-        model = model_interface.Model()
-        model.id = name
-        model.model_definition = definition
-        model.task = task
-        model.region = region
-        model.hardware = hardware
-        model.model_definition = definition
-        model.visibility = (
-            model_interface.Model.VISIBILITY_PUBLIC
-            if is_public
-            else model_interface.Model.VISIBILITY_PRIVATE
-        )
-
-        configuration = {} if configuration is None else configuration
-        model.configuration.Clear()
-        model.configuration.update(configuration)
-        parent = f"organizations/{self.namespace}"
-
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.CreateOrganizationModel,
-                request=model_interface.CreateOrganizationModelRequest(
-                    model=model,
-                    parent=parent,
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.CreateOrganizationModel,
-            request=model_interface.CreateOrganizationModelRequest(
-                model=model,
-                parent=parent,
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def get_organization_model(
-        self,
-        model_name: str,
-        async_enabled: bool = False,
-    ) -> model_interface.GetOrganizationModelResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.GetOrganizationModel,
-                request=model_interface.GetOrganizationModelRequest(
-                    name=f"{self.namespace}/models/{model_name}",
-                    view=model_definition_interface.VIEW_FULL,
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.GetOrganizationModel,
-            request=model_interface.GetOrganizationModelRequest(
-                name=f"{self.namespace}/models/{model_name}",
-                view=model_definition_interface.VIEW_FULL,
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def update_organization_model(
-        self,
-        name: str,
-        description: str,
-        documentation_url: str,
-        hardware: str,
-        model_license: str = "",
-        is_public: bool = True,
-        async_enabled: bool = False,
-    ) -> model_interface.UpdateOrganizationModelResponse:
-        model = model_interface.Model(
-            name=name,
-            description=description,
-            documentation_url=documentation_url,
-            hardware=hardware,
-            license=model_license,
-            visibility=(
-                model_interface.Model.VISIBILITY_PUBLIC
-                if is_public
-                else model_interface.Model.VISIBILITY_PRIVATE
-            ),
-        )
-        update_mask = field_mask_pb2.FieldMask()
-        update_mask.paths.extend(
-            [
-                "description",
-                "documentation_url",
-                "hardware",
-                "license",
-                "visibility",
-            ]
-        )
-
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.UpdateOrganizationModel,
-                request=model_interface.UpdateOrganizationModelRequest(
-                    model=model, update_mask=update_mask
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.UpdateOrganizationModel,
-            request=model_interface.UpdateOrganizationModelRequest(
-                model=model, update_mask=update_mask
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def delete_organization_model(
-        self,
-        model_name: str,
-        async_enabled: bool = False,
-    ) -> model_interface.DeleteOrganizationModelResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.DeleteOrganizationModel,
-                request=model_interface.DeleteOrganizationModelRequest(
-                    name=f"organizations/{self.namespace}/models/{model_name}",
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.DeleteOrganizationModel,
-            request=model_interface.DeleteOrganizationModelRequest(
-                name=f"organizations/{self.namespace}/models/{model_name}",
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def rename_organization_model(
-        self,
-        model_name: str,
-        new_model_id: str,
-        async_enabled: bool = False,
-    ) -> model_interface.RenameOrganizationModelResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.RenameOrganizationModel,
-                request=model_interface.RenameOrganizationModelRequest(
-                    name=f"{self.namespace}/models/{model_name}",
-                    new_model_id=new_model_id,
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.RenameOrganizationModel,
-            request=model_interface.RenameOrganizationModelRequest(
-                name=f"{self.namespace}/models/{model_name}",
-                new_model_id=new_model_id,
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def watch_organization_model(
-        self,
-        model_name: str,
-        version: str,
-        async_enabled: bool = False,
-    ) -> model_interface.WatchOrganizationModelResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.WatchOrganizationModel,
-                request=model_interface.WatchOrganizationModelRequest(
-                    name=f"{self.namespace}/models/{model_name}",
-                    version=version,
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.WatchOrganizationModel,
-            request=model_interface.WatchOrganizationModelRequest(
-                name=f"{self.namespace}/models/{model_name}",
-                version=version,
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def watch_organization_latest_model(
-        self,
-        model_name: str,
-        async_enabled: bool = False,
-    ) -> model_interface.WatchOrganizationLatestModelResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.WatchOrganizationLatestModel,
-                request=model_interface.WatchOrganizationLatestModelRequest(
-                    name=f"{self.namespace}/models/{model_name}",
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.WatchOrganizationLatestModel,
-            request=model_interface.WatchOrganizationLatestModelRequest(
-                name=f"{self.namespace}/models/{model_name}",
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def list_organization_model_versions(
-        self,
-        page_size: int,
-        page: int,
-        model_name: str,
-        async_enabled: bool = False,
-    ) -> model_interface.ListOrganizationModelVersionsResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.ListOrganizationModelVersions,
-                request=model_interface.ListOrganizationModelVersionsRequest(
-                    page_size=page_size,
-                    page=page,
-                    name=f"{self.namespace}/models/{model_name}",
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.ListOrganizationModelVersions,
-            request=model_interface.ListOrganizationModelVersionsRequest(
-                page_size=page_size,
-                page=page,
-                name=f"{self.namespace}/models/{model_name}",
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def delete_organization_model_version(
-        self,
-        model_name: str,
-        version: str,
-        async_enabled: bool = False,
-    ) -> model_interface.DeleteOrganizationModelVersionResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.DeleteOrganizationModelVersion,
-                request=model_interface.DeleteOrganizationModelVersionRequest(
-                    name=f"{self.namespace}/models/{model_name}",
-                    version=version,
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.DeleteOrganizationModelVersion,
-            request=model_interface.DeleteOrganizationModelVersionRequest(
-                name=f"{self.namespace}/models/{model_name}",
-                version=version,
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def trigger_organization_model(
-        self,
-        model_name: str,
-        task_inputs: list,
-        version: str,
-        async_enabled: bool = False,
-    ) -> model_interface.TriggerOrganizationModelResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[self.instance].async_client.TriggerOrganizationModel,
-                request=model_interface.TriggerOrganizationModelRequest(
-                    name=f"{self.namespace}/models/{model_name}",
-                    task_inputs=task_inputs,
-                    version=version,
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.TriggerOrganizationModel,
-            request=model_interface.TriggerOrganizationModelRequest(
-                name=f"{self.namespace}/models/{model_name}",
-                task_inputs=task_inputs,
-                version=version,
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def trigger_async_organization_model(
-        self,
-        model_name: str,
-        task_inputs: list,
-        version: str,
-        async_enabled: bool = False,
-    ) -> model_interface.TriggerAsyncOrganizationModelResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.TriggerAsyncOrganizationModel,
-                request=model_interface.TriggerAsyncOrganizationModelRequest(
-                    name=f"{self.namespace}/models/{model_name}",
-                    task_inputs=task_inputs,
-                    version=version,
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.TriggerAsyncOrganizationModel,
-            request=model_interface.TriggerAsyncOrganizationModelRequest(
-                name=f"{self.namespace}/models/{model_name}",
-                task_inputs=task_inputs,
-                version=version,
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def trigger_organization_latest_model(
-        self,
-        model_name: str,
-        task_inputs: list,
-        async_enabled: bool = False,
-    ) -> model_interface.TriggerOrganizationLatestModelResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.TriggerOrganizationLatestModel,
-                request=model_interface.TriggerOrganizationLatestModelRequest(
-                    name=f"{self.namespace}/models/{model_name}",
-                    task_inputs=task_inputs,
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.TriggerOrganizationLatestModel,
-            request=model_interface.TriggerOrganizationLatestModelRequest(
-                name=f"{self.namespace}/models/{model_name}",
-                task_inputs=task_inputs,
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def trigger_async_organization_latest_model(
-        self,
-        model_name: str,
-        task_inputs: list,
-        async_enabled: bool = False,
-    ) -> model_interface.TriggerAsyncOrganizationLatestModelResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.TriggerAsyncOrganizationLatestModel,
-                request=model_interface.TriggerAsyncOrganizationLatestModelRequest(
-                    name=f"{self.namespace}/models/{model_name}",
-                    task_inputs=task_inputs,
-                ),
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[self.instance].client.TriggerAsyncOrganizationLatestModel,
-            request=model_interface.TriggerAsyncOrganizationLatestModelRequest(
-                name=f"{self.namespace}/models/{model_name}",
-                task_inputs=task_inputs,
-            ),
-            metadata=self.hosts[self.instance].metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def trigger_organization_model_binary_file_upload(
-        self,
-        model_name: str,
-        task_inputs: list,
-        version: str,
-        async_enabled: bool = False,
-    ) -> model_interface.TriggerOrganizationModelBinaryFileUploadResponse:
-        request = model_interface.TriggerOrganizationModelBinaryFileUploadRequest(
-            name=f"{self.namespace}/models/{model_name}",
-            version=version,
-        )
-        for input_value in task_inputs:
-            trigger_inputs = Struct()
-            trigger_inputs.update(input_value)
-            request.task_inputs.append(trigger_inputs)
-
-        if async_enabled:
-            return RequestFactory(
-                method=self.hosts[
-                    self.instance
-                ].async_client.TriggerOrganizationModelBinaryFileUpload,
-                request=request,
-                metadata=self.hosts[self.instance].metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.hosts[
-                self.instance
-            ].client.TriggerOrganizationModelBinaryFileUpload,
-            request=request,
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
 
     @grpc_handler
     def list_model_runs(
         self,
-        namespace_id: str,
         model_id: str,
         page_size: int = 10,
         page: int = 0,
         order_by: str = "",
         filter_str: str = "",
         async_enabled: bool = False,
+        namespace_id: str = "",
     ) -> model_interface.ListModelRunsResponse:
         if async_enabled:
             return RequestFactory(
                 method=self.hosts[self.instance].async_client.ListModelRuns,
                 request=model_interface.ListModelRunsRequest(
                     view=model_definition_interface.VIEW_FULL,
-                    namespace_id=namespace_id,
+                    namespace_id=(
+                        namespace_id if namespace_id != "" else self.namespace_id
+                    ),
                     model_id=model_id,
                     page_size=page_size,
                     page=page,
                     order_by=order_by,
                     filter=filter_str,
                 ),
-                metadata=self.hosts[self.instance].metadata,
+                metadata=self.hosts[self.instance].metadata.extend(self.metadata),
             ).send_async()
 
         return RequestFactory(
             method=self.hosts[self.instance].client.ListModelRuns,
             request=model_interface.ListModelRunsRequest(
                 view=model_definition_interface.VIEW_FULL,
-                namespace_id=namespace_id,
+                namespace_id=namespace_id if namespace_id != "" else self.namespace_id,
                 model_id=model_id,
                 page_size=page_size,
                 page=page,
                 order_by=order_by,
                 filter=filter_str,
             ),
-            metadata=self.hosts[self.instance].metadata,
+            metadata=self.hosts[self.instance].metadata.extend(self.metadata),
         ).send_sync()
