@@ -14,22 +14,12 @@ class Client(ABC):
 
     @property
     @abstractmethod
-    def hosts(self):
+    def host(self):
         pass
 
-    @hosts.setter
+    @host.setter
     @abstractmethod
-    def hosts(self):
-        pass
-
-    @property
-    @abstractmethod
-    def instance(self):
-        pass
-
-    @instance.setter
-    @abstractmethod
-    def instance(self):
+    def host(self):
         pass
 
     @property
