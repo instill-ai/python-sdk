@@ -17,33 +17,27 @@ class Pipeline(Resource):
     def __init__(
         self,
         client: InstillClient,
-        name: str,
+        namespace_id: str,
+        pipeline_id: str,
         recipe: Union[Struct, None] = None,
     ) -> None:
         super().__init__()
         self.client = client
         get_resp = None
         pipeline = None
-        if client.pipeline_service.target_namespace.startswith("users"):
-            get_resp = client.pipeline_service.get_pipeline(name=name, silent=True)
-            if get_resp is None:
-                pipeline = client.pipeline_service.create_pipeline(
-                    name=name, recipe=recipe
-                ).pipeline
-                if pipeline is None:
-                    raise BaseException("pipeline creation failed")
-            else:
-                pipeline = get_resp.pipeline
-        elif client.pipeline_service.target_namespace.startswith("organizations"):
-            get_resp = client.pipeline_service.get_org_pipeline(name=name, silent=True)
-            if get_resp is None:
-                pipeline = client.pipeline_service.create_org_pipeline(
-                    name=name, recipe=recipe
-                ).pipeline
-                if pipeline is None:
-                    raise BaseException("pipeline creation failed")
-            else:
-                pipeline = get_resp.pipeline
+        get_resp = client.pipeline_service.get_pipeline(
+            namespace_id=namespace_id,
+            pipeline_id=pipeline_id,
+        )
+        if get_resp is None:
+            pipeline = client.pipeline_service.create_pipeline(
+                namespace_id=namespace_id,
+                recipe=recipe,
+            ).pipeline
+            if pipeline is None:
+                raise BaseException("pipeline creation failed")
+        else:
+            pipeline = get_resp.pipeline
 
         self.resource = pipeline
 
