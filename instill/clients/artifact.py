@@ -24,6 +24,7 @@ class ArtifactClient(Client):
         lookup_func: Callable[[str], str],
         url: str = "api.instill.tech",
         secure: bool = True,
+        requester_id: str = "",
         async_enabled: bool = False,
     ) -> None:
         self.host: InstillInstance = InstillInstance(
@@ -35,6 +36,10 @@ class ArtifactClient(Client):
         )
         self.metadata = []
         self._lookup_uid = lookup_func
+
+        if requester_id != "":
+            requester_uid = lookup_func(requester_id)
+            self.metadata = [("instill-requester-uid", requester_uid)]
 
     def close(self):
         if self.is_serving():
@@ -59,11 +64,6 @@ class ArtifactClient(Client):
     @metadata.setter
     def metadata(self, metadata: List[tuple]):
         self._metadata = metadata
-
-    def _set_requester_id(self, requester_id: str):
-        if requester_id != "":
-            requester_uid = self._lookup_uid(requester_id)
-            self.metadata = [("instill-requester-uid", requester_uid)]
 
     def liveness(
         self,
@@ -115,10 +115,8 @@ class ArtifactClient(Client):
         name: str,
         description: str,
         tags: Optional[list[str]] = None,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> artifact_interface.CreateCatalogResponse:
-        self._set_requester_id(requester_id)
         tags = tags if tags is not None else []
 
         if async_enabled:
@@ -148,10 +146,8 @@ class ArtifactClient(Client):
     def list_catalogs(
         self,
         namespace_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> artifact_interface.ListCatalogsResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ListCatalogs,
@@ -176,10 +172,8 @@ class ArtifactClient(Client):
         description: str,
         namespace_id: str,
         tags: Optional[list[str]] = None,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> artifact_interface.UpdateCatalogResponse:
-        self._set_requester_id(requester_id)
         tags = tags if tags is not None else []
 
         if async_enabled:
@@ -210,10 +204,8 @@ class ArtifactClient(Client):
         self,
         namespace_id: str,
         catalog_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> artifact_interface.DeleteCatalogResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.DeleteCatalog,
@@ -239,10 +231,8 @@ class ArtifactClient(Client):
         namespace_id: str,
         catalog_id: str,
         file_path: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> artifact_interface.UploadCatalogFileResponse:
-        self._set_requester_id(requester_id)
         file = process_file(file_path)
 
         if async_enabled:
@@ -270,10 +260,8 @@ class ArtifactClient(Client):
     def delete_catalog_file(
         self,
         file_uid: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> artifact_interface.DeleteCatalogFileResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.DeleteCatalogFile,
@@ -295,10 +283,8 @@ class ArtifactClient(Client):
     def process_catalog_files(
         self,
         file_uids: list[str],
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> artifact_interface.ProcessCatalogFilesResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ProcessCatalogFiles,
@@ -324,10 +310,8 @@ class ArtifactClient(Client):
         files_filter: Optional[list[str]] = None,
         page_size: int = 10,
         page_token: str = "",
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> artifact_interface.ListCatalogFilesResponse:
-        self._set_requester_id(requester_id)
         list_catalog_files_filter = artifact_interface.ListCatalogFilesFilter()
         files_filter = files_filter if files_filter is not None else []
         for file_uid in files_filter:
@@ -364,10 +348,8 @@ class ArtifactClient(Client):
         namespace_id: str,
         catalog_id: str,
         file_uid: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> chunk_interface.ListChunksResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ListChunks,
@@ -395,10 +377,8 @@ class ArtifactClient(Client):
         namespace_id: str,
         catalog_id: str,
         file_uid: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> chunk_interface.GetSourceFileResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.GetSourceFile,
@@ -425,10 +405,8 @@ class ArtifactClient(Client):
         self,
         chunk_uid: str,
         retrievable: bool,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> chunk_interface.UpdateChunkResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.UpdateChunk,
@@ -455,10 +433,8 @@ class ArtifactClient(Client):
         catalog_id: str,
         text_prompt: str,
         top_k: int,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> chunk_interface.SimilarityChunksSearchResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.SimilarityChunksSearch,
@@ -489,10 +465,8 @@ class ArtifactClient(Client):
         catalog_id: str,
         question: str,
         top_k: int,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> qa_interface.QuestionAnsweringResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.QuestionAnswering,
@@ -523,10 +497,8 @@ class ArtifactClient(Client):
         catalog_id: str,
         file_id: str = "",
         file_uid: str = "",
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> file_catalog_interface.GetFileCatalogResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.GetFileCatalog,
@@ -556,10 +528,8 @@ class ArtifactClient(Client):
         namespace_id: str,
         catalog_id: str,
         conversation_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> conversation_interface.CreateConversationResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.CreateConversation,
@@ -588,10 +558,8 @@ class ArtifactClient(Client):
         catalog_id: str,
         page_size: int = 10,
         page_token: str = "",
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> conversation_interface.ListConversationsResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ListConversations,
@@ -622,10 +590,8 @@ class ArtifactClient(Client):
         catalog_id: str,
         conversation_id: str,
         new_conversation_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> conversation_interface.UpdateConversationResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.UpdateConversation,
@@ -655,10 +621,8 @@ class ArtifactClient(Client):
         namespace_id: str,
         catalog_id: str,
         conversation_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> conversation_interface.DeleteConversationResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.DeleteConversation,
@@ -688,10 +652,8 @@ class ArtifactClient(Client):
         conversation_id: str,
         content: str,
         role: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> conversation_interface.CreateMessageResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.CreateMessage,
@@ -729,10 +691,8 @@ class ArtifactClient(Client):
         include_system_messages: bool,
         page_size: int = 10,
         page_token: str = "",
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> conversation_interface.ListMessagesResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ListMessages,
@@ -770,10 +730,8 @@ class ArtifactClient(Client):
         conversation_id: str,
         message_uid: str,
         content: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> conversation_interface.UpdateMessageResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.UpdateMessage,
@@ -806,10 +764,8 @@ class ArtifactClient(Client):
         catalog_id: str,
         conversation_id: str,
         message_uid: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> conversation_interface.DeleteMessageResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.DeleteMessage,

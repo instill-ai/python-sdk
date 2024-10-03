@@ -26,6 +26,7 @@ class PipelineClient(Client):
         lookup_func: Callable[[str], str],
         url: str = "api.instill.tech",
         secure: bool = True,
+        requester_id: str = "",
         async_enabled: bool = False,
     ) -> None:
         self.host: InstillInstance = InstillInstance(
@@ -36,7 +37,10 @@ class PipelineClient(Client):
             async_enabled=async_enabled,
         )
         self.metadata = []
-        self._lookup_uid = lookup_func
+
+        if requester_id != "":
+            requester_uid = lookup_func(requester_id)
+            self.metadata = [("instill-requester-uid", requester_uid)]
 
     def close(self):
         if self.is_serving():
@@ -61,11 +65,6 @@ class PipelineClient(Client):
     @metadata.setter
     def metadata(self, metadata: List[tuple]):
         self._metadata = metadata
-
-    def _set_requester_id(self, requester_id: str):
-        if requester_id != "":
-            requester_uid = self._lookup_uid(requester_id)
-            self.metadata = [("instill-requester-uid", requester_uid)]
 
     def liveness(
         self, async_enabled: bool = False
@@ -130,10 +129,8 @@ class PipelineClient(Client):
     def lookup_pipeline(
         self,
         pipeline_uid: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.LookUpPipelineResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.LookUpPipeline,
@@ -162,10 +159,8 @@ class PipelineClient(Client):
         next_page_token: str = "",
         total_size: int = 100,
         show_deleted: bool = False,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.ListPipelinesResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ListPipelines,
@@ -204,10 +199,8 @@ class PipelineClient(Client):
         next_page_token: str = "",
         total_size: int = 100,
         show_deleted: bool = False,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.ListNamespacePipelinesResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ListNamespacePipelines,
@@ -243,10 +236,8 @@ class PipelineClient(Client):
         self,
         namespace_id: str,
         pipeline: pipeline_interface.Pipeline,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.CreateNamespacePipelineResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.CreateNamespacePipeline,
@@ -271,10 +262,8 @@ class PipelineClient(Client):
         self,
         namespace_id: str,
         pipeline_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.GetNamespacePipelineResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.GetNamespacePipeline,
@@ -307,10 +296,8 @@ class PipelineClient(Client):
         source_url: str,
         documentation_url: str,
         license_url: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.UpdateNamespacePipelineResponse:
-        self._set_requester_id(requester_id)
 
         pipeline = pipeline_interface.Pipeline(
             name=f"namespaces/{namespace_id}/models/{pipeline_id}",
@@ -363,10 +350,8 @@ class PipelineClient(Client):
         self,
         namespace_id: str,
         pipeline_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.DeleteNamespacePipelineResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.DeleteNamespacePipeline,
@@ -391,10 +376,8 @@ class PipelineClient(Client):
         self,
         namespace_id: str,
         pipeline_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.ValidateNamespacePipelineResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ValidateNamespacePipeline,
@@ -420,10 +403,8 @@ class PipelineClient(Client):
         namespace_id: str,
         pipeline_id: str,
         new_pipeline_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.RenameNamespacePipelineResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.RenameNamespacePipeline,
@@ -454,10 +435,8 @@ class PipelineClient(Client):
         description: str,
         sharing_enabled: bool = False,
         sharing_role_executor: bool = True,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.CloneNamespacePipelineResponse:
-        self._set_requester_id(requester_id)
         sharing = common_pb2.Sharing()
         sharing.User.enabled = sharing_enabled
         if sharing_role_executor:
@@ -496,10 +475,8 @@ class PipelineClient(Client):
         event: str,
         code: str,
         data: dict,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.SendNamespacePipelineEventResponse:
-        self._set_requester_id(requester_id)
         trigger_data = Struct()
         trigger_data.update(data)
 
@@ -537,10 +514,8 @@ class PipelineClient(Client):
         event: str,
         code: str,
         data: Struct,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.SendNamespacePipelineReleaseEventResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.SendNamespacePipelineReleaseEvent,
@@ -574,10 +549,8 @@ class PipelineClient(Client):
         namespace_id: str,
         pipeline_id: str,
         data: List[dict],
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerNamespacePipelineResponse:
-        self._set_requester_id(requester_id)
         request = pipeline_interface.TriggerNamespacePipelineRequest(
             namespace_id=namespace_id,
             pipeline_id=pipeline_id,
@@ -606,10 +579,8 @@ class PipelineClient(Client):
         namespace_id: str,
         pipeline_id: str,
         data: List[dict],
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerNamespacePipelineWithStreamResponse:
-        self._set_requester_id(requester_id)
         request = pipeline_interface.TriggerNamespacePipelineWithStreamRequest(
             namespace_id=namespace_id,
             pipeline_id=pipeline_id,
@@ -638,10 +609,8 @@ class PipelineClient(Client):
         namespace_id: str,
         pipeline_id: str,
         data: List[dict],
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerAsyncNamespacePipelineResponse:
-        self._set_requester_id(requester_id)
         request = pipeline_interface.TriggerAsyncNamespacePipelineRequest(
             namespace_id=namespace_id,
             pipeline_id=pipeline_id,
@@ -670,10 +639,8 @@ class PipelineClient(Client):
         namespace_id: str,
         pipeline_id: str,
         release: pipeline_interface.PipelineRelease,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.CreateNamespacePipelineReleaseResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.CreateNamespacePipelineRelease,
@@ -704,10 +671,8 @@ class PipelineClient(Client):
         next_page_token: str = "",
         filter_str: str = "",
         show_deleted: bool = False,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.ListNamespacePipelineReleasesResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ListNamespacePipelineReleases,
@@ -743,10 +708,8 @@ class PipelineClient(Client):
         namespace_id: str,
         pipeline_id: str,
         release_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.GetNamespacePipelineReleaseResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.GetNamespacePipelineRelease,
@@ -778,10 +741,8 @@ class PipelineClient(Client):
         release_id: str,
         recipe: Struct,
         readme: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.UpdateNamespacePipelineReleaseResponse:
-        self._set_requester_id(requester_id)
         release = pipeline_interface.PipelineRelease(
             name=f"namespaces/{namespace_id}/models/{pipeline_id}/releases/{release_id}",
             id=release_id,
@@ -832,10 +793,8 @@ class PipelineClient(Client):
         namespace_id: str,
         pipeline_id: str,
         release_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.DeleteNamespacePipelineReleaseResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.DeleteNamespacePipelineRelease,
@@ -867,10 +826,8 @@ class PipelineClient(Client):
         description: str,
         sharing_enabled: bool = False,
         sharing_role_executor: bool = True,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.CloneNamespacePipelineReleaseResponse:
-        self._set_requester_id(requester_id)
         sharing = common_pb2.Sharing()
         sharing.User.enabled = sharing_enabled
         if sharing_role_executor:
@@ -910,10 +867,8 @@ class PipelineClient(Client):
         pipeline_id: str,
         release_id: str,
         data: List[dict],
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerNamespacePipelineReleaseResponse:
-        self._set_requester_id(requester_id)
         request = pipeline_interface.TriggerNamespacePipelineReleaseRequest(
             namespace_id=namespace_id,
             pipeline_id=pipeline_id,
@@ -944,10 +899,8 @@ class PipelineClient(Client):
         pipeline_id: str,
         release_id: str,
         data: List[dict],
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.TriggerAsyncNamespacePipelineReleaseResponse:
-        self._set_requester_id(requester_id)
         request = pipeline_interface.TriggerAsyncNamespacePipelineReleaseRequest(
             namespace_id=namespace_id,
             pipeline_id=pipeline_id,
@@ -976,10 +929,8 @@ class PipelineClient(Client):
         self,
         namespace_id: str,
         secret: secret_interface.Secret,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> secret_interface.CreateNamespaceSecretResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.CreateNamespaceSecret,
@@ -1005,10 +956,8 @@ class PipelineClient(Client):
         namespace_id: str,
         total_size: int = 10,
         next_page_token: str = "",
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> secret_interface.ListNamespaceSecretsResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ListNamespaceSecrets,
@@ -1035,10 +984,8 @@ class PipelineClient(Client):
         self,
         namespace_id: str,
         secret_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> secret_interface.GetNamespaceSecretResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.GetNamespaceSecret,
@@ -1064,10 +1011,8 @@ class PipelineClient(Client):
         namespace_id: str,
         secret_id: str,
         secret: secret_interface.Secret,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> secret_interface.UpdateNamespaceSecretResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.UpdateNamespaceSecret,
@@ -1094,10 +1039,8 @@ class PipelineClient(Client):
         self,
         namespace_id: str,
         secret_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> secret_interface.DeleteNamespaceSecretResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.DeleteNamespaceSecret,
@@ -1123,10 +1066,8 @@ class PipelineClient(Client):
         page: int,
         total_size: int = 100,
         filter_str: str = "",
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> component_definition.ListComponentDefinitionsResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ListComponentDefinitions,
@@ -1154,10 +1095,8 @@ class PipelineClient(Client):
     def get_operation(
         self,
         operation_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.GetOperationResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.GetOperation,
@@ -1181,10 +1120,8 @@ class PipelineClient(Client):
         total_size: int = 100,
         next_page_token: str = "",
         filter_str: str = "",
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> component_definition.ListConnectorDefinitionsResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ListConnectorDefinitions,
@@ -1213,10 +1150,8 @@ class PipelineClient(Client):
         self,
         namespace_id: str,
         name: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> component_definition.GetConnectorDefinitionResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.GetConnectorDefinition,
@@ -1242,10 +1177,8 @@ class PipelineClient(Client):
         total_size: int = 100,
         next_page_token: str = "",
         filter_str: str = "",
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> component_definition.ListOperatorDefinitionsResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ListOperatorDefinitions,
@@ -1274,10 +1207,8 @@ class PipelineClient(Client):
         self,
         namespace_id: str,
         name: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> component_definition.GetOperatorDefinitionResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.GetOperatorDefinition,
@@ -1302,10 +1233,8 @@ class PipelineClient(Client):
         self,
         namespace_id: str,
         name: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> common_pb2.CheckNameResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.CheckName,
@@ -1332,10 +1261,8 @@ class PipelineClient(Client):
         total_size: int = 10,
         filter_str: str = "",
         order_by: str = "",
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.ListPipelineRunsResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ListPipelineRuns,
@@ -1373,10 +1300,8 @@ class PipelineClient(Client):
         total_size: int = 10,
         filter_str: str = "",
         order_by: str = "",
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.ListComponentRunsResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ListComponentRuns,
@@ -1411,10 +1336,8 @@ class PipelineClient(Client):
         total_size: int = 10,
         next_page_token: str = "",
         filter_str: str = "",
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> integration_interface.ListNamespaceConnectionsResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ListNamespaceConnections,
@@ -1443,10 +1366,8 @@ class PipelineClient(Client):
         self,
         namespace_id: str,
         connection_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> integration_interface.GetNamespaceConnectionResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.GetNamespaceConnection,
@@ -1472,10 +1393,8 @@ class PipelineClient(Client):
     def create_connection(
         self,
         connection: integration_interface.Connection,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> integration_interface.CreateNamespaceConnectionResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.CreateNamespaceConnection,
@@ -1497,10 +1416,8 @@ class PipelineClient(Client):
     def update_connection(
         self,
         connection: integration_interface.Connection,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> integration_interface.UpdateNamespaceConnectionResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.UpdateNamespaceConnection,
@@ -1523,10 +1440,8 @@ class PipelineClient(Client):
         self,
         namespace_id: str,
         connection_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> integration_interface.DeleteNamespaceConnectionResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.DeleteNamespaceConnection,
@@ -1551,10 +1466,8 @@ class PipelineClient(Client):
         self,
         namespace_id: str,
         connection_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> integration_interface.TestNamespaceConnectionResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.TestNamespaceConnection,
@@ -1580,10 +1493,8 @@ class PipelineClient(Client):
         total_size: int = 10,
         next_page_token: str = "",
         filter_str: str = "",
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> integration_interface.ListIntegrationsResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ListIntegrations,
@@ -1609,10 +1520,8 @@ class PipelineClient(Client):
     def get_integration(
         self,
         integration_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> integration_interface.GetIntegrationResponse:
-        self._set_requester_id(requester_id)
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.GetIntegration,

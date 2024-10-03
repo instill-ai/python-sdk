@@ -21,6 +21,7 @@ class MgmtClient(Client):
         api_token: str,
         url: str = "api.instill.tech",
         secure: bool = True,
+        requester_id: str = "",
         async_enabled: bool = False,
     ) -> None:
 
@@ -33,6 +34,10 @@ class MgmtClient(Client):
         )
 
         self.metadata = []
+
+        if requester_id != "":
+            requester_uid = self._lookup_namespace_uid(requester_id)
+            self.metadata = [("instill-requester-uid", requester_uid)]
 
     def close(self):
         if self.is_serving():
@@ -71,11 +76,6 @@ class MgmtClient(Client):
             raise Exception("namespace ID not available")
 
         return namespace_uid
-
-    def _set_requester_id(self, requester_id: str):
-        if requester_id != "":
-            requester_uid = self._lookup_namespace_uid(requester_id)
-            self.metadata = [("instill-requester-uid", requester_uid)]
 
     def liveness(self, async_enabled: bool = False) -> mgmt_interface.LivenessResponse:
         if async_enabled:

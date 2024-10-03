@@ -24,6 +24,7 @@ class ModelClient(Client):
         lookup_func: Callable[[str], str],
         url: str = "api.instill.tech",
         secure: bool = True,
+        requester_id: str = "",
         async_enabled: bool = False,
     ) -> None:
         self.host: InstillInstance = InstillInstance(
@@ -34,7 +35,10 @@ class ModelClient(Client):
             async_enabled=async_enabled,
         )
         self.metadata = []
-        self._lookup_namespace_uid = lookup_func
+
+        if requester_id != "":
+            requester_uid = lookup_func(requester_id)
+            self.metadata = [("instill-requester-uid", requester_uid)]
 
     def close(self):
         if self.is_serving():
@@ -70,11 +74,6 @@ class ModelClient(Client):
     @metadata.setter
     def metadata(self, metadata: List[tuple]):
         self._metadata = metadata
-
-    def _set_requester_id(self, requester_id: str):
-        if requester_id != "":
-            requester_uid = self._lookup_namespace_uid(requester_id)
-            self.metadata = [("instill-requester-uid", requester_uid)]
 
     def liveness(self, async_enabled: bool = False) -> model_interface.LivenessResponse:
         if async_enabled:
@@ -121,10 +120,8 @@ class ModelClient(Client):
         namespace_id: str,
         model_id: str,
         version: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.WatchNamespaceModelResponse:
-        self._set_requester_id(requester_id)
 
         if async_enabled:
             return RequestFactory(
@@ -152,10 +149,8 @@ class ModelClient(Client):
         self,
         namespace_id: str,
         model_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.WatchNamespaceLatestModelResponse:
-        self._set_requester_id(requester_id)
 
         if async_enabled:
             return RequestFactory(
@@ -187,10 +182,8 @@ class ModelClient(Client):
         definition: str = "model-definitions/container",
         configuration: Optional[dict] = None,
         is_public: bool = True,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.CreateNamespaceModelResponse:
-        self._set_requester_id(requester_id)
 
         model = model_interface.Model()
         model.id = model_id
@@ -233,10 +226,8 @@ class ModelClient(Client):
         model_id: str,
         task_inputs: List[dict],
         version: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.TriggerNamespaceModelResponse:
-        self._set_requester_id(requester_id)
 
         request = model_interface.TriggerNamespaceModelRequest(
             namespace_id=namespace_id,
@@ -268,10 +259,8 @@ class ModelClient(Client):
         model_id: str,
         task_inputs: List[dict],
         version: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.TriggerAsyncNamespaceModelResponse:
-        self._set_requester_id(requester_id)
 
         request = model_interface.TriggerAsyncNamespaceModelRequest(
             namespace_id=namespace_id,
@@ -302,10 +291,8 @@ class ModelClient(Client):
         namespace_id: str,
         model_id: str,
         task_inputs: List[dict],
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.TriggerNamespaceLatestModelResponse:
-        self._set_requester_id(requester_id)
 
         request = model_interface.TriggerNamespaceLatestModelRequest(
             namespace_id=namespace_id,
@@ -335,10 +322,8 @@ class ModelClient(Client):
         namespace_id: str,
         model_id: str,
         task_inputs: List[dict],
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.TriggerAsyncNamespaceLatestModelResponse:
-        self._set_requester_id(requester_id)
 
         request = model_interface.TriggerAsyncNamespaceLatestModelRequest(
             namespace_id=namespace_id,
@@ -369,10 +354,8 @@ class ModelClient(Client):
         model_id: str,
         task_inputs: List[dict],
         version: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.TriggerNamespaceModelBinaryFileUploadResponse:
-        self._set_requester_id(requester_id)
 
         request = model_interface.TriggerNamespaceModelBinaryFileUploadRequest(
             namespace_id=namespace_id,
@@ -403,10 +386,8 @@ class ModelClient(Client):
         namespace_id: str,
         model_id: str,
         task_input: List[dict],
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.TriggerNamespaceLatestModelBinaryFileUploadResponse:
-        self._set_requester_id(requester_id)
 
         request = model_interface.TriggerNamespaceLatestModelBinaryFileUploadRequest(
             namespace_id=namespace_id,
@@ -436,10 +417,8 @@ class ModelClient(Client):
         namespace_id: str,
         model_id: str,
         version: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.GetNamespaceModelOperationResponse:
-        self._set_requester_id(requester_id)
 
         if async_enabled:
             return RequestFactory(
@@ -469,10 +448,8 @@ class ModelClient(Client):
         self,
         namespace_id: str,
         model_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.GetNamespaceLatestModelOperationResponse:
-        self._set_requester_id(requester_id)
 
         if async_enabled:
             return RequestFactory(
@@ -499,10 +476,8 @@ class ModelClient(Client):
     def get_model_operation(
         self,
         operation_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.GetModelOperationResponse:
-        self._set_requester_id(requester_id)
 
         if async_enabled:
             return RequestFactory(
@@ -528,10 +503,8 @@ class ModelClient(Client):
         self,
         namespace_id: str,
         model_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.DeleteNamespaceModelResponse:
-        self._set_requester_id(requester_id)
 
         if async_enabled:
             return RequestFactory(
@@ -558,10 +531,8 @@ class ModelClient(Client):
         namespace_id: str,
         model_id: str,
         new_model_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.RenameNamespaceModelResponse:
-        self._set_requester_id(requester_id)
 
         if async_enabled:
             return RequestFactory(
@@ -589,10 +560,8 @@ class ModelClient(Client):
         self,
         namespace_id: str,
         model_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.GetNamespaceModelResponse:
-        self._set_requester_id(requester_id)
 
         if async_enabled:
             return RequestFactory(
@@ -625,10 +594,8 @@ class ModelClient(Client):
         hardware: str,
         model_license: str = "",
         is_public: bool = True,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.UpdateNamespaceModelResponse:
-        self._set_requester_id(requester_id)
 
         model = model_interface.Model(
             name=f"namespaces/{namespace_id}/models/{model_id}",
@@ -680,10 +647,8 @@ class ModelClient(Client):
     def lookup_model(
         self,
         model_uid: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.LookUpModelResponse:
-        self._set_requester_id(requester_id)
 
         if async_enabled:
             return RequestFactory(
@@ -711,10 +676,8 @@ class ModelClient(Client):
         public=False,
         filter_str: str = "",
         order_by: str = "",
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.ListNamespaceModelsResponse:
-        self._set_requester_id(requester_id)
 
         visibility = (
             model_interface.Model.VISIBILITY_PUBLIC
@@ -859,10 +822,8 @@ class ModelClient(Client):
     def get_operation(
         self,
         operation_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.GetModelOperationResponse:
-        self._set_requester_id(requester_id)
 
         if async_enabled:
             return RequestFactory(
@@ -888,10 +849,8 @@ class ModelClient(Client):
         self,
         namespace_id: str,
         model_id: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.GetNamespaceLatestModelOperationResponse:
-        self._set_requester_id(requester_id)
 
         if async_enabled:
             return RequestFactory(
@@ -921,10 +880,8 @@ class ModelClient(Client):
         page: int,
         model_id: str,
         page_size: int = 10,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.ListNamespaceModelVersionsResponse:
-        self._set_requester_id(requester_id)
 
         if async_enabled:
             return RequestFactory(
@@ -955,10 +912,8 @@ class ModelClient(Client):
         namespace_id: str,
         model_id: str,
         version: str,
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.DeleteNamespaceModelVersionResponse:
-        self._set_requester_id(requester_id)
 
         if async_enabled:
             return RequestFactory(
@@ -990,10 +945,8 @@ class ModelClient(Client):
         page: int = 0,
         order_by: str = "",
         filter_str: str = "",
-        requester_id: str = "",
         async_enabled: bool = False,
     ) -> model_interface.ListModelRunsResponse:
-        self._set_requester_id(requester_id)
 
         if async_enabled:
             return RequestFactory(

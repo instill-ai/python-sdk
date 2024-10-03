@@ -14,12 +14,14 @@ class InstillClient:
         api_token: str,
         url: str = "api.instill.tech",
         secure: bool = True,
+        requester_id="",
         async_enabled: bool = False,
     ) -> None:
         self.mgmt_service = MgmtClient(
             api_token=api_token,
             url=url,
             secure=secure,
+            requester_id=requester_id,
             async_enabled=async_enabled,
         )
         if not self.mgmt_service.is_serving():
@@ -31,6 +33,7 @@ class InstillClient:
             url=url,
             secure=secure,
             lookup_func=self._lookup_namespace_uid,
+            requester_id=requester_id,
             async_enabled=async_enabled,
         )
         if not self.pipeline_service.is_serving():
@@ -41,6 +44,7 @@ class InstillClient:
             url=url,
             secure=secure,
             lookup_func=self._lookup_namespace_uid,
+            requester_id=requester_id,
             async_enabled=async_enabled,
         )
         if not self.model_service.is_serving():
@@ -53,6 +57,7 @@ class InstillClient:
             url=url,
             secure=secure,
             lookup_func=self._lookup_namespace_uid,
+            requester_id=requester_id,
             async_enabled=async_enabled,
         )
         if not self.artifact_service.is_serving():
