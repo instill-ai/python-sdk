@@ -2,7 +2,7 @@
 from typing import Optional, Tuple, Union
 
 import grpc
-from google.longrunning import operations_pb2
+from google.longrunning.operations_pb2 import Operation
 from google.protobuf import json_format
 from google.protobuf.field_mask_pb2 import FieldMask
 from google.protobuf.struct_pb2 import Struct
@@ -25,12 +25,12 @@ class Pipeline(Resource):
         self.client = client
         get_resp = None
         pipeline = None
-        get_resp = client.pipeline_service.get_pipeline(
+        get_resp = client.pipeline.get_pipeline(
             namespace_id=namespace_id,
             pipeline_id=pipeline_id,
         )
         if get_resp is None:
-            pipeline = client.pipeline_service.create_pipeline(
+            pipeline = client.pipeline.create_pipeline(
                 namespace_id=namespace_id,
                 recipe=recipe,
             ).pipeline
@@ -46,7 +46,7 @@ class Pipeline(Resource):
         task_inputs: list,
         silent: bool = False,
     ) -> Optional[Tuple[list, pipeline_interface.TriggerMetadata]]:
-        resp = self.client.pipeline_service.trigger_pipeline(
+        resp = self.client.pipeline.trigger(
             self.resource.id,
             task_inputs,
             silent=silent,
@@ -72,10 +72,10 @@ class Pipeline(Resource):
         self._resource = resource
 
     def _update(self):
-        self.resource = self.client.pipeline_service.get_pipeline(name=self.resource.id)
+        self.resource = self.client.pipeline.get_pipeline(name=self.resource.id)
 
-    def get_operation(self, operation: operations_pb2.Operation, silent: bool = False):
-        response = self.client.pipeline_service.get_operation(
+    def get_operation(self, operation: Operation, silent: bool = False):
+        response = self.client.pipeline.get_operation(
             operation.name,
             silent=silent,
         )
@@ -87,8 +87,8 @@ class Pipeline(Resource):
         self,
         task_inputs: list,
         silent: bool = False,
-    ) -> operations_pb2.Operation:
-        response = self.client.pipeline_service.trigger_async_pipeline(
+    ) -> Operation:
+        response = self.client.pipeline.trigger_async(
             self.resource.id,
             task_inputs,
             silent=silent,
@@ -103,7 +103,7 @@ class Pipeline(Resource):
     def update_recipe(self, recipe: Struct, silent: bool = False):
         pipeline = self.resource
         pipeline.recipe.CopyFrom(recipe)
-        self.client.pipeline_service.update_pipeline(
+        self.client.pipeline.update_pipeline(
             pipeline,
             FieldMask(paths=["recipe"]),
             silent=silent,
@@ -112,9 +112,7 @@ class Pipeline(Resource):
 
     def validate_pipeline(self, silent: bool = True) -> bool:
         try:
-            self.client.pipeline_service.validate_pipeline(
-                name=self.resource.id, silent=silent
-            )
+            self.client.pipeline.validate_pipeline(name=self.resource.id, silent=silent)
             return True
         except grpc.RpcError as rpc_error:
             Logger.w(rpc_error.code())
@@ -123,6 +121,4 @@ class Pipeline(Resource):
 
     def delete(self, silent: bool = False):
         if self.resource is not None:
-            self.client.pipeline_service.delete_pipeline(
-                self.resource.id, silent=silent
-            )
+            self.client.pipeline.delete_pipeline(self.resource.id, silent=silent)
