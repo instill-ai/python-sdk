@@ -17,9 +17,9 @@ class Model(Resource):
     ) -> None:
         super().__init__()
         self.client = client
-        get_resp = client.model_service.get_model(model_name=name, silent=True)
+        get_resp = client.model.get_model(model_name=name, silent=True)
         if get_resp is None:
-            model = client.model_service.create_model(
+            model = client.model.create_model(
                 name=name,
                 definition=definition,
                 configuration=configuration,
@@ -32,7 +32,7 @@ class Model(Resource):
         self.resource = model
 
     def __call__(self, task_inputs: list, silent: bool = False) -> Optional[list]:
-        response = self.client.model_service.trigger_model(
+        response = self.client.model.trigger(
             self.resource.id,
             task_inputs,
             silent=silent,
@@ -58,16 +58,14 @@ class Model(Resource):
         self._resource = resource
 
     def _update(self):
-        self.resource = self.client.model_service.get_model(
-            model_name=self.resource.id
-        ).model
+        self.resource = self.client.model.get_model(model_name=self.resource.id).model
 
     def get_definition(self) -> model_definition_interface.ModelDefinition:
         return self.resource.model_definition
 
     def delete(self, silent: bool = False):
         if self.resource is not None:
-            self.client.model_service.delete_model(
+            self.client.model.delete_model(
                 self.resource.id,
                 silent=silent,
             )
