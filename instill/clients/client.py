@@ -104,5 +104,83 @@ class InstillClient:
         return self.model
 
 
-def init_core_client(api_token: str, async_enabled: bool = False) -> InstillClient:
-    return InstillClient(api_token=api_token, async_enabled=async_enabled)
+def init_core_client(
+    api_token: str,
+    requester_id="",
+    async_enabled: bool = False,
+) -> InstillClient:
+    return InstillClient(
+        api_token=api_token,
+        requester_id=requester_id,
+        async_enabled=async_enabled,
+    )
+
+
+def init_artifact_client(
+    api_token: str,
+    requester_id="",
+    async_enabled: bool = False,
+) -> ArtifactClient:
+    client = InstillClient(
+        api_token=api_token,
+        requester_id=requester_id,
+        async_enabled=async_enabled,
+    )
+    if not client.get_artifact().is_serving():
+        Logger.w(
+            "Instill Artifact is not serving, Artifact functionalities will not work"
+        )
+        raise NotServingException
+
+    return client.get_artifact()
+
+
+def init_model_client(
+    api_token: str,
+    requester_id="",
+    async_enabled: bool = False,
+) -> ModelClient:
+    client = InstillClient(
+        api_token=api_token,
+        requester_id=requester_id,
+        async_enabled=async_enabled,
+    )
+    if not client.get_model().is_serving():
+        Logger.w("Instill Model is not serving, Model functionalities will not work")
+        raise NotServingException
+
+    return client.get_model()
+
+
+def init_pipeline_client(
+    api_token: str,
+    requester_id="",
+    async_enabled: bool = False,
+) -> PipelineClient:
+    client = InstillClient(
+        api_token=api_token,
+        requester_id=requester_id,
+        async_enabled=async_enabled,
+    )
+    if not client.get_pipeline().is_serving():
+        Logger.w("Instill VDP is not serving, VDP functionalities will not work")
+        raise NotServingException
+
+    return client.get_pipeline()
+
+
+def init_mgmt_client(
+    api_token: str,
+    requester_id="",
+    async_enabled: bool = False,
+) -> MgmtClient:
+    client = InstillClient(
+        api_token=api_token,
+        requester_id=requester_id,
+        async_enabled=async_enabled,
+    )
+    if not client.get_mgmt().is_serving():
+        Logger.w("Instill Core is required")
+        raise NotServingException
+
+    return client.get_mgmt()
