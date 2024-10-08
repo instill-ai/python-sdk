@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.13.0](https://github.com/instill-ai/python-sdk/compare/v0.12.1...v0.13.0) (2024-10-07)
+
+
+### Features
+
+* **client:** support namespace and requester ([#217](https://github.com/instill-ai/python-sdk/issues/217)) ([f524739](https://github.com/instill-ai/python-sdk/commit/f5247399e91b3334e92a74659874c4daa83252fe))
+* **client:** support target namespace and extra header ([#215](https://github.com/instill-ai/python-sdk/issues/215)) ([19563ac](https://github.com/instill-ai/python-sdk/commit/19563ac9496010e0de6ec488aaf48425163aab23))
+
 ## [0.12.1](https://github.com/instill-ai/python-sdk/compare/v0.12.0...v0.12.1) (2024-09-12)
 
 
