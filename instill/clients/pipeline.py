@@ -448,9 +448,10 @@ class PipelineClient(Client):
                 request=pipeline_interface.CloneNamespacePipelineRequest(
                     namespace_id=namespace_id,
                     pipeline_id=pipeline_id,
-                    target=f"namespaces/{namespace_id}/pipelines/{target}",
                     description=description,
                     sharing=sharing,
+                    target_namespace_id=namespace_id,
+                    target_pipeline_id=target,
                 ),
                 metadata=self.host.metadata + self.metadata,
             ).send_async()
@@ -460,9 +461,10 @@ class PipelineClient(Client):
             request=pipeline_interface.CloneNamespacePipelineRequest(
                 namespace_id=namespace_id,
                 pipeline_id=pipeline_id,
-                target=f"namespaces/{namespace_id}/pipelines/{target}",
                 description=description,
                 sharing=sharing,
+                target_namespace_id=namespace_id,
+                target_pipeline_id=target,
             ),
             metadata=self.host.metadata + self.metadata,
         ).send_sync()
@@ -840,9 +842,10 @@ class PipelineClient(Client):
                     namespace_id=namespace_id,
                     pipeline_id=pipeline_id,
                     release_id=release_id,
-                    target=f"namespaces/{namespace_id}/pipelines/{target}",
                     description=description,
                     sharing=sharing,
+                    target_namespace_id=namespace_id,
+                    target_pipeline_id=target,
                 ),
                 metadata=self.host.metadata + self.metadata,
             ).send_async()
@@ -853,9 +856,10 @@ class PipelineClient(Client):
                 namespace_id=namespace_id,
                 pipeline_id=pipeline_id,
                 release_id=release_id,
-                target=f"namespaces/{namespace_id}/pipelines/{target}",
                 description=description,
                 sharing=sharing,
+                target_namespace_id=namespace_id,
+                target_pipeline_id=target,
             ),
             metadata=self.host.metadata + self.metadata,
         ).send_sync()

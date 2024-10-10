@@ -1,5 +1,6 @@
 # pylint: disable=no-name-in-module,no-member
 import instill.protogen.core.mgmt.v1beta.mgmt_pb2 as mgmt_interface
+from instill.clients.app import AppClient
 from instill.clients.artifact import ArtifactClient
 from instill.clients.mgmt import MgmtClient
 from instill.clients.model import ModelClient
@@ -65,6 +66,17 @@ class InstillClient:
                 "Instill Artifact is not serving, Artifact functionalities will not work"
             )
 
+        self.app_service = AppClient(
+            api_token=api_token,
+            url=url,
+            secure=secure,
+            lookup_func=self._lookup_namespace_uid,
+            requester_id=requester_id,
+            async_enabled=async_enabled,
+        )
+        if not self.app_service.is_serving():
+            Logger.w("Instill App is not serving, App functionalities will not work")
+
     def _lookup_namespace_uid(self, namespace_id: str):
         resp = self.mgmt.check_namespace(namespace_id)
         if resp.type == mgmt_interface.CheckNamespaceAdminResponse.NAMESPACE_USER:
@@ -84,12 +96,14 @@ class InstillClient:
         self.pipeline.close()
         self.model.close()
         self.artifact.close()
+        self.app_service.close()
 
     async def async_close(self):
         self.mgmt.async_close()
         self.pipeline.async_close()
         self.model.async_close()
         self.artifact.async_close()
+        self.app_service.async_close()
 
     def get_mgmt(self) -> MgmtClient:
         return self.mgmt
@@ -102,6 +116,9 @@ class InstillClient:
 
     def get_model(self) -> ModelClient:
         return self.model
+
+    def get_app(self) -> AppClient:
+        return self.app_service
 
 
 def init_core_client(
@@ -118,7 +135,7 @@ def init_core_client(
 
 def init_artifact_client(
     api_token: str,
-    requester_id="",
+    requester_id: str = "",
     async_enabled: bool = False,
 ) -> ArtifactClient:
     client = InstillClient(
@@ -184,3 +201,18 @@ def init_mgmt_client(
         raise NotServingException
 
     return client.get_mgmt()
+
+
+def init_app_client(
+    api_token: str = "", requester_id: str = "", async_enabled: bool = False
+) -> AppClient:
+    client = InstillClient(
+        api_token=api_token,
+        requester_id=requester_id,
+        async_enabled=async_enabled,
+    )
+    if not client.get_app().is_serving():
+        Logger.w("Instill App is not serving, App functionalities will not work")
+        raise NotServingException
+
+    return client.get_app()
