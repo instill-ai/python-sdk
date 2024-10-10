@@ -263,9 +263,9 @@ class AppClient(Client):
         app_id: str,
         conversation_uid: str,
         conversation_id: str,
-        if_all: bool,
         page_size: int = 10,
         page_token: str = "",
+        if_all: bool = False,
         async_enabled: bool = False,
     ) -> conversation_interface.ListConversationsResponse:
         if async_enabled:
@@ -276,9 +276,9 @@ class AppClient(Client):
                     app_id=app_id,
                     conversation_uid=conversation_uid,
                     conversation_id=conversation_id,
-                    if_all=if_all,
                     page_size=page_size,
                     page_token=page_token,
+                    if_all=if_all,
                 ),
                 metadata=self.host.metadata + self.metadata,
             ).send_async()
@@ -290,9 +290,9 @@ class AppClient(Client):
                 app_id=app_id,
                 conversation_uid=conversation_uid,
                 conversation_id=conversation_id,
-                if_all=if_all,
                 page_size=page_size,
                 page_token=page_token,
+                if_all=if_all,
             ),
             metadata=self.host.metadata + self.metadata,
         ).send_sync()
@@ -409,10 +409,10 @@ class AppClient(Client):
         conversation_id: str,
         latest_k: int,
         include_system_messages: bool,
-        if_all: bool,
         message_uid: str,
         page_size: int = 10,
         page_token: str = "",
+        if_all: bool = False,
         async_enabled: bool = False,
     ) -> conversation_interface.ListMessagesResponse:
         if async_enabled:
@@ -424,10 +424,10 @@ class AppClient(Client):
                     conversation_id=conversation_id,
                     latest_k=latest_k,
                     include_system_messages=include_system_messages,
-                    if_all=if_all,
                     message_uid=message_uid,
                     page_size=page_size,
                     page_token=page_token,
+                    if_all=if_all,
                 ),
                 metadata=self.host.metadata + self.metadata,
             ).send_async()
@@ -440,10 +440,10 @@ class AppClient(Client):
                 conversation_id=conversation_id,
                 latest_k=latest_k,
                 include_system_messages=include_system_messages,
-                if_all=if_all,
                 message_uid=message_uid,
                 page_size=page_size,
                 page_token=page_token,
+                if_all=if_all,
             ),
             metadata=self.host.metadata + self.metadata,
         ).send_sync()
