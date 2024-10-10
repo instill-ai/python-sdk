@@ -426,18 +426,18 @@ class ArtifactClient(Client):
         ).send_sync()
 
     @grpc_handler
-    def view_chunks(
+    def similarity_chunks_search(
         self,
         namespace_id: str,
         catalog_id: str,
         text_prompt: str,
         top_k: int,
         async_enabled: bool = False,
-    ) -> chunk_interface.ViewChunksResponse:
+    ) -> chunk_interface.SimilarityChunksSearchResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.hosts[self.instance].async_client.ViewChunks,
-                request=chunk_interface.ViewChunksRequest(
+                method=self.host.async_client.SimilarityChunksSearch,
+                request=chunk_interface.SimilarityChunksSearchRequest(
                     namespace_id=namespace_id,
                     catalog_id=catalog_id,
                     text_prompt=text_prompt,
@@ -447,8 +447,8 @@ class ArtifactClient(Client):
             ).send_async()
 
         return RequestFactory(
-            method=self.hosts[self.instance].client.ViewChunks,
-            request=chunk_interface.ViewChunksRequest(
+            method=self.host.client.SimilarityChunksSearch,
+            request=chunk_interface.SimilarityChunksSearchRequest(
                 namespace_id=namespace_id,
                 catalog_id=catalog_id,
                 text_prompt=text_prompt,

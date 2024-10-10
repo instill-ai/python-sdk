@@ -66,7 +66,14 @@ class InstillClient:
                 "Instill Artifact is not serving, Artifact functionalities will not work"
             )
 
-        self.app_service = AppClient(async_enabled=async_enabled, api_token=api_token)
+        self.app_service = AppClient(
+            api_token=api_token,
+            url=url,
+            secure=secure,
+            lookup_func=self._lookup_namespace_uid,
+            requester_id=requester_id,
+            async_enabled=async_enabled,
+        )
         if not self.app_service.is_serving():
             Logger.w("Instill App is not serving, App functionalities will not work")
 
@@ -128,7 +135,7 @@ def init_core_client(
 
 def init_artifact_client(
     api_token: str,
-    requester_id="",
+    requester_id: str = "",
     async_enabled: bool = False,
 ) -> ArtifactClient:
     client = InstillClient(
@@ -143,15 +150,6 @@ def init_artifact_client(
         raise NotServingException
 
     return client.get_artifact()
-
-
-def init_app_client(api_token: str = "", async_enabled: bool = False) -> AppClient:
-    client = AppClient(api_token=api_token, async_enabled=async_enabled)
-    if not client.is_serving():
-        Logger.w("Instill App is not serving, App functionalities will not work")
-        raise NotServingException
-
-    return client
 
 
 def init_model_client(
@@ -203,3 +201,18 @@ def init_mgmt_client(
         raise NotServingException
 
     return client.get_mgmt()
+
+
+def init_app_client(
+    api_token: str = "", requester_id: str = "", async_enabled: bool = False
+) -> AppClient:
+    client = InstillClient(
+        api_token=api_token,
+        requester_id=requester_id,
+        async_enabled=async_enabled,
+    )
+    if not client.get_app().is_serving():
+        Logger.w("Instill App is not serving, App functionalities will not work")
+        raise NotServingException
+
+    return client.get_app()
