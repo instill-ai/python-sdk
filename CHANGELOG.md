@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.14.0](https://github.com/instill-ai/python-sdk/compare/v0.13.0...v0.14.0) (2024-10-10)
+
+
+### Features
+
+* **app:** update AppClient ([#221](https://github.com/instill-ai/python-sdk/issues/221)) ([ccfc9fe](https://github.com/instill-ai/python-sdk/commit/ccfc9fe283d9e63a6da8b0fb6f0eef03d32b5bad))
+* **client:** update proto and add AppClient ([#213](https://github.com/instill-ai/python-sdk/issues/213)) ([6a73033](https://github.com/instill-ai/python-sdk/commit/6a73033063d5c7f6320fcc5db4c2f49365c7833b))
+
 ## [0.13.0](https://github.com/instill-ai/python-sdk/compare/v0.12.1...v0.13.0) (2024-10-07)
 
 
