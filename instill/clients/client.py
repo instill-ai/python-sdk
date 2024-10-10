@@ -66,7 +66,7 @@ class InstillClient:
                 "Instill Artifact is not serving, Artifact functionalities will not work"
             )
 
-        self.app_service = AppClient(
+        self.app = AppClient(
             api_token=api_token,
             url=url,
             secure=secure,
@@ -74,7 +74,7 @@ class InstillClient:
             requester_id=requester_id,
             async_enabled=async_enabled,
         )
-        if not self.app_service.is_serving():
+        if not self.app.is_serving():
             Logger.w("Instill App is not serving, App functionalities will not work")
 
     def _lookup_namespace_uid(self, namespace_id: str):
@@ -96,14 +96,14 @@ class InstillClient:
         self.pipeline.close()
         self.model.close()
         self.artifact.close()
-        self.app_service.close()
+        self.app.close()
 
     async def async_close(self):
         self.mgmt.async_close()
         self.pipeline.async_close()
         self.model.async_close()
         self.artifact.async_close()
-        self.app_service.async_close()
+        self.app.async_close()
 
     def get_mgmt(self) -> MgmtClient:
         return self.mgmt
@@ -118,7 +118,7 @@ class InstillClient:
         return self.model
 
     def get_app(self) -> AppClient:
-        return self.app_service
+        return self.app
 
 
 def init_core_client(
