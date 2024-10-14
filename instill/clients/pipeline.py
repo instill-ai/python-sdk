@@ -1,5 +1,5 @@
 # pylint: disable=no-member,wrong-import-position,too-many-lines,no-name-in-module
-from typing import Callable, List
+from typing import Callable, List, Optional
 
 from google.protobuf import field_mask_pb2
 from google.protobuf.struct_pb2 import Struct
@@ -237,7 +237,7 @@ class PipelineClient(Client):
         namespace_id: str,
         pipeline_id: str,
         description: str,
-        recipe: dict,
+        recipe: Optional[dict] = None,
         raw_recipe: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.CreateNamespacePipelineResponse:
@@ -246,6 +246,8 @@ class PipelineClient(Client):
             description=description,
             raw_recipe=raw_recipe,
         )
+        if recipe is None:
+            recipe = {}
         pipeline.recipe.update(recipe)
 
         if async_enabled:
