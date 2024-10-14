@@ -1408,9 +1408,40 @@ class PipelineClient(Client):
     @grpc_handler
     def create_connection(
         self,
-        connection: integration_interface.Connection,
+        namespace_id: str,
+        integration_id: str,
+        connection_id: str,
+        scopes: Optional[List[str]] = None,
+        identity: Optional[str] = None,
+        setup: Optional[dict] = None,
+        o_auth_access_details: Optional[dict] = None,
+        is_oauth: bool = False,
         async_enabled: bool = False,
     ) -> integration_interface.CreateNamespaceConnectionResponse:
+        if scopes is None:
+            scopes = []
+        connection = integration_interface.Connection(
+            namespace_id=namespace_id,
+            integration_id=integration_id,
+            id=connection_id,
+            identity=identity,
+            scopes=scopes,
+        )
+
+        if setup is None:
+            setup = {}
+        connection.setup.update(setup)
+        if o_auth_access_details is None:
+            o_auth_access_details = {}
+        connection.o_auth_access_details.update(o_auth_access_details)
+
+        if is_oauth:
+            connection.method = integration_interface.Connection.Method.METHOD_OAUTH
+        else:
+            connection.method = (
+                integration_interface.Connection.Method.METHOD_DICTIONARY
+            )
+
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.CreateNamespaceConnection,
@@ -1431,9 +1462,40 @@ class PipelineClient(Client):
     @grpc_handler
     def update_connection(
         self,
-        connection: integration_interface.Connection,
+        namespace_id: str,
+        integration_id: str,
+        connection_id: str,
+        scopes: Optional[List[str]] = None,
+        identity: Optional[str] = None,
+        setup: Optional[dict] = None,
+        o_auth_access_details: Optional[dict] = None,
+        is_oauth: bool = False,
         async_enabled: bool = False,
     ) -> integration_interface.UpdateNamespaceConnectionResponse:
+        if scopes is None:
+            scopes = []
+        connection = integration_interface.Connection(
+            namespace_id=namespace_id,
+            integration_id=integration_id,
+            id=connection_id,
+            scopes=scopes,
+            identity=identity,
+        )
+
+        if setup is None:
+            setup = {}
+        connection.setup.update(setup)
+        if o_auth_access_details is None:
+            o_auth_access_details = {}
+        connection.o_auth_access_details.update(o_auth_access_details)
+
+        if is_oauth:
+            connection.method = integration_interface.Connection.Method.METHOD_OAUTH
+        else:
+            connection.method = (
+                integration_interface.Connection.Method.METHOD_DICTIONARY
+            )
+
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.UpdateNamespaceConnection,
