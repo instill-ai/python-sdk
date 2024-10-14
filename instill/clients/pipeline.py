@@ -235,14 +235,14 @@ class PipelineClient(Client):
     def create_pipeline(
         self,
         namespace_id: str,
-        name: str,
+        pipeline_id: str,
         description: str,
         recipe: dict,
         raw_recipe: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.CreateNamespacePipelineResponse:
         pipeline = pipeline_interface.Pipeline(
-            id=name,
+            id=pipeline_id,
             description=description,
             raw_recipe=raw_recipe,
         )
