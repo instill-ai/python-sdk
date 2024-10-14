@@ -235,9 +235,17 @@ class PipelineClient(Client):
     def create_pipeline(
         self,
         namespace_id: str,
-        pipeline: pipeline_interface.Pipeline,
+        name: str,
+        description: str,
+        recipe: dict,
         async_enabled: bool = False,
     ) -> pipeline_interface.CreateNamespacePipelineResponse:
+        pipeline = pipeline_interface.Pipeline(
+            id=name,
+            description=description,
+        )
+        pipeline.recipe.update(recipe)
+
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.CreateNamespacePipeline,
