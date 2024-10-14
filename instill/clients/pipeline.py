@@ -153,14 +153,20 @@ class PipelineClient(Client):
     @grpc_handler
     def list_public_pipelines(
         self,
-        visibility: pipeline_interface.Pipeline.Visibility.ValueType,
-        order_by: str,
+        order_by: str = "",
+        is_public: bool = True,
         filter_str: str = "",
         next_page_token: str = "",
         total_size: int = 100,
         show_deleted: bool = False,
         async_enabled: bool = False,
     ) -> pipeline_interface.ListPipelinesResponse:
+        visibility = (
+            pipeline_interface.Pipeline.Visibility.VISIBILITY_PUBLIC
+            if is_public
+            else pipeline_interface.Pipeline.Visibility.VISIBILITY_PRIVATE
+        )
+
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ListPipelines,
@@ -193,14 +199,20 @@ class PipelineClient(Client):
     def list_pipelines(
         self,
         namespace_id: str,
-        visibility: pipeline_interface.Pipeline.Visibility.ValueType,
-        order_by: str,
+        order_by: str = "",
+        is_public: bool = True,
         filter_str: str = "",
         next_page_token: str = "",
         total_size: int = 100,
         show_deleted: bool = False,
         async_enabled: bool = False,
     ) -> pipeline_interface.ListNamespacePipelinesResponse:
+        visibility = (
+            pipeline_interface.Pipeline.Visibility.VISIBILITY_PUBLIC
+            if is_public
+            else pipeline_interface.Pipeline.Visibility.VISIBILITY_PRIVATE
+        )
+
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ListNamespacePipelines,
