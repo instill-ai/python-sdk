@@ -238,11 +238,13 @@ class PipelineClient(Client):
         name: str,
         description: str,
         recipe: dict,
+        raw_recipe: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.CreateNamespacePipelineResponse:
         pipeline = pipeline_interface.Pipeline(
             id=name,
             description=description,
+            raw_recipe=raw_recipe,
         )
         pipeline.recipe.update(recipe)
 
