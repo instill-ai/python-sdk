@@ -314,25 +314,32 @@ class PipelineClient(Client):
         self,
         namespace_id: str,
         pipeline_id: str,
-        recipe: Struct,
+        description: str,
         readme: str,
         tags: List[str],
         source_url: str,
         documentation_url: str,
         license_url: str,
+        recipe: Optional[dict] = None,
+        raw_recipe: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.UpdateNamespacePipelineResponse:
 
         pipeline = pipeline_interface.Pipeline(
             name=f"namespaces/{namespace_id}/models/{pipeline_id}",
             id=pipeline_id,
-            recipe=recipe,
+            description=description,
+            raw_recipe=raw_recipe,
             readme=readme,
             tags=tags,
             source_url=source_url,
             documentation_url=documentation_url,
             license=license_url,
         )
+
+        if recipe is None:
+            recipe = {}
+        pipeline.recipe.update(recipe)
 
         update_mask = field_mask_pb2.FieldMask()
         update_mask.paths.extend(
@@ -664,9 +671,33 @@ class PipelineClient(Client):
         self,
         namespace_id: str,
         pipeline_id: str,
+        release_id: str,
+        name: str,
+        description: str,
+        alias: str,
+        readme: str,
         release: pipeline_interface.PipelineRelease,
+        recipe: Optional[dict] = None,
+        raw_recipe: str = "",
+        metadata: Optional[dict] = None,
         async_enabled: bool = False,
     ) -> pipeline_interface.CreateNamespacePipelineReleaseResponse:
+        release = pipeline_interface.PipelineRelease(
+            id=release_id,
+            name=name,
+            description=description,
+            alias=alias,
+            readme=readme,
+            raw_recipe=raw_recipe,
+        )
+
+        if recipe is None:
+            recipe = {}
+        release.recipe.update(recipe)
+        if metadata is None:
+            metadata = {}
+        release.metadata.update(metadata)
+
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.CreateNamespacePipelineRelease,
@@ -956,9 +987,16 @@ class PipelineClient(Client):
     def create_secret(
         self,
         namespace_id: str,
-        secret: secret_interface.Secret,
+        secret_id: str,
+        description: str,
+        secret_name: str = "",
+        value: str = "",
         async_enabled: bool = False,
     ) -> secret_interface.CreateNamespaceSecretResponse:
+        secret = secret_interface.Secret(
+            id=secret_id, name=secret_name, description=description, value=value
+        )
+
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.CreateNamespaceSecret,
@@ -1038,9 +1076,15 @@ class PipelineClient(Client):
         self,
         namespace_id: str,
         secret_id: str,
-        secret: secret_interface.Secret,
+        description: str,
+        secret_name: str = "",
+        value: str = "",
         async_enabled: bool = False,
     ) -> secret_interface.UpdateNamespaceSecretResponse:
+        secret = secret_interface.Secret(
+            name=secret_name, description=description, value=value
+        )
+
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.UpdateNamespaceSecret,
