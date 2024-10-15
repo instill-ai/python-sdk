@@ -31,6 +31,7 @@ from instill.helpers.utils import get_dir_size
 class InstillDeployable:
     def __init__(self, deployable: Deployment) -> None:
         self._deployment: Deployment = deployable
+        self._autoscaling_config = DEFAULT_AUTOSCALING_CONFIG.copy()
 
         num_of_cpus = os.getenv(ENV_NUM_OF_CPUS)
         if num_of_cpus is not None and num_of_cpus != "":
@@ -39,6 +40,7 @@ class InstillDeployable:
         is_test_model = os.getenv(ENV_IS_TEST_MODEL)
         if is_test_model is not None and is_test_model.lower() == "true":
             self._update_num_cpus(float(0.001))
+            self._update_downscale_delay(60)
 
         memory = os.getenv(ENV_MEMORY)
         if memory is not None and memory != "":
@@ -164,22 +166,23 @@ class InstillDeployable:
         return self
 
     def _update_min_replicas(self, num_replicas: int):
-        new_autoscaling_config = DEFAULT_AUTOSCALING_CONFIG
-        new_autoscaling_config["min_replicas"] = num_replicas
+        self._autoscaling_config["min_replicas"] = num_replicas
         self._deployment = self._deployment.options(
-            autoscaling_config=new_autoscaling_config
+            autoscaling_config=self._autoscaling_config
         )
 
         return self
 
     def _update_max_replicas(self, num_replicas: int):
-        new_autoscaling_config = DEFAULT_AUTOSCALING_CONFIG
-        new_autoscaling_config["max_replicas"] = num_replicas
+        self._autoscaling_config["max_replicas"] = num_replicas
         self._deployment = self._deployment.options(
-            autoscaling_config=new_autoscaling_config
+            autoscaling_config=self._autoscaling_config
         )
 
         return self
+
+    def _update_downscale_delay(self, downscale_delay_s: int):
+        self._autoscaling_config["downscale_delay_s"] = downscale_delay_s
 
     def get_deployment_handle(self):
         return self._deployment.bind()
