@@ -315,11 +315,6 @@ class PipelineClient(Client):
         namespace_id: str,
         pipeline_id: str,
         description: str,
-        readme: str,
-        tags: List[str],
-        source_url: str,
-        documentation_url: str,
-        license_url: str,
         recipe: Optional[dict] = None,
         raw_recipe: str = "",
         async_enabled: bool = False,
@@ -330,11 +325,6 @@ class PipelineClient(Client):
             id=pipeline_id,
             description=description,
             raw_recipe=raw_recipe,
-            readme=readme,
-            tags=tags,
-            source_url=source_url,
-            documentation_url=documentation_url,
-            license=license_url,
         )
 
         if recipe is None:
@@ -672,11 +662,9 @@ class PipelineClient(Client):
         namespace_id: str,
         pipeline_id: str,
         release_id: str,
-        name: str,
-        description: str,
-        alias: str,
-        readme: str,
-        release: pipeline_interface.PipelineRelease,
+        name: str = "",
+        description: str = "",
+        alias: str = "",
         recipe: Optional[dict] = None,
         raw_recipe: str = "",
         metadata: Optional[dict] = None,
@@ -687,7 +675,6 @@ class PipelineClient(Client):
             name=name,
             description=description,
             alias=alias,
-            readme=readme,
             raw_recipe=raw_recipe,
         )
 
@@ -796,26 +783,27 @@ class PipelineClient(Client):
         namespace_id: str,
         pipeline_id: str,
         release_id: str,
-        recipe: Struct,
-        readme: str,
+        description: str = "",
+        recipe: Optional[dict] = None,
+        raw_recipe: str = "",
         async_enabled: bool = False,
     ) -> pipeline_interface.UpdateNamespacePipelineReleaseResponse:
         release = pipeline_interface.PipelineRelease(
             name=f"namespaces/{namespace_id}/models/{pipeline_id}/releases/{release_id}",
             id=release_id,
-            recipe=recipe,
-            readme=readme,
+            description=description,
+            raw_recipe=raw_recipe,
         )
+
+        if recipe is None:
+            recipe = {}
+        release.recipe.update(recipe)
 
         update_mask = field_mask_pb2.FieldMask()
         update_mask.paths.extend(
             [
                 "recipe",
-                "readme",
-                "tags",
-                "source_url",
-                "documentation_url",
-                "license",
+                "description",
             ]
         )
 
@@ -1484,8 +1472,8 @@ class PipelineClient(Client):
             scopes=scopes,
         )
 
-        if setup is None:
-            setup = {}
+        setup = {} if setup is None else setup
+        connection.setup.Clear()
         connection.setup.update(setup)
         if o_auth_access_details is None:
             o_auth_access_details = {}
@@ -1524,7 +1512,7 @@ class PipelineClient(Client):
         scopes: Optional[List[str]] = None,
         identity: Optional[str] = None,
         setup: Optional[dict] = None,
-        o_auth_access_details: Optional[dict] = None,
+        # o_auth_access_details: Optional[dict] = None,
         is_oauth: bool = False,
         async_enabled: bool = False,
     ) -> integration_interface.UpdateNamespaceConnectionResponse:
@@ -1533,17 +1521,27 @@ class PipelineClient(Client):
         connection = integration_interface.Connection(
             namespace_id=namespace_id,
             integration_id=integration_id,
-            id=connection_id,
             scopes=scopes,
             identity=identity,
         )
 
         if setup is None:
             setup = {}
+        connection.setup.Clear()
         connection.setup.update(setup)
-        if o_auth_access_details is None:
-            o_auth_access_details = {}
-        connection.o_auth_access_details.update(o_auth_access_details)
+        # if o_auth_access_details is None:
+        #     o_auth_access_details = {}
+        # connection.o_auth_access_details.Clear()
+        # connection.o_auth_access_details.update(o_auth_access_details)
+
+        update_mask = field_mask_pb2.FieldMask()
+        update_mask.paths.extend(
+            [
+                "setup",
+                "scopes",
+                "identity",
+            ]
+        )
 
         if is_oauth:
             connection.method = integration_interface.Connection.Method.METHOD_OAUTH
@@ -1556,7 +1554,9 @@ class PipelineClient(Client):
             return RequestFactory(
                 method=self.host.async_client.UpdateNamespaceConnection,
                 request=integration_interface.UpdateNamespaceConnectionRequest(
+                    connection_id=connection_id,
                     connection=connection,
+                    update_mask=update_mask,
                 ),
                 metadata=self.host.metadata + self.metadata,
             ).send_async()
@@ -1564,7 +1564,9 @@ class PipelineClient(Client):
         return RequestFactory(
             method=self.host.client.UpdateNamespaceConnection,
             request=integration_interface.UpdateNamespaceConnectionRequest(
+                connection_id=connection_id,
                 connection=connection,
+                update_mask=update_mask,
             ),
             metadata=self.host.metadata + self.metadata,
         ).send_sync()
