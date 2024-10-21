@@ -1,10 +1,10 @@
 # pylint: disable=no-member,wrong-import-position,too-many-lines,no-name-in-module
+from datetime import datetime
 from typing import Callable, List, Optional
 
-from google.protobuf import field_mask_pb2
+from google.protobuf import field_mask_pb2, timestamp_pb2
 from google.protobuf.struct_pb2 import Struct
 
-# common
 import instill.protogen.common.healthcheck.v1beta.healthcheck_pb2 as healthcheck
 import instill.protogen.common.task.v1alpha.task_pb2 as task_interface
 import instill.protogen.model.model.v1alpha.model_definition_pb2 as model_definition_interface
@@ -14,6 +14,7 @@ import instill.protogen.model.model.v1alpha.model_pb2 as model_interface
 import instill.protogen.model.model.v1alpha.model_public_service_pb2_grpc as model_service
 from instill.clients.base import Client, RequestFactory
 from instill.clients.instance import InstillInstance
+from instill.helpers.const import HOST_URL_PROD
 from instill.utils.error_handler import grpc_handler
 
 
@@ -22,7 +23,7 @@ class ModelClient(Client):
         self,
         api_token: str,
         lookup_func: Callable[[str], str],
-        url: str = "api.instill.tech",
+        url: str = HOST_URL_PROD,
         secure: bool = True,
         requester_id: str = "",
         async_enabled: bool = False,
@@ -952,7 +953,6 @@ class ModelClient(Client):
             return RequestFactory(
                 method=self.host.async_client.ListModelRuns,
                 request=model_interface.ListModelRunsRequest(
-                    view=model_definition_interface.VIEW_FULL,
                     namespace_id=namespace_id,
                     model_id=model_id,
                     page_size=page_size,
@@ -966,9 +966,51 @@ class ModelClient(Client):
         return RequestFactory(
             method=self.host.client.ListModelRuns,
             request=model_interface.ListModelRunsRequest(
-                view=model_definition_interface.VIEW_FULL,
                 namespace_id=namespace_id,
                 model_id=model_id,
+                page_size=page_size,
+                page=page,
+                order_by=order_by,
+                filter=filter_str,
+            ),
+            metadata=self.host.metadata + self.metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def list_model_runs_by_credit_owner(
+        self,
+        start: datetime,
+        stop: datetime,
+        page_size: int = 10,
+        page: int = 0,
+        order_by: str = "",
+        filter_str: str = "",
+        async_enabled: bool = False,
+    ) -> model_interface.ListModelRunsByCreditOwnerResponse:
+        start_timestamp = timestamp_pb2.Timestamp()
+        start_timestamp.FromDatetime(start)
+        stop_timestamp = timestamp_pb2.Timestamp()
+        stop_timestamp.FromDatetime(stop)
+
+        if async_enabled:
+            return RequestFactory(
+                method=self.host.async_client.ListModelRunsByCreditOwner,
+                request=model_interface.ListModelRunsByCreditOwnerRequest(
+                    start=start_timestamp,
+                    stop=stop_timestamp,
+                    page_size=page_size,
+                    page=page,
+                    order_by=order_by,
+                    filter=filter_str,
+                ),
+                metadata=self.host.metadata + self.metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.host.client.ListModelRunsByCreditOwner,
+            request=model_interface.ListModelRunsByCreditOwnerRequest(
+                start=start_timestamp,
+                stop=stop_timestamp,
                 page_size=page_size,
                 page=page,
                 order_by=order_by,

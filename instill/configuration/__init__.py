@@ -7,6 +7,8 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel
 
+from instill.helpers.const import HOST_URL_PROD
+
 CONFIG_DIR = Path(
     os.getenv(
         "INSTILL_SYSTEM_CONFIG_PATH",
@@ -31,7 +33,7 @@ class Configuration:
         self.load()
 
         if "default" not in self._config.hosts:
-            self.set_default(url="api.instill.tech", secure=True, token="")
+            self.set_default(url=HOST_URL_PROD, secure=True, token="")
 
         CONFIG_DIR.mkdir(exist_ok=True)
 

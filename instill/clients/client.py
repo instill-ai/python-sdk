@@ -5,6 +5,7 @@ from instill.clients.artifact import ArtifactClient
 from instill.clients.mgmt import MgmtClient
 from instill.clients.model import ModelClient
 from instill.clients.pipeline import PipelineClient
+from instill.helpers.const import HOST_URL_PROD
 from instill.utils.error_handler import NotServingException
 from instill.utils.logger import Logger
 
@@ -13,7 +14,7 @@ class InstillClient:
     def __init__(
         self,
         api_token: str,
-        url: str = "api.instill.tech",
+        url: str = HOST_URL_PROD,
         secure: bool = True,
         requester_id="",
         async_enabled: bool = False,
@@ -124,11 +125,13 @@ class InstillClient:
 def init_core_client(
     api_token: str,
     requester_id="",
+    url: str = HOST_URL_PROD,
     async_enabled: bool = False,
 ) -> InstillClient:
     return InstillClient(
         api_token=api_token,
         requester_id=requester_id,
+        url=url,
         async_enabled=async_enabled,
     )
 
@@ -136,11 +139,13 @@ def init_core_client(
 def init_artifact_client(
     api_token: str,
     requester_id: str = "",
+    url: str = HOST_URL_PROD,
     async_enabled: bool = False,
 ) -> ArtifactClient:
     client = InstillClient(
         api_token=api_token,
         requester_id=requester_id,
+        url=url,
         async_enabled=async_enabled,
     )
     if not client.get_artifact().is_serving():
@@ -155,11 +160,13 @@ def init_artifact_client(
 def init_model_client(
     api_token: str,
     requester_id="",
+    url: str = HOST_URL_PROD,
     async_enabled: bool = False,
 ) -> ModelClient:
     client = InstillClient(
         api_token=api_token,
         requester_id=requester_id,
+        url=url,
         async_enabled=async_enabled,
     )
     if not client.get_model().is_serving():
@@ -172,11 +179,13 @@ def init_model_client(
 def init_pipeline_client(
     api_token: str,
     requester_id="",
+    url: str = HOST_URL_PROD,
     async_enabled: bool = False,
 ) -> PipelineClient:
     client = InstillClient(
         api_token=api_token,
         requester_id=requester_id,
+        url=url,
         async_enabled=async_enabled,
     )
     if not client.get_pipeline().is_serving():
@@ -189,11 +198,13 @@ def init_pipeline_client(
 def init_mgmt_client(
     api_token: str,
     requester_id="",
+    url: str = HOST_URL_PROD,
     async_enabled: bool = False,
 ) -> MgmtClient:
     client = InstillClient(
         api_token=api_token,
         requester_id=requester_id,
+        url=url,
         async_enabled=async_enabled,
     )
     if not client.get_mgmt().is_serving():
@@ -204,11 +215,15 @@ def init_mgmt_client(
 
 
 def init_app_client(
-    api_token: str = "", requester_id: str = "", async_enabled: bool = False
+    api_token: str = "",
+    requester_id: str = "",
+    url: str = HOST_URL_PROD,
+    async_enabled: bool = False,
 ) -> AppClient:
     client = InstillClient(
         api_token=api_token,
         requester_id=requester_id,
+        url=url,
         async_enabled=async_enabled,
     )
     if not client.get_app().is_serving():
