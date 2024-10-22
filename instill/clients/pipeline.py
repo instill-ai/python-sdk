@@ -1,10 +1,10 @@
 # pylint: disable=no-member,wrong-import-position,too-many-lines,no-name-in-module
+from datetime import datetime
 from typing import Callable, List, Optional
 
-from google.protobuf import field_mask_pb2
+from google.protobuf import field_mask_pb2, timestamp_pb2
 from google.protobuf.struct_pb2 import Struct
 
-# common
 import instill.protogen.common.healthcheck.v1beta.healthcheck_pb2 as healthcheck
 import instill.protogen.vdp.pipeline.v1beta.component_definition_pb2 as component_definition
 import instill.protogen.vdp.pipeline.v1beta.integration_pb2 as integration_interface
@@ -15,6 +15,7 @@ import instill.protogen.vdp.pipeline.v1beta.pipeline_public_service_pb2_grpc as 
 import instill.protogen.vdp.pipeline.v1beta.secret_pb2 as secret_interface
 from instill.clients.base import Client, RequestFactory
 from instill.clients.instance import InstillInstance
+from instill.helpers.const import HOST_URL_PROD
 from instill.protogen.vdp.pipeline.v1beta import common_pb2
 from instill.utils.error_handler import grpc_handler
 
@@ -24,7 +25,7 @@ class PipelineClient(Client):
         self,
         api_token: str,
         lookup_func: Callable[[str], str],
-        url: str = "api.instill.tech",
+        url: str = HOST_URL_PROD,
         secure: bool = True,
         requester_id: str = "",
         async_enabled: bool = False,
@@ -1329,7 +1330,6 @@ class PipelineClient(Client):
                 request=pipeline_interface.ListPipelineRunsRequest(
                     namespace_id=namespace_id,
                     pipeline_id=pipeline_id,
-                    view=pipeline_interface.Pipeline.VIEW_RECIPE,
                     page=page,
                     page_size=total_size,
                     filter=filter_str,
@@ -1343,7 +1343,6 @@ class PipelineClient(Client):
             request=pipeline_interface.ListPipelineRunsRequest(
                 namespace_id=namespace_id,
                 pipeline_id=pipeline_id,
-                view=pipeline_interface.Pipeline.VIEW_RECIPE,
                 page=page,
                 page_size=total_size,
                 filter=filter_str,
@@ -1381,6 +1380,49 @@ class PipelineClient(Client):
             request=pipeline_interface.ListComponentRunsRequest(
                 pipeline_run_id=pipeline_run_id,
                 view=pipeline_interface.Pipeline.VIEW_RECIPE,
+                page=page,
+                page_size=total_size,
+                filter=filter_str,
+                order_by=order_by,
+            ),
+            metadata=self.host.metadata + self.metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def list_pipeline_runs_by_credit_owner(
+        self,
+        start: datetime,
+        stop: datetime,
+        page: int = 0,
+        total_size: int = 10,
+        filter_str: str = "",
+        order_by: str = "",
+        async_enabled: bool = False,
+    ) -> pipeline_interface.ListPipelineRunsByCreditOwnerResponse:
+        start_timestamp = timestamp_pb2.Timestamp()
+        start_timestamp.FromDatetime(start)
+        stop_timestamp = timestamp_pb2.Timestamp()
+        stop_timestamp.FromDatetime(stop)
+
+        if async_enabled:
+            return RequestFactory(
+                method=self.host.async_client.ListPipelineRunsByCreditOwner,
+                request=pipeline_interface.ListPipelineRunsByCreditOwnerRequest(
+                    start=start_timestamp,
+                    stop=stop_timestamp,
+                    page=page,
+                    page_size=total_size,
+                    filter=filter_str,
+                    order_by=order_by,
+                ),
+                metadata=self.host.metadata + self.metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.host.client.ListPipelineRunsByCreditOwner,
+            request=pipeline_interface.ListPipelineRunsByCreditOwnerRequest(
+                start=start_timestamp,
+                stop=stop_timestamp,
                 page=page,
                 page_size=total_size,
                 filter=filter_str,

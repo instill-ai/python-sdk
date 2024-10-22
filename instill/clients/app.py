@@ -10,6 +10,7 @@ import instill.protogen.app.app.v1alpha.conversation_pb2 as conversation_interfa
 import instill.protogen.common.healthcheck.v1beta.healthcheck_pb2 as healthcheck
 from instill.clients.base import Client, RequestFactory
 from instill.clients.instance import InstillInstance
+from instill.helpers.const import HOST_URL_PROD
 from instill.utils.error_handler import grpc_handler
 
 
@@ -18,7 +19,7 @@ class AppClient(Client):
         self,
         api_token: str,
         lookup_func: Callable[[str], str],
-        url: str = "api.instill.tech",
+        url: str = HOST_URL_PROD,
         secure: bool = True,
         requester_id: str = "",
         async_enabled: bool = False,

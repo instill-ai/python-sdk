@@ -12,6 +12,7 @@ import instill.protogen.core.mgmt.v1beta.mgmt_pb2 as mgmt_interface
 import instill.protogen.core.mgmt.v1beta.mgmt_public_service_pb2_grpc as mgmt_service
 from instill.clients.base import Client, RequestFactory
 from instill.clients.instance import InstillInstance
+from instill.helpers.const import HOST_URL_PROD
 from instill.utils.error_handler import grpc_handler
 
 
@@ -19,7 +20,7 @@ class MgmtClient(Client):
     def __init__(
         self,
         api_token: str,
-        url: str = "api.instill.tech",
+        url: str = HOST_URL_PROD,
         secure: bool = True,
         requester_id: str = "",
         async_enabled: bool = False,
