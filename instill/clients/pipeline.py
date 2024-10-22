@@ -335,12 +335,9 @@ class PipelineClient(Client):
         update_mask = field_mask_pb2.FieldMask()
         update_mask.paths.extend(
             [
+                "description",
                 "recipe",
-                "readme",
-                "tags",
-                "source_url",
-                "documentation_url",
-                "license",
+                "raw_recipe",
             ]
         )
 
