@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.15.0](https://github.com/instill-ai/python-sdk/compare/v0.14.0...v0.15.0) (2024-10-22)
+
+
+### Features
+
+* **ray:** support shorter downscale config for test models ([#234](https://github.com/instill-ai/python-sdk/issues/234)) ([954f94b](https://github.com/instill-ai/python-sdk/commit/954f94b3c0b1e15d88162dc08c707ef700156831))
+
+
+### Bug Fixes
+
+* **vdp:** allow empty input for recipe parameter ([#229](https://github.com/instill-ai/python-sdk/issues/229)) ([033ca6c](https://github.com/instill-ai/python-sdk/commit/033ca6cc977f0b216281a15f26b1f051a241115f))
+* **vdp:** fix create pipeline input parameters ([#225](https://github.com/instill-ai/python-sdk/issues/225)) ([3fd0538](https://github.com/instill-ai/python-sdk/commit/3fd0538432161b201501f4e2c65b1f7ed83ceaec))
+* **vdp:** fix create/update connection input parameters ([#230](https://github.com/instill-ai/python-sdk/issues/230)) ([f3d0bec](https://github.com/instill-ai/python-sdk/commit/f3d0bec9966370c2a7abe8919e61cdcb262a1b07))
+* **vdp:** fix update pipeline mask ([#236](https://github.com/instill-ai/python-sdk/issues/236)) ([2107a40](https://github.com/instill-ai/python-sdk/commit/2107a409cf684fe6be61d47d4efba848f72bf26f))
+* **vdp:** fix update pipeline parameter ([#233](https://github.com/instill-ai/python-sdk/issues/233)) ([b19a59c](https://github.com/instill-ai/python-sdk/commit/b19a59cc7960b24d7e226348ab7561a358b7ff07))
+* **vdp:** rename create pipeline input parameters ([#228](https://github.com/instill-ai/python-sdk/issues/228)) ([2220438](https://github.com/instill-ai/python-sdk/commit/2220438a72c6c25e96a857f75f7793eb52797acd))
+
 ## [0.14.0](https://github.com/instill-ai/python-sdk/compare/v0.13.0...v0.14.0) (2024-10-12)
 
 
