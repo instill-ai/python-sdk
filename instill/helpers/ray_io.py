@@ -321,7 +321,7 @@ def construct_task_semantic_segmentation_output(
         for r, cat in zip(rle, category):
             objects.append({"rle": str(r), "category": str(cat)})
 
-        data["objects"] = objects
+        data["stuffs"] = objects
 
         if isinstance(request, Request):
             task_outputs.append({"data": data})
