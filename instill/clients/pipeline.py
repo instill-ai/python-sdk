@@ -1386,16 +1386,17 @@ class PipelineClient(Client):
         ).send_sync()
 
     @grpc_handler
-    def list_pipeline_runs_by_credit_owner(
+    def list_pipeline_runs_by_requester(
         self,
         start: datetime,
         stop: datetime,
+        requester_id: str,
         page: int = 0,
         total_size: int = 10,
         filter_str: str = "",
         order_by: str = "",
         async_enabled: bool = False,
-    ) -> pipeline_interface.ListPipelineRunsByCreditOwnerResponse:
+    ) -> pipeline_interface.ListPipelineRunsByRequesterResponse:
         start_timestamp = timestamp_pb2.Timestamp()
         start_timestamp.FromDatetime(start)
         stop_timestamp = timestamp_pb2.Timestamp()
@@ -1403,10 +1404,11 @@ class PipelineClient(Client):
 
         if async_enabled:
             return RequestFactory(
-                method=self.host.async_client.ListPipelineRunsByCreditOwner,
-                request=pipeline_interface.ListPipelineRunsByCreditOwnerRequest(
+                method=self.host.async_client.ListPipelineRunsByRequester,
+                request=pipeline_interface.ListPipelineRunsByRequesterRequest(
                     start=start_timestamp,
                     stop=stop_timestamp,
+                    requester_id=requester_id,
                     page=page,
                     page_size=total_size,
                     filter=filter_str,
@@ -1416,10 +1418,11 @@ class PipelineClient(Client):
             ).send_async()
 
         return RequestFactory(
-            method=self.host.client.ListPipelineRunsByCreditOwner,
-            request=pipeline_interface.ListPipelineRunsByCreditOwnerRequest(
+            method=self.host.client.ListPipelineRunsByRequester,
+            request=pipeline_interface.ListPipelineRunsByRequesterRequest(
                 start=start_timestamp,
                 stop=stop_timestamp,
+                requester_id=requester_id,
                 page=page,
                 page_size=total_size,
                 filter=filter_str,

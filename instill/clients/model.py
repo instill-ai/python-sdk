@@ -977,16 +977,17 @@ class ModelClient(Client):
         ).send_sync()
 
     @grpc_handler
-    def list_model_runs_by_credit_owner(
+    def list_model_runs_by_requester(
         self,
         start: datetime,
         stop: datetime,
+        requester_id: str,
         page_size: int = 10,
         page: int = 0,
         order_by: str = "",
         filter_str: str = "",
         async_enabled: bool = False,
-    ) -> model_interface.ListModelRunsByCreditOwnerResponse:
+    ) -> model_interface.ListModelRunsByRequesterResponse:
         start_timestamp = timestamp_pb2.Timestamp()
         start_timestamp.FromDatetime(start)
         stop_timestamp = timestamp_pb2.Timestamp()
@@ -994,10 +995,11 @@ class ModelClient(Client):
 
         if async_enabled:
             return RequestFactory(
-                method=self.host.async_client.ListModelRunsByCreditOwner,
-                request=model_interface.ListModelRunsByCreditOwnerRequest(
+                method=self.host.async_client.ListModelRunsByRequester,
+                request=model_interface.ListModelRunsByRequesterRequest(
                     start=start_timestamp,
                     stop=stop_timestamp,
+                    requester_id=requester_id,
                     page_size=page_size,
                     page=page,
                     order_by=order_by,
@@ -1007,10 +1009,11 @@ class ModelClient(Client):
             ).send_async()
 
         return RequestFactory(
-            method=self.host.client.ListModelRunsByCreditOwner,
-            request=model_interface.ListModelRunsByCreditOwnerRequest(
+            method=self.host.client.ListModelRunsByRequester,
+            request=model_interface.ListModelRunsByRequesterRequest(
                 start=start_timestamp,
                 stop=stop_timestamp,
+                requester_id=requester_id,
                 page_size=page_size,
                 page=page,
                 order_by=order_by,

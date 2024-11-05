@@ -1,4 +1,5 @@
 # pylint: disable=no-member,wrong-import-position
+from datetime import datetime
 from typing import List
 
 # common
@@ -645,6 +646,103 @@ class MgmtClient(Client):
         ).send_sync()
 
     @grpc_handler
+    def list_pipeline_trigger_records(
+        self,
+        total_size: int = 10,
+        next_page_token: str = "",
+        filter_str: str = "",
+        async_enabled: bool = False,
+    ) -> metric_interface.ListPipelineTriggerRecordsResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.host.async_client.ListPipelineTriggerRecords,
+                request=metric_interface.ListPipelineTriggerRecordsRequest(
+                    page_size=total_size,
+                    page_token=next_page_token,
+                    filter=filter_str,
+                ),
+                metadata=self.host.metadata + self.metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.host.client.ListPipelineTriggerRecords,
+            request=metric_interface.ListPipelineTriggerRecordsRequest(
+                page_size=total_size,
+                page_token=next_page_token,
+                filter=filter_str,
+            ),
+            metadata=self.host.metadata + self.metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def get_pipeline_trigger_count(
+        self,
+        namespace_id: str,
+        start: datetime,
+        stop: datetime,
+        async_enabled: bool = False,
+    ) -> metric_interface.GetPipelineTriggerCountResponse:
+        start_timestamp = timestamp_pb2.Timestamp()
+        start_timestamp.FromDatetime(start)
+        stop_timestamp = timestamp_pb2.Timestamp()
+        stop_timestamp.FromDatetime(stop)
+
+        if async_enabled:
+            return RequestFactory(
+                method=self.host.async_client.GetPipelineTriggerCount,
+                request=metric_interface.GetPipelineTriggerCountRequest(
+                    namespace_id=namespace_id,
+                    start=start_timestamp,
+                    stop=stop_timestamp,
+                ),
+                metadata=self.host.metadata + self.metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.host.client.GetPipelineTriggerCount,
+            request=metric_interface.GetPipelineTriggerCountRequest(
+                namespace_id=namespace_id,
+                start=start_timestamp,
+                stop=stop_timestamp,
+            ),
+            metadata=self.host.metadata + self.metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def get_model_trigger_count(
+        self,
+        requester_id: str,
+        start: datetime,
+        stop: datetime,
+        async_enabled: bool = False,
+    ) -> metric_interface.GetModelTriggerCountResponse:
+        start_timestamp = timestamp_pb2.Timestamp()
+        start_timestamp.FromDatetime(start)
+        stop_timestamp = timestamp_pb2.Timestamp()
+        stop_timestamp.FromDatetime(stop)
+
+        if async_enabled:
+            return RequestFactory(
+                method=self.host.async_client.GetModelTriggerCount,
+                request=metric_interface.GetModelTriggerCountRequest(
+                    requester_id=requester_id,
+                    start=start_timestamp,
+                    stop=stop_timestamp,
+                ),
+                metadata=self.host.metadata + self.metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.host.client.GetModelTriggerCount,
+            request=metric_interface.GetModelTriggerCountRequest(
+                requester_id=requester_id,
+                start=start_timestamp,
+                stop=stop_timestamp,
+            ),
+            metadata=self.host.metadata + self.metadata,
+        ).send_sync()
+
+    @grpc_handler
     def list_pipeline_trigger_table_records(
         self,
         total_size: int = 100,
@@ -820,18 +918,23 @@ class MgmtClient(Client):
         self,
         namespace_id: str,
         aggregation_window: str,
-        start: timestamp_pb2.Timestamp,
-        stop: timestamp_pb2.Timestamp,
+        start: datetime,
+        stop: datetime,
         async_enabled: bool = False,
     ) -> metric_interface.ListCreditConsumptionChartRecordsResponse:
+        start_timestamp = timestamp_pb2.Timestamp()
+        start_timestamp.FromDatetime(start)
+        stop_timestamp = timestamp_pb2.Timestamp()
+        stop_timestamp.FromDatetime(stop)
+
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ListCreditConsumptionChartRecords,
                 request=metric_interface.ListCreditConsumptionChartRecordsRequest(
                     namespace_id=namespace_id,
                     aggregation_window=aggregation_window,
-                    start=start,
-                    stop=stop,
+                    start=start_timestamp,
+                    stop=stop_timestamp,
                 ),
                 metadata=self.host.metadata + self.metadata,
             ).send_async()
@@ -841,8 +944,8 @@ class MgmtClient(Client):
             request=metric_interface.ListCreditConsumptionChartRecordsRequest(
                 namespace_id=namespace_id,
                 aggregation_window=aggregation_window,
-                start=start,
-                stop=stop,
+                start=start_timestamp,
+                stop=stop_timestamp,
             ),
             metadata=self.host.metadata + self.metadata,
         ).send_sync()
