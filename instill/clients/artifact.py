@@ -568,7 +568,6 @@ class ArtifactClient(Client):
         self,
         namespace_id: str,
         object_uid: str,
-        object_name: str,
         url_expire_days: int,
         async_enabled: bool = False,
     ) -> object_interface.GetObjectDownloadURLResponse:
@@ -578,7 +577,6 @@ class ArtifactClient(Client):
                 request=object_interface.GetObjectDownloadURLRequest(
                     namespace_id=namespace_id,
                     object_uid=object_uid,
-                    object_name=object_name,
                     url_expire_days=url_expire_days,
                 ),
                 metadata=self.host.metadata + self.metadata,
@@ -589,7 +587,6 @@ class ArtifactClient(Client):
             request=object_interface.GetObjectDownloadURLRequest(
                 namespace_id=namespace_id,
                 object_uid=object_uid,
-                object_name=object_name,
                 url_expire_days=url_expire_days,
             ),
             metadata=self.host.metadata + self.metadata,
