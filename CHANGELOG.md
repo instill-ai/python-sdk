@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.1](https://github.com/instill-ai/python-sdk/compare/v0.15.0...v0.15.1) (2024-11-05)
+
+
+### Bug Fixes
+
+* **ray:** fix semantic segmentation task parser ([#237](https://github.com/instill-ai/python-sdk/issues/237)) ([652c548](https://github.com/instill-ai/python-sdk/commit/652c5480f11a852a7af23e09bbd8dfd91d9f659e))
+
 ## [0.15.0](https://github.com/instill-ai/python-sdk/compare/v0.14.0...v0.15.0) (2024-10-22)
 
 
