@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Callable, List, Optional
 
 from google.protobuf import field_mask_pb2, timestamp_pb2
+from google.protobuf.json_format import MessageToDict
 from google.protobuf.struct_pb2 import Struct
 
 import instill.protogen.common.healthcheck.v1beta.healthcheck_pb2 as healthcheck
@@ -571,7 +572,7 @@ class PipelineClient(Client):
         pipeline_id: str,
         data: List[dict],
         async_enabled: bool = False,
-    ) -> pipeline_interface.TriggerNamespacePipelineResponse:
+    ) -> dict:
         request = pipeline_interface.TriggerNamespacePipelineRequest(
             namespace_id=namespace_id,
             pipeline_id=pipeline_id,
@@ -582,17 +583,19 @@ class PipelineClient(Client):
             request.data.append(trigger_data)
 
         if async_enabled:
-            return RequestFactory(
+            resp = RequestFactory(
                 method=self.host.async_client.TriggerNamespacePipeline,
                 request=request,
                 metadata=self.host.metadata + self.metadata,
             ).send_async()
+            return MessageToDict(resp)
 
-        return RequestFactory(
+        resp = RequestFactory(
             method=self.host.client.TriggerNamespacePipeline,
             request=request,
             metadata=self.host.metadata + self.metadata,
         ).send_sync()
+        return MessageToDict(resp)
 
     @grpc_handler
     def trigger_with_stream(
