@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.16.0](https://github.com/instill-ai/python-sdk/compare/v0.15.1...v0.16.0) (2024-11-08)
+
+
+### Features
+
+* **proto:** update protogen ([#240](https://github.com/instill-ai/python-sdk/issues/240)) ([5fd0db1](https://github.com/instill-ai/python-sdk/commit/5fd0db17c1dcb82dfbaf9c5c88ffda6c28ad50fa))
+* **vdp:** return dict type instead of proto type in trigger pipeline ([#242](https://github.com/instill-ai/python-sdk/issues/242)) ([8e6b3a7](https://github.com/instill-ai/python-sdk/commit/8e6b3a730059d7ce453e51abea096d2b356a1e0a))
+
 ## [0.15.1](https://github.com/instill-ai/python-sdk/compare/v0.15.0...v0.15.1) (2024-11-05)
 
 
