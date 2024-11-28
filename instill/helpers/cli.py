@@ -17,7 +17,7 @@ from instill.helpers.errors import ModelConfigException
 from instill.utils.logger import Logger
 
 bash_script = """
-until curl -s -o /dev/null -w "%{{http_code}}" http://localhost:8265 | grep -q "200"; do
+until curl -s -o /dev/null -w "%{http_code}" http://localhost:8265 | grep -q "200"; do
     sleep 5
 done
 """
