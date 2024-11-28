@@ -6,7 +6,6 @@ import platform
 import shutil
 import subprocess
 import tempfile
-import time
 import uuid
 
 import ray
@@ -17,7 +16,7 @@ from instill.helpers.const import DEFAULT_DEPENDENCIES
 from instill.helpers.errors import ModelConfigException
 from instill.utils.logger import Logger
 
-bash_script = f"""
+bash_script = """
 until curl -s -o /dev/null -w "%{{http_code}}" http://localhost:8265 | grep -q "200"; do
     sleep 5
 done
