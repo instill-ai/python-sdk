@@ -17,6 +17,12 @@ from instill.helpers.const import DEFAULT_DEPENDENCIES
 from instill.helpers.errors import ModelConfigException
 from instill.utils.logger import Logger
 
+bash_script = f"""
+until curl -s -o /dev/null -w "%{{http_code}}" http://localhost:8265 | grep -q "200"; do
+    sleep 5
+done
+"""
+
 
 def config_check_required_fields(c):
     if "build" not in c or c["build"] is None:
@@ -276,7 +282,6 @@ def run(args):
     docker_run = False
     try:
         name = uuid.uuid4()
-
         Logger.i("[Instill] Starting model image...")
         if not args.gpu:
             subprocess.run(
@@ -307,7 +312,14 @@ def run(args):
                 stdout=subprocess.DEVNULL,
             )
         docker_run = True
-        time.sleep(10)
+        subprocess.run(
+            f"docker exec {str(name)} /bin/bash -c '{bash_script}'",
+            shell=True,
+            check=True,
+            stdout=subprocess.DEVNULL,
+            timeout=300,
+        )
+
         Logger.i("[Instill] Deploying model...")
         subprocess.run(
             [
@@ -336,6 +348,8 @@ def run(args):
         )
     except subprocess.CalledProcessError:
         Logger.e("[Instill] Run failed")
+    except subprocess.TimeoutExpired:
+        Logger.e("[Instill] Deployment timeout")
     except Exception as e:
         Logger.e("[Instill] Prepare failed")
         Logger.e(e)
