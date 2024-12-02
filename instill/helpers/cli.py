@@ -292,6 +292,10 @@ def run(args):
                     "--shm-size=4gb",
                     "--name",
                     str(name),
+                    "-v",
+                    "/etc/timezone:/etc/timezone:ro",
+                    "-v",
+                    "/etc/localtime:/etc/localtime:ro",
                     f"{args.name}:{args.tag}",
                     "serve",
                     "run",
@@ -302,11 +306,14 @@ def run(args):
             )
         else:
             subprocess.run(
-                f"docker run --rm -d --shm-size=4gb --name {str(name)} --gpus all {args.name}:{args.tag} /bin/bash -c \
-                    \"serve build _model:entrypoint -o serve.yaml && \
-                    sed -i 's/app1/default/' serve.yaml && \
-                    sed -i 's/num_cpus: 0.0/num_gpus: 1.0/' serve.yaml && \
-                    serve run serve.yaml\"",
+                f"docker run \
+                    --rm -d --shm-size=4gb --name {str(name)} --gpus all \
+                    -v /etc/timezone:/etc/timezone:ro -v /etc/localtime:/etc/localtime:ro \
+                    {args.name}:{args.tag} /bin/bash -c \
+                        \"serve build _model:entrypoint -o serve.yaml && \
+                        sed -i 's/app1/default/' serve.yaml && \
+                        sed -i 's/num_cpus: 0.0/num_gpus: 1.0/' serve.yaml && \
+                        serve run serve.yaml\"",
                 shell=True,
                 check=True,
                 stdout=subprocess.DEVNULL,

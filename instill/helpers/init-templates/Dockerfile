@@ -6,7 +6,7 @@ ARG TARGET_ARCH_SUFFIX
 
 FROM rayproject/ray:${RAY_VERSION}-py${PYTHON_VERSION}${CUDA_SUFFIX}${TARGET_ARCH_SUFFIX}
 
-RUN sudo apt-get update && sudo apt-get install curl -y
+RUN sudo apt-get update && sudo apt-get install tzdata curl vim -y
 
 ARG SYSTEM_PACKAGES
 RUN for package in ${SYSTEM_PACKAGES}; do \
