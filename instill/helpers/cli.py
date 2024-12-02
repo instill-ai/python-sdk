@@ -289,6 +289,7 @@ def run(args):
                     "run",
                     "--rm",
                     "-d",
+                    "--shm-size=4gb",
                     "--name",
                     str(name),
                     f"{args.name}:{args.tag}",
@@ -301,7 +302,7 @@ def run(args):
             )
         else:
             subprocess.run(
-                f"docker run --rm -d --name {str(name)} --gpus all {args.name}:{args.tag} /bin/bash -c \
+                f"docker run --rm -d --shm-size=4gb --name {str(name)} --gpus all {args.name}:{args.tag} /bin/bash -c \
                     \"serve build _model:entrypoint -o serve.yaml && \
                     sed -i 's/app1/default/' serve.yaml && \
                     sed -i 's/num_cpus: 0.0/num_gpus: 1.0/' serve.yaml && \
