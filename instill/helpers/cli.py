@@ -119,6 +119,14 @@ def cli():
         required=False,
     )
     run_parser.add_argument(
+        "-ng",
+        "--num-of-gpus",
+        help="number of gpus to use if gpu flag is on, default to 1",
+        type=int,
+        default=1,
+        required=False,
+    )
+    run_parser.add_argument(
         "-t",
         "--tag",
         help="tag for the model image, default to `latest`",
@@ -311,7 +319,7 @@ def run(args):
                     {args.name}:{args.tag} /bin/bash -c \
                         \"serve build _model:entrypoint -o serve.yaml && \
                         sed -i 's/app1/default/' serve.yaml && \
-                        sed -i 's/num_cpus: 0.0/num_gpus: 1.0/' serve.yaml && \
+                        sed -i 's/num_cpus: 0.0/num_gpus: {args.num_of_gpus}/' serve.yaml && \
                         serve run serve.yaml\"",
                 shell=True,
                 check=True,
