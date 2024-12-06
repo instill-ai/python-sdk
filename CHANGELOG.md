@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.16.0](https://github.com/instill-ai/python-sdk/compare/v0.15.1...v0.16.0) (2024-12-06)
+
+
+### Features
+
+* **cli:** support multi-gpus when running inference locally ([#249](https://github.com/instill-ai/python-sdk/issues/249)) ([6760651](https://github.com/instill-ai/python-sdk/commit/6760651cd0aa4764c2b0a88fde4689d33358f01b))
+* **proto:** update protogen ([#240](https://github.com/instill-ai/python-sdk/issues/240)) ([5fd0db1](https://github.com/instill-ai/python-sdk/commit/5fd0db17c1dcb82dfbaf9c5c88ffda6c28ad50fa))
+* **vdp:** return dict type instead of proto type in trigger pipeline ([#242](https://github.com/instill-ai/python-sdk/issues/242)) ([8e6b3a7](https://github.com/instill-ai/python-sdk/commit/8e6b3a730059d7ce453e51abea096d2b356a1e0a))
+
+
+### Bug Fixes
+
+* **cli:** align timezone between host and model container ([#247](https://github.com/instill-ai/python-sdk/issues/247)) ([aa84a1c](https://github.com/instill-ai/python-sdk/commit/aa84a1c0333289906133a613199de066bbed37b6))
+* **cli:** fix curl script ([444b210](https://github.com/instill-ai/python-sdk/commit/444b210c190b7256f21fcf90063167c0cebc23a0))
+* **cli:** replace fix wait time with curl loop ([#245](https://github.com/instill-ai/python-sdk/issues/245)) ([3f62de1](https://github.com/instill-ai/python-sdk/commit/3f62de1ac3b142c016804bb13a29f081eb778c9c))
+* **cli:** update run command shmsize ([#246](https://github.com/instill-ai/python-sdk/issues/246)) ([d08cf37](https://github.com/instill-ai/python-sdk/commit/d08cf37542a0bf9189390184716fcfa36d7820b6))
+
 ## [0.15.1](https://github.com/instill-ai/python-sdk/compare/v0.15.0...v0.15.1) (2024-11-05)
 
 
