@@ -175,23 +175,22 @@ def build(args):
         else:
             cuda_suffix = "-gpu"
 
-        system_str = ""
+        system_pkg_list = []
         if (
             "system_packages" in build_params
             and not build_params["system_packages"] is None
         ):
-            for p in build_params["system_packages"]:
-                system_str += p + " "
+            system_pkg_list.extend(build_params["system_packages"])
+        system_pkg_str = " ".join(system_pkg_list)
 
-        packages_str = ""
+        python_pkg_list = []
         if (
             "python_packages" in build_params
             and not build_params["python_packages"] is None
         ):
-            for p in build_params["python_packages"]:
-                packages_str += p + " "
-        for p in DEFAULT_DEPENDENCIES:
-            packages_str += p + " "
+            python_pkg_list.extend(build_params["python_packages"])
+        python_pkg_list.extend(DEFAULT_DEPENDENCIES)
+        python_pkg_str = " ".join(python_pkg_list)
 
         with tempfile.TemporaryDirectory() as tmpdir:
             shutil.copyfile(
@@ -222,9 +221,9 @@ def build(args):
                 "--build-arg",
                 f"CUDA_SUFFIX={cuda_suffix}",
                 "--build-arg",
-                f"PACKAGES={packages_str}",
+                f"PACKAGES={python_pkg_str}",
                 "--build-arg",
-                f"SYSTEM_PACKAGES={system_str}",
+                f"SYSTEM_PACKAGES={system_pkg_str}",
                 "--build-arg",
                 f"SDK_VERSION={instill_version}",
                 "--platform",
