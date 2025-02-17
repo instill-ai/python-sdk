@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.1](https://github.com/instill-ai/python-sdk/compare/v0.16.0...v0.16.1) (2025-02-17)
+
+
+### Bug Fixes
+
+* **ray:** remove timezone for compatibility issue ([#253](https://github.com/instill-ai/python-sdk/issues/253)) ([d242f44](https://github.com/instill-ai/python-sdk/commit/d242f4456e75c2047e66c910714c143fc2be4025))
+
 ## [0.16.0](https://github.com/instill-ai/python-sdk/compare/v0.15.1...v0.16.0) (2024-12-06)
 
 
