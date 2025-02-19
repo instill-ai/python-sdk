@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.2](https://github.com/instill-ai/python-sdk/compare/v0.16.1...v0.16.2) (2025-02-19)
+
+
+### Bug Fixes
+
+* **ray:** add -y for apt package installation ([#255](https://github.com/instill-ai/python-sdk/issues/255)) ([d58787b](https://github.com/instill-ai/python-sdk/commit/d58787beafa4e18a825b84d8cecaccefe6ceaa93))
+
 ## [0.16.1](https://github.com/instill-ai/python-sdk/compare/v0.16.0...v0.16.1) (2025-02-17)
 
 
