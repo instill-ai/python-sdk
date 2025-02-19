@@ -10,7 +10,7 @@ RUN sudo apt-get update && sudo apt-get install curl vim -y
 
 ARG SYSTEM_PACKAGES
 RUN for package in ${SYSTEM_PACKAGES}; do \
-    sudo apt-get install $package; \
+    sudo apt-get install -y $package; \
     done;
 
 ARG PACKAGES
