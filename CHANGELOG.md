@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.17.0](https://github.com/instill-ai/python-sdk/compare/v0.16.2...v0.17.0) (2025-03-11)
+
+
+### Features
+
+* **ray:** add high scale config ([#261](https://github.com/instill-ai/python-sdk/issues/261)) ([ccf24b2](https://github.com/instill-ai/python-sdk/commit/ccf24b26b474dc4eac018bc183601ba9677a86d3))
+
+
+### Bug Fixes
+
+* **ray:** align autoscale config ([#263](https://github.com/instill-ai/python-sdk/issues/263)) ([c07b787](https://github.com/instill-ai/python-sdk/commit/c07b787ffba23eca592a08f9d2186401d67aca42))
+* **ray:** fix config not applied ([0bc15de](https://github.com/instill-ai/python-sdk/commit/0bc15deea3dc3e46d2e90ed48b828b575ce81c5d))
+* **ray:** override max replica ([7e456ca](https://github.com/instill-ai/python-sdk/commit/7e456ca59d51af3a62c99b53f1a7d162a1231dd8))
+
 ## [0.16.2](https://github.com/instill-ai/python-sdk/compare/v0.16.1...v0.16.2) (2025-02-19)
 
 
