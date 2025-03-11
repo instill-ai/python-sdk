@@ -10,6 +10,7 @@ from instill.helpers.const import (
     DEFAULT_MAX_ONGOING_REQUESTS,
     DEFAULT_MAX_QUEUED_REQUESTS,
     DEFAULT_RAY_ACTOR_OPTIONS,
+    ENV_IS_HIGH_SCALE_MODEL,
     ENV_IS_TEST_MODEL,
     ENV_MEMORY,
     ENV_NUM_OF_CPUS,
@@ -41,6 +42,11 @@ class InstillDeployable:
         if is_test_model is not None and is_test_model.lower() == "true":
             self._update_num_cpus(float(0.001))
             self._update_downscale_delay(60)
+
+        is_high_scale_model = os.getenv(ENV_IS_HIGH_SCALE_MODEL)
+        if is_high_scale_model is not None and is_high_scale_model.lower() == "true":
+            self._update_upscale_delay(120)
+            self._update_downscale_delay(600)
 
         memory = os.getenv(ENV_MEMORY)
         if memory is not None and memory != "":
@@ -180,6 +186,9 @@ class InstillDeployable:
         )
 
         return self
+
+    def _update_upscale_delay(self, upscale_delay_s: int):
+        self._autoscaling_config["upscale_delay_s"] = upscale_delay_s
 
     def _update_downscale_delay(self, downscale_delay_s: int):
         self._autoscaling_config["downscale_delay_s"] = downscale_delay_s
