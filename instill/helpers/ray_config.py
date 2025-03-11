@@ -191,9 +191,15 @@ class InstillDeployable:
 
     def _update_upscale_delay(self, upscale_delay_s: int):
         self._autoscaling_config["upscale_delay_s"] = upscale_delay_s
+        self._deployment = self._deployment.options(
+            autoscaling_config=self._autoscaling_config
+        )
 
     def _update_downscale_delay(self, downscale_delay_s: int):
         self._autoscaling_config["downscale_delay_s"] = downscale_delay_s
+        self._deployment = self._deployment.options(
+            autoscaling_config=self._autoscaling_config
+        )
 
     def get_deployment_handle(self):
         return self._deployment.bind()
