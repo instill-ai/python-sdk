@@ -38,18 +38,6 @@ class InstillDeployable:
         if num_of_cpus is not None and num_of_cpus != "":
             self._update_num_cpus(float(num_of_cpus))
 
-        is_test_model = os.getenv(ENV_IS_TEST_MODEL)
-        if is_test_model is not None and is_test_model.lower() == "true":
-            self._update_max_replicas(1000)
-            self._update_num_cpus(float(0.001))
-            self._update_upscale_delay(30)
-            self._update_downscale_delay(60)
-
-        is_high_scale_model = os.getenv(ENV_IS_HIGH_SCALE_MODEL)
-        if is_high_scale_model is not None and is_high_scale_model.lower() == "true":
-            self._update_upscale_delay(120)
-            self._update_downscale_delay(600)
-
         memory = os.getenv(ENV_MEMORY)
         if memory is not None and memory != "":
             self._update_memory(float(memory))
@@ -84,6 +72,18 @@ class InstillDeployable:
             self._update_max_replicas(int(num_of_max_replicas))
         else:
             self._update_max_replicas(1)
+
+        is_test_model = os.getenv(ENV_IS_TEST_MODEL)
+        if is_test_model is not None and is_test_model.lower() == "true":
+            self._update_max_replicas(1000)
+            self._update_num_cpus(float(0.001))
+            self._update_upscale_delay(30)
+            self._update_downscale_delay(60)
+
+        is_high_scale_model = os.getenv(ENV_IS_HIGH_SCALE_MODEL)
+        if is_high_scale_model is not None and is_high_scale_model.lower() == "true":
+            self._update_upscale_delay(120)
+            self._update_downscale_delay(600)
 
     def _determine_vram_usage(self, model_path: str, total_vram: str):
         warn(
