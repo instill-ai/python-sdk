@@ -40,7 +40,9 @@ class InstillDeployable:
 
         is_test_model = os.getenv(ENV_IS_TEST_MODEL)
         if is_test_model is not None and is_test_model.lower() == "true":
+            self._update_max_replicas(1000)
             self._update_num_cpus(float(0.001))
+            self._update_upscale_delay(30)
             self._update_downscale_delay(60)
 
         is_high_scale_model = os.getenv(ENV_IS_HIGH_SCALE_MODEL)
@@ -205,5 +207,6 @@ def instill_deployment(
         ray_actor_options=DEFAULT_RAY_ACTOR_OPTIONS,
         autoscaling_config=DEFAULT_AUTOSCALING_CONFIG,
         max_ongoing_requests=DEFAULT_MAX_ONGOING_REQUESTS,
+        max_concurrent_queries=DEFAULT_MAX_ONGOING_REQUESTS,
         max_queued_requests=DEFAULT_MAX_QUEUED_REQUESTS,
     )

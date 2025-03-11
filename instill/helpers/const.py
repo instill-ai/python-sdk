@@ -107,6 +107,7 @@ DEFAULT_RAY_ACTOR_OPTIONS = {
     "num_cpus": 0,
 }
 DEFAULT_AUTOSCALING_CONFIG = {
+    "target_num_ongoing_requests_per_replica": 2,
     "target_ongoing_requests": 2,
     "initial_replicas": 1,
     "min_replicas": 0,
@@ -124,8 +125,8 @@ DEFAULT_RUNTIME_ENV = {
         "PYTHONPATH": os.getcwd(),
     },
 }
-DEFAULT_MAX_ONGOING_REQUESTS = 5
-DEFAULT_MAX_QUEUED_REQUESTS = 10
+DEFAULT_MAX_ONGOING_REQUESTS = 6
+DEFAULT_MAX_QUEUED_REQUESTS = 100
 
 RAM_MINIMUM_RESERVE = 1  # GB
 RAM_UPSCALE_FACTOR = 1.25
