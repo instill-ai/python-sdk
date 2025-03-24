@@ -84,6 +84,8 @@ class InstillDeployable:
         if is_high_scale_model is not None and is_high_scale_model.lower() == "true":
             self._update_upscale_delay(120)
             self._update_downscale_delay(600)
+            self._update_target_ongoing_requests(4)
+            self._update_max_concurrent_requests(6)
 
     def _determine_vram_usage(self, model_path: str, total_vram: str):
         warn(
@@ -188,6 +190,21 @@ class InstillDeployable:
         )
 
         return self
+
+    def _update_target_ongoing_requests(self, target_ongoing_requests: int):
+        self._autoscaling_config["target_num_ongoing_requests_per_replica"] = (
+            target_ongoing_requests
+        )
+        self._autoscaling_config["target_ongoing_requests"] = target_ongoing_requests
+        self._deployment = self._deployment.options(
+            autoscaling_config=self._autoscaling_config
+        )
+
+    def _update_max_concurrent_requests(self, max_concurrent_requests: int):
+        self._deployment = self._deployment.options(
+            max_concurrent_queries=max_concurrent_requests,
+            max_ongoing_requests=max_concurrent_requests,
+        )
 
     def _update_upscale_delay(self, upscale_delay_s: int):
         self._autoscaling_config["upscale_delay_s"] = upscale_delay_s
