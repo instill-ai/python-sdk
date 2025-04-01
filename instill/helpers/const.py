@@ -8,7 +8,7 @@ PROMPT_ROLES = ["user", "assistant", "system"]
 IMAGE_INPUT_TYPE_URL = "image-url"
 IMAGE_INPUT_TYPE_BASE64 = "image-base64"
 
-HOST_URL_PROD = "api.instill.tech"
+HOST_URL_PROD = "api.instill-ai.com"
 
 EMBEDDING_FORMAT_FLOAT = "float"
 EMBEDDING_FORMAT_BASE64 = "base64"
