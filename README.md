@@ -117,7 +117,7 @@ Let's get started!
 
 ### Import packages
 
-To Form a pipeine, it required a `start` operator and a `end` operator, we have helper functions to create both
+To Form a pipeline, it required a `start` operator and a `end` operator, we have helper functions to create both
 
 ```python
 from instill.clients import InstillClient

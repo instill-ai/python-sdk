@@ -8,7 +8,7 @@ MODULES := $(wildcard $(PACKAGE)/*.py)
 all: doctor format check test mkdocs ## Run all tasks that determine CI status
 
 .PHONY: dev
-dev: install .clean-test ## Continuously run CI tasks when files chanage
+dev: install .clean-test ## Continuously run CI tasks when files change
 	poetry run sniffer
 
 # SYSTEM DEPENDENCIES #########################################################
@@ -34,7 +34,7 @@ $(DEPENDENCIES): poetry.lock
 
 ifndef CI
 poetry.lock: pyproject.toml
-	poetry lock --no-update
+	poetry lock
 	@ touch $@
 endif
 
