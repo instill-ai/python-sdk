@@ -18,7 +18,7 @@ watch_paths = ["instill", "tests"]
 class Options:
     group = int(time.time())  # unique per run
     show_coverage = False
-    rerun_args = None
+    rerun_args = (None, None, None)
 
     targets = [
         (("make", "test-unit", "DISABLE_COVERAGE=true"), "Unit Tests", True),
@@ -65,15 +65,15 @@ def run_targets(*args):
 
 def call(command, title, retry):
     """Run a command-line program and display the result."""
-    if Options.rerun_args:
+    if Options.rerun_args[0] is not None:
         command, title, retry = Options.rerun_args
-        Options.rerun_args = None
+        Options.rerun_args = (None, None, None)
         success = call(command, title, retry)
         if not success:
             return False
 
     print("")
-    print("$ %s" % " ".join(command))
+    print(f"$ {' '.join(command)}")
     failure = subprocess.call(command)
 
     if failure and retry:

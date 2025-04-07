@@ -200,10 +200,9 @@ class InstillDeployable:
             autoscaling_config=self._autoscaling_config
         )
 
-    def _update_max_concurrent_requests(self, max_concurrent_requests: int):
+    def _update_max_concurrent_requests(self, max_ongoing_requests: int):
         self._deployment = self._deployment.options(
-            max_concurrent_queries=max_concurrent_requests,
-            max_ongoing_requests=max_concurrent_requests,
+            max_ongoing_requests=max_ongoing_requests,
         )
 
     def _update_upscale_delay(self, upscale_delay_s: int):
@@ -230,6 +229,5 @@ def instill_deployment(
         ray_actor_options=DEFAULT_RAY_ACTOR_OPTIONS,
         autoscaling_config=DEFAULT_AUTOSCALING_CONFIG,
         max_ongoing_requests=DEFAULT_MAX_ONGOING_REQUESTS,
-        max_concurrent_queries=DEFAULT_MAX_ONGOING_REQUESTS,
         max_queued_requests=DEFAULT_MAX_QUEUED_REQUESTS,
     )

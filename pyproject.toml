@@ -1,22 +1,21 @@
 [tool.poetry]
 
+description = "python sdk for Instill AI products"
 name = "instill-sdk"
 version = "0.16.2"
-description = "python sdk for Instill AI products"
 
-packages = [{ include = "instill" }]
+packages = [{include = "instill"}]
 
-license = "MIT"
 authors = ["instill-ai <drop@instill.tech>"]
+license = "MIT"
 
-readme = "README.md"
-homepage = "https://pypi.org/project/instill-sdk"
 documentation = "https://instill-sdk.readthedocs.io"
+homepage = "https://pypi.org/project/instill-sdk"
+readme = "README.md"
 repository = "https://github.com/instill-ai/python-sdk"
 
 maintainers = ["Heiru Wu <heiru.wu@instill.tech>"]
 
-keywords = []
 classifiers = [
   "Development Status :: 1 - Planning",
   "Natural Language :: English",
@@ -24,76 +23,37 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.8",
 ]
+keywords = []
 
 [tool.poetry.dependencies]
 
-python = ">3.9.1,<3.12"
-grpcio = "^1.59.0"
-pyyaml = "^6.0.1"
-numpy = "^1.21.0"
-protobuf = "^4.24.2"
-requests = "^2.32.3"
-fastapi = "^0.109.2"
+fastapi = "^0.115.12"
 google-api-core = "^2.11.1"
 googleapis-common-protos = "^1.60.0"
+grpcio = "^1.59.0"
+jsonschema = "^4.20.0"
+numpy = "^1.21.0"
+pillow = "^10.1.0"
+protobuf = "^4.24.2"
 protoc-gen-openapiv2 = "^0.0.1"
 pydantic = ">=1.10.13"
-pillow = "^10.1.0"
-ray = { version = "2.21.0", extras = ["serve"] }
-jsonschema = "^4.20.0"
-types-requests = "^2.32.0.20240712"
+python = ">3.9.1,<3.12"
+pyyaml = "^6.0.1"
+ray = "^2.44.1"
+requests = "^2.32.3"
+starlette = "^0.46.1"
 types-protobuf = "^4.24.0.1"
 types-pyyaml = "^6.0.12.11"
-
-[tool.poetry.dev-dependencies]
-
-# Formatters
-black = "^24.3"
-tomli = "*"     # missing 'black' dependency
-isort = "^5.10"
-
-# Linters
-mypy = "^1.0"
-pydocstyle = "^6.1"
-pylint = "~2.15"
-wrapt = "*"         # missing 'pylint' dependency
-
-# Testing
-pytest = "^7.3"
-pytest-describe = "^2.0"
-pytest-expecter = "^3.0"
-pytest-random = "*"
-pytest-cov = "^4.1"
-freezegun = "*"
-
-# Reports
-coveragespace = "^6.0"
-
-# Documentation
-mkdocs = "~1.3"
-pygments = "^2.11.1"
-
-# Tooling
-pyinstaller = "5.13.1"
-sniffer = "*"
-MacFSEvents = { version = "*", platform = "darwin" }
-pync = { version = "*", platform = "darwin" }
-ipython = "^8.10.0"
-ipykernel = "^6.28.0"
-mypy-protobuf = "^3.5.0"
-grpcio-tools = "^1.54.2"
-datamodel-code-generator = "^0.25.2"
-jsonref = "^1.1.0"
-
-# Publish
-twine = "^4.0.2"
+types-requests = "^2.32.0.20240712"
+virtualenv = "^20.30.0"
+pkginfo = "^1.12.1.2"
+uvicorn = "^0.34.0"
 
 [tool.poetry.scripts]
 instill = "instill.helpers.cli:cli"
 
 [tool.black]
 
-quiet = true
 exclude = '''
 (
   /(
@@ -115,6 +75,7 @@ exclude = '''
                      # the root of the project
 )
 '''
+quiet = true
 
 [tool.isort]
 
@@ -122,10 +83,10 @@ profile = "black"
 skip_glob = ["**/protogen/*", "**/protobufs/*"]
 
 [tool.mypy]
+check_untyped_defs = true
 exclude = ['instill/resources/schema']
 ignore_missing_imports = true
 no_implicit_optional = true
-check_untyped_defs = true
 
 cache_dir = ".cache/mypy/"
 
@@ -150,5 +111,48 @@ markers = []
 
 [build-system]
 
-requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0"]
+
+[tool.poetry.group.dev.dependencies]
+
+# Formatters
+black = "^24.3" 
+isort = "^5.10" 
+tomli = "*" # missing 'black' dependency
+
+# Linters
+mypy = "^1.0" 
+pydocstyle = "^6.1" 
+pylint = "~2.15" 
+wrapt = "*" # missing 'pylint' dependency
+
+# Testing
+freezegun = "*"
+pytest = "^7.3"
+pytest-cov = "^4.1"
+pytest-describe = "^2.0"
+pytest-expecter = "^3.0"
+pytest-random = "*"
+
+# Reports
+coveragespace = "^6.0"
+
+# Documentation
+mkdocs = "~1.3"
+pygments = "^2.11.1"
+
+# Tooling
+MacFSEvents = {version = "*", platform = "darwin"}
+datamodel-code-generator = "^0.25.2"
+grpcio-tools = "^1.54.2"
+ipykernel = "^6.28.0"
+ipython = "^8.10.0"
+jsonref = "^1.1.0"
+mypy-protobuf = "^3.5.0"
+pyinstaller = "5.13.1"
+pync = {version = "*", platform = "darwin"}
+sniffer = "*"
+
+# Publish
+twine = "^4.0.2"
