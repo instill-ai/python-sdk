@@ -14,7 +14,7 @@ homepage = "https://pypi.org/project/instill-sdk"
 readme = "README.md"
 repository = "https://github.com/instill-ai/python-sdk"
 
-maintainers = ["Heiru Wu <heiru.wu@instill.tech>"]
+maintainers = ["Ping-Lin Chang <ping-lin.chang@instill.tech>"]
 
 classifiers = [
   "Development Status :: 1 - Planning",
@@ -34,6 +34,7 @@ grpcio = "^1.59.0"
 jsonschema = "^4.20.0"
 numpy = "^1.21.0"
 pillow = "^10.1.0"
+pkginfo = "^1.12.1.2"
 protobuf = "^4.24.2"
 protoc-gen-openapiv2 = "^0.0.1"
 pydantic = ">=1.10.13"
@@ -45,9 +46,8 @@ starlette = "^0.46.1"
 types-protobuf = "^4.24.0.1"
 types-pyyaml = "^6.0.12.11"
 types-requests = "^2.32.0.20240712"
-virtualenv = "^20.30.0"
-pkginfo = "^1.12.1.2"
 uvicorn = "^0.34.0"
+virtualenv = "^20.30.0"
 
 [tool.poetry.scripts]
 instill = "instill.helpers.cli:cli"
