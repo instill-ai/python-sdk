@@ -400,8 +400,32 @@ async def parse_task_completion_to_completion_input(
     if isinstance(request, Request):
         test_data: dict = await request.json()
 
+        # Initialize ChatInput with default values
         inp = CompletionInput()
+
+        # Required field
+        if "prompt" not in test_data or not test_data["prompt"]:
+            raise InvalidInputException("prompt is required")
         inp.prompt = test_data["prompt"]
+
+        # Override defaults only if valid values are provided in test_data
+        if "max-tokens" in test_data and test_data["max-tokens"] not in ["", None, 0]:
+            inp.max_tokens = int(test_data["max-tokens"])
+        if "n" in test_data and test_data["n"] not in ["", None, 0]:
+            inp.n = int(test_data["n"])
+        if "seed" in test_data and test_data["seed"] not in ["", None]:
+            inp.seed = int(test_data["seed"])
+        if "temperature" in test_data and test_data["temperature"] not in [
+            "",
+            None,
+            0.0,
+        ]:
+            inp.temperature = float(test_data["temperature"])
+        if "top-p" in test_data and test_data["top-p"] not in ["", None, 0]:
+            inp.top_p = int(test_data["top-p"])
+        if "stream" in test_data and test_data["stream"] not in ["", None]:
+            inp.stream = bool(int(test_data["stream"]))
+
         return [inp]
 
     input_list = []
@@ -552,8 +576,32 @@ async def parse_task_chat_to_chat_input(
     if isinstance(request, Request):
         test_data: dict = await request.json()
 
+        # Initialize ChatInput with default values
         inp = ChatInput()
+
+        # Required field
+        if "prompt" not in test_data or not test_data["prompt"]:
+            raise InvalidInputException("prompt is required")
         inp.messages = [{"role": "user", "content": test_data["prompt"]}]
+
+        # Override defaults only if valid values are provided in test_data
+        if "max-tokens" in test_data and test_data["max-tokens"] not in ["", None, 0]:
+            inp.max_tokens = int(test_data["max-tokens"])
+        if "n" in test_data and test_data["n"] not in ["", None, 0]:
+            inp.n = int(test_data["n"])
+        if "seed" in test_data and test_data["seed"] not in ["", None]:
+            inp.seed = int(test_data["seed"])
+        if "temperature" in test_data and test_data["temperature"] not in [
+            "",
+            None,
+            0.0,
+        ]:
+            inp.temperature = float(test_data["temperature"])
+        if "top-p" in test_data and test_data["top-p"] not in ["", None, 0]:
+            inp.top_p = int(test_data["top-p"])
+        if "stream" in test_data and test_data["stream"] not in ["", None]:
+            inp.stream = bool(int(test_data["stream"]))
+
         return [inp]
 
     input_list = []
@@ -751,17 +799,39 @@ async def parse_task_chat_to_multimodal_chat_input(
     if isinstance(request, Request):
         test_data: dict = await request.json()
 
+        # Initialize ChatMultiModalInput with default values
+        inp = ChatMultiModalInput()
+
+        # Required fields validation
+        if "prompt" not in test_data or not test_data["prompt"]:
+            raise InvalidInputException("prompt is required")
+        if "image-url" not in test_data or not test_data["image-url"]:
+            raise InvalidInputException("image-url is required")
+
+        # Set required fields
         test_prompt = test_data["prompt"]
         image_url = test_data["image-url"]
-
-        inp = ChatMultiModalInput()
-        inp.messages = [
-            {
-                "role": "user",
-                "content": test_prompt,
-            }
-        ]
+        inp.messages = [{"role": "user", "content": test_prompt}]
         inp.prompt_images = [[url_to_pil_image(image_url)]]
+
+        # Override defaults only if valid values are provided in test_data
+        if "max-tokens" in test_data and test_data["max-tokens"] not in ["", None, 0]:
+            inp.max_tokens = int(test_data["max-tokens"])
+        if "n" in test_data and test_data["n"] not in ["", None, 0]:
+            inp.n = int(test_data["n"])
+        if "seed" in test_data and test_data["seed"] not in ["", None]:
+            inp.seed = int(test_data["seed"])
+        if "temperature" in test_data and test_data["temperature"] not in [
+            "",
+            None,
+            0.0,
+        ]:
+            inp.temperature = float(test_data["temperature"])
+        if "top-p" in test_data and test_data["top-p"] not in ["", None, 0]:
+            inp.top_p = int(test_data["top-p"])
+        if "stream" in test_data and test_data["stream"] not in ["", None]:
+            inp.stream = bool(int(test_data["stream"]))
+
         return [inp]
 
     input_list = []

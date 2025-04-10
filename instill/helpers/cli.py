@@ -24,6 +24,7 @@ done
 
 
 def config_check_required_fields(c):
+    """Check if required fields are present in the model configuration."""
     if "build" not in c or c["build"] is None:
         raise ModelConfigException("build")
     if "gpu" not in c["build"] or c["build"]["gpu"] is None:
@@ -33,6 +34,7 @@ def config_check_required_fields(c):
 
 
 def cli():
+    """Command line interface for the Instill CLI tool."""
     if platform.machine() in ("i386", "AMD64", "x86_64"):
         default_platform = "amd64"
     else:
@@ -78,6 +80,13 @@ def cli():
         "-w",
         "--sdk-wheel",
         help="instill sdk wheel absolute path for debug purpose",
+        default=None,
+        required=False,
+    )
+    build_parser.add_argument(
+        "-e",
+        "--editable-project",
+        help="path to local Python project to install in editable mode (overrides --sdk-wheel if both are specified)",
         default=None,
         required=False,
     )
@@ -145,6 +154,7 @@ def cli():
 
 
 def init(_):
+    """Initialize a new model directory with template files."""
     shutil.copyfile(
         __file__.replace("cli.py", "init-templates/instill.yaml"),
         f"{os.getcwd()}/instill.yaml",
@@ -159,7 +169,154 @@ def init(_):
     )
 
 
+def find_project_root(start_path):
+    """Find the Python project root by looking for setup.py or pyproject.toml"""
+    current_path = os.path.abspath(start_path)
+    while current_path != "/":
+        if os.path.exists(os.path.join(current_path, "setup.py")) or os.path.exists(
+            os.path.join(current_path, "pyproject.toml")
+        ):
+            return current_path
+        current_path = os.path.dirname(current_path)
+    return None
+
+
+def is_vllm_version_compatible(version_parts):
+    """Check if vLLM version meets minimum requirements (v0.6.5)"""
+    return not (
+        version_parts[0] < 0
+        or (version_parts[0] == 0 and version_parts[1] < 6)
+        or (version_parts[0] == 0 and version_parts[1] == 6 and version_parts[2] < 5)
+    )
+
+
+def prepare_build_environment(build_params):
+    """Prepare environment variables and settings for the build process."""
+    python_version = build_params["python_version"].replace(".", "")
+    ray_version = ray.__version__
+    instill_sdk_version = instill.__version__
+
+    # Determine CUDA suffix
+    if not build_params["gpu"]:
+        cuda_suffix = ""
+    elif "cuda_version" in build_params and not build_params["cuda_version"] is None:
+        cuda_suffix = f'-cu{build_params["cuda_version"].replace(".", "")}'
+    else:
+        cuda_suffix = "-gpu"
+
+    # Prepare system packages
+    system_pkg_list = []
+    if (
+        "system_packages" in build_params
+        and not build_params["system_packages"] is None
+    ):
+        system_pkg_list.extend(build_params["system_packages"])
+    system_pkg_str = " ".join(system_pkg_list)
+
+    # Prepare Python packages
+    python_pkg_list = []
+    if (
+        "python_packages" in build_params
+        and build_params["python_packages"] is not None
+    ):
+        python_pkg_list.extend(build_params["python_packages"])
+    python_pkg_list.extend(DEFAULT_DEPENDENCIES)
+
+    return (
+        python_version,
+        ray_version,
+        instill_sdk_version,
+        cuda_suffix,
+        system_pkg_str,
+        python_pkg_list,
+    )
+
+
+def process_arm64_packages(python_pkg_list, target_arch):
+    """Process packages for ARM64 architecture, handling vLLM and other dependencies."""
+    dockerfile = "Dockerfile"
+    vllm_version = None
+
+    if target_arch == "arm64":
+        filtered_pkg_list = []
+        for pkg in python_pkg_list:
+            if pkg.startswith("vllm"):
+                # Transform version string from "0.6.4.post1" to "v0.6.4"
+                version = pkg.split("==")[1]
+                vllm_version = f"v{version.split('.post')[0]}"
+                # Check if version is at least v0.6.5
+                base_version = version.split(".post")[0]
+                version_parts = [int(x) for x in base_version.split(".")]
+                if not is_vllm_version_compatible(version_parts):
+                    raise ValueError(
+                        f"[Instill] vLLM version must be at least v0.6.5, got {vllm_version}"
+                    )
+            elif pkg.startswith("bitsandbytes"):
+                raise ValueError(
+                    "[Instill] bitsandbytes is not supported on ARM architecture"
+                )
+            else:
+                filtered_pkg_list.append(pkg)
+
+        python_pkg_list = filtered_pkg_list
+        if vllm_version is not None:
+            dockerfile = "Dockerfile.vllm.arm"
+
+    python_pkg_str = " ".join(python_pkg_list)
+    target_arch_suffix = "-aarch64" if target_arch == "arm64" else ""
+
+    return dockerfile, vllm_version, python_pkg_str, target_arch_suffix, python_pkg_list
+
+
+def prepare_build_command(args, tmpdir, dockerfile, build_vars):
+    """Prepare the Docker build command with all necessary arguments."""
+    vllm_version, target_arch_suffix, ray_version, python_version = build_vars[:4]
+    cuda_suffix, python_pkg_str, system_pkg_str, instill_sdk_version = build_vars[4:8]
+    instill_sdk_project_name = build_vars[8]
+
+    command = [
+        "docker",
+        "buildx",
+        "build",
+        "--progress=plain",
+        "--file",
+        f"{tmpdir}/{dockerfile}",
+        "--build-arg",
+        f"VLLM_VERSION={vllm_version}",
+        "--build-arg",
+        f"TARGET_ARCH_SUFFIX={target_arch_suffix}",
+        "--build-arg",
+        f"RAY_VERSION={ray_version}",
+        "--build-arg",
+        f"PYTHON_VERSION={python_version}",
+        "--build-arg",
+        f"CUDA_SUFFIX={cuda_suffix}",
+        "--build-arg",
+        f"PYTHON_PACKAGES={python_pkg_str}",
+        "--build-arg",
+        f"SYSTEM_PACKAGES={system_pkg_str}",
+        "--build-arg",
+        f"INSTILL_SDK_VERSION={instill_sdk_version}",
+        "--build-arg",
+        (
+            f"INSTILL_SDK_PROJECT_NAME={instill_sdk_project_name}"
+            if instill_sdk_project_name
+            else ""
+        ),
+        "--platform",
+        f"linux/{args.target_arch}",
+        "-t",
+        f"{args.name}:{args.tag}",
+        tmpdir,
+        "--load",
+    ]
+    if args.no_cache:
+        command.append("--no-cache")
+    return command
+
+
 def build(args):
+    """Build a Docker image for the model with specified configuration."""
     try:
         Logger.i("[Instill] Loading config file...")
         with open("instill.yaml", "r", encoding="utf8") as f:
@@ -167,90 +324,77 @@ def build(args):
             config = yaml.safe_load(f)
 
         config_check_required_fields(config)
-
         build_params = config["build"]
 
-        python_version = build_params["python_version"].replace(".", "")
-        ray_version = ray.__version__
-        instill_version = instill.__version__
+        # Prepare build environment
+        (
+            python_version,
+            ray_version,
+            instill_sdk_version,
+            cuda_suffix,
+            system_pkg_str,
+            python_pkg_list,
+        ) = prepare_build_environment(build_params)
 
-        if not build_params["gpu"]:
-            cuda_suffix = ""
-        elif (
-            "cuda_version" in build_params and not build_params["cuda_version"] is None
-        ):
-            cuda_suffix = f'-cu{build_params["cuda_version"].replace(".", "")}'
-        else:
-            cuda_suffix = "-gpu"
-
-        system_pkg_list = []
-        if (
-            "system_packages" in build_params
-            and not build_params["system_packages"] is None
-        ):
-            system_pkg_list.extend(build_params["system_packages"])
-        system_pkg_str = " ".join(system_pkg_list)
-
-        python_pkg_list = []
-        if (
-            "python_packages" in build_params
-            and not build_params["python_packages"] is None
-        ):
-            python_pkg_list.extend(build_params["python_packages"])
-        python_pkg_list.extend(DEFAULT_DEPENDENCIES)
-        python_pkg_str = " ".join(python_pkg_list)
+        # Process ARM64-specific packages
+        (
+            dockerfile,
+            vllm_version,
+            python_pkg_str,
+            target_arch_suffix,
+            python_pkg_list,
+        ) = process_arm64_packages(python_pkg_list, args.target_arch)
 
         with tempfile.TemporaryDirectory() as tmpdir:
+            # Copy files to tmpdir
             shutil.copyfile(
-                __file__.replace("cli.py", "init-templates/Dockerfile"),
-                f"{tmpdir}/Dockerfile",
+                __file__.replace("cli.py", f"docker/{dockerfile}"),
+                f"{tmpdir}/{dockerfile}",
             )
             shutil.copytree(os.getcwd(), tmpdir, dirs_exist_ok=True)
 
+            # Handle SDK wheel if provided
             if args.sdk_wheel is not None:
                 shutil.copyfile(
                     args.sdk_wheel,
-                    f"{tmpdir}/instill_sdk-{instill_version}dev-py3-none-any.whl",
+                    f"{tmpdir}/instill_sdk-{instill_sdk_version}dev-py3-none-any.whl",
                 )
 
-            target_arch_suffix = "-aarch64" if args.target_arch == "arm64" else ""
+            # Handle editable project installation
+            instill_sdk_project_name = None
+            if args.editable_project:
+                project_root = find_project_root(args.editable_project)
+                if project_root is None:
+                    raise FileNotFoundError(
+                        "[Instill] No Python project found at the specified path (missing setup.py or pyproject.toml)"
+                    )
+                instill_sdk_project_name = os.path.basename(project_root)
+                Logger.i(f"[Instill] Found Python project: {instill_sdk_project_name}")
+                shutil.copytree(
+                    project_root,
+                    f"{tmpdir}/{instill_sdk_project_name}",
+                    dirs_exist_ok=True,
+                )
 
             Logger.i("[Instill] Building model image...")
-            command = [
-                "docker",
-                "buildx",
-                "build",
-                "--build-arg",
-                f"TARGET_ARCH_SUFFIX={target_arch_suffix}",
-                "--build-arg",
-                f"RAY_VERSION={ray_version}",
-                "--build-arg",
-                f"PYTHON_VERSION={python_version}",
-                "--build-arg",
-                f"CUDA_SUFFIX={cuda_suffix}",
-                "--build-arg",
-                f"PACKAGES={python_pkg_str}",
-                "--build-arg",
-                f"SYSTEM_PACKAGES={system_pkg_str}",
-                "--build-arg",
-                f"SDK_VERSION={instill_version}",
-                "--platform",
-                f"linux/{args.target_arch}",
-                "-t",
-                f"{args.name}:{args.tag}",
-                tmpdir,
-                "--load",
+            build_vars = [
+                vllm_version,
+                target_arch_suffix,
+                ray_version,
+                python_version,
+                cuda_suffix,
+                python_pkg_str,
+                system_pkg_str,
+                instill_sdk_version,
+                instill_sdk_project_name,
             ]
-            if args.no_cache:
-                command.append("--no-cache")
-            subprocess.run(
-                command,
-                check=True,
-            )
+            command = prepare_build_command(args, tmpdir, dockerfile, build_vars)
+
+            subprocess.run(command, check=True)
             Logger.i(f"[Instill] {args.name}:{args.tag} built")
     except subprocess.CalledProcessError:
         Logger.e("[Instill] Build failed")
-    except Exception as e:
+    except (ValueError, FileNotFoundError, OSError, IOError) as e:
         Logger.e("[Instill] Prepare failed")
         Logger.e(e)
     finally:
@@ -258,33 +402,43 @@ def build(args):
 
 
 def push(args):
+    """Push a built model image to a Docker registry."""
+    registry = args.url
+    tagged_image = f"{registry}/{args.name}:{args.tag}"
     try:
-        registry = args.url
-
+        # Tag the image
         subprocess.run(
             [
                 "docker",
                 "tag",
                 f"{args.name}:{args.tag}",
-                f"{registry}/{args.name}:{args.tag}",
+                tagged_image,
             ],
             check=True,
         )
         Logger.i("[Instill] Pushing model image...")
-        subprocess.run(
-            ["docker", "push", f"{registry}/{args.name}:{args.tag}"], check=True
-        )
-        Logger.i(f"[Instill] {registry}/{args.name}:{args.tag} pushed")
+        # Push the image
+        subprocess.run(["docker", "push", tagged_image], check=True)
+        Logger.i(f"[Instill] {tagged_image} pushed")
     except subprocess.CalledProcessError:
         Logger.e("[Instill] Push failed")
-    except Exception as e:
+    except (ConnectionError, OSError, IOError) as e:
         Logger.e("[Instill] Prepare failed")
         Logger.e(e)
     finally:
+        # Remove the tagged image regardless of success/failure
+        try:
+            subprocess.run(
+                ["docker", "rmi", tagged_image],
+                check=True,
+            )
+        except subprocess.CalledProcessError:
+            Logger.e(f"[Instill] Failed to remove tagged image {tagged_image}")
         Logger.i("[Instill] Done")
 
 
 def run(args):
+    """Run inference on a model image."""
     docker_run = False
     try:
         name = uuid.uuid4()
@@ -359,7 +513,7 @@ def run(args):
         Logger.e("[Instill] Run failed")
     except subprocess.TimeoutExpired:
         Logger.e("[Instill] Deployment timeout")
-    except Exception as e:
+    except (RuntimeError, OSError, IOError) as e:
         Logger.e("[Instill] Prepare failed")
         Logger.e(e)
     finally:
