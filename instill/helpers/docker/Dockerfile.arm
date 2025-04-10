@@ -78,15 +78,15 @@ WORKDIR /home/ray
 COPY --chown=ray:users --exclude=model.py . .
 COPY --chown=ray:users model.py _model.py
 
-ARG INSTILL_SDK_PROJECT_NAME
-ARG INSTILL_SDK_VERSION
+ARG INSTILL_PYTHON_SDK_PROJECT_NAME
+ARG INSTILL_PYTHON_SDK_VERSION
 RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \    
-    if [ ! -z "$INSTILL_SDK_PROJECT_NAME" ]; then \
-    pip install -e ${INSTILL_SDK_PROJECT_NAME}; \
-    elif [ -f instill_sdk-${INSTILL_SDK_VERSION}dev-py3-none-any.whl ]; then \
-    pip install instill_sdk-${INSTILL_SDK_VERSION}dev-py3-none-any.whl; \
+    if [ ! -z "$INSTILL_PYTHON_SDK_PROJECT_NAME" ]; then \
+    pip install -e ${INSTILL_PYTHON_SDK_PROJECT_NAME}; \
+    elif [ -f instill_sdk-${INSTILL_PYTHON_SDK_VERSION}dev-py3-none-any.whl ]; then \
+    pip install instill_sdk-${INSTILL_PYTHON_SDK_VERSION}dev-py3-none-any.whl; \
     else \
-    pip install --default-timeout=1000 instill-sdk==${INSTILL_SDK_VERSION}; \
+    pip install --default-timeout=1000 instill-sdk==${INSTILL_PYTHON_SDK_VERSION}; \
     fi;
 
 USER ray
