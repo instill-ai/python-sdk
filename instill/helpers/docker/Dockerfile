@@ -29,12 +29,15 @@ RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
 
 COPY --chown=ray:users --exclude=model.py . .
 
-ARG SDK_VERSION
-RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \ 
-    if [ ! -f instill_sdk-${SDK_VERSION}dev-py3-none-any.whl ]; then \
-    pip install --default-timeout=1000 --no-cache-dir instill-sdk==${SDK_VERSION}; \
+ARG INSTILL_PYTHON_SDK_PROJECT_NAME
+ARG INSTILL_PYTHON_SDK_VERSION
+RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \    
+    if [ ! -z "$INSTILL_PYTHON_SDK_PROJECT_NAME" ]; then \
+    pip install -e ${INSTILL_PYTHON_SDK_PROJECT_NAME}; \
+    elif [ -f instill_sdk-${INSTILL_PYTHON_SDK_VERSION}dev-py3-none-any.whl ]; then \
+    pip install instill_sdk-${INSTILL_PYTHON_SDK_VERSION}dev-py3-none-any.whl; \
     else \
-    pip install instill_sdk-${SDK_VERSION}dev-py3-none-any.whl; \
-    fi
+    pip install --default-timeout=1000 instill-sdk==${INSTILL_PYTHON_SDK_VERSION}; \
+    fi;
 
 COPY --chown=ray:users model.py _model.py

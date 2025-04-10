@@ -25,7 +25,10 @@ from instill.helpers.const import (
     VisionInput,
 )
 from instill.helpers.errors import InvalidInputException, InvalidOutputShapeException
-from instill.helpers.protobufs.ray_pb2 import CallRequest, CallResponse
+from instill.helpers.protobufs.model_ray_user_defined_pb2 import (
+    CallRequest,
+    CallResponse,
+)
 
 
 def base64_to_pil_image(base64_str):

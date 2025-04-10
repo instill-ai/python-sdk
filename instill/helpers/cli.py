@@ -51,15 +51,7 @@ def cli():
     build_parser.set_defaults(func=build)
     build_parser.add_argument(
         "name",
-        help="user and model namespace, in the format of <user-id>/<model-id>",
-    )
-    build_parser.add_argument(
-        "-t",
-        "--tag",
-        help="tag for the model image, default to `latest`",
-        # default=hashlib.sha256().hexdigest(),
-        default="latest",
-        required=False,
+        help="user and model namespace, in the format of <user-id>/<model-id>[:tag] (default tag is 'latest')",
     )
     build_parser.add_argument(
         "-n",
@@ -96,7 +88,7 @@ def cli():
     push_parser.set_defaults(func=push)
     push_parser.add_argument(
         "name",
-        help="user and model namespace, in the format of <user-id>/<model-id>",
+        help="user and model namespace, in the format of <user-id>/<model-id>[:tag] (default tag is 'latest')",
     )
     push_parser.add_argument(
         "-u",
@@ -105,20 +97,13 @@ def cli():
         default="api.instill.tech",
         required=False,
     )
-    push_parser.add_argument(
-        "-t",
-        "--tag",
-        help="tag for the model image, default to `latest`",
-        default="latest",
-        required=False,
-    )
 
     # run
     run_parser = subcommands.add_parser("run", help="Run inference on model image")
     run_parser.set_defaults(func=run)
     run_parser.add_argument(
         "name",
-        help="user and model namespace, in the format of <user-id>/<model-id>",
+        help="user and model namespace, in the format of <user-id>/<model-id>[:tag] (default tag is 'latest')",
     )
     run_parser.add_argument(
         "-g",
@@ -133,13 +118,6 @@ def cli():
         help="number of gpus to use if gpu flag is on, default to 1",
         type=int,
         default=1,
-        required=False,
-    )
-    run_parser.add_argument(
-        "-t",
-        "--tag",
-        help="tag for the model image, default to `latest`",
-        default="latest",
         required=False,
     )
     run_parser.add_argument(
@@ -260,7 +238,7 @@ def process_arm64_packages(python_pkg_list, target_arch):
 
         python_pkg_list = filtered_pkg_list
         if vllm_version is not None:
-            dockerfile = "Dockerfile.vllm.arm"
+            dockerfile = "Dockerfile.arm"
 
     python_pkg_str = " ".join(python_pkg_list)
     target_arch_suffix = "-aarch64" if target_arch == "arm64" else ""
@@ -268,11 +246,21 @@ def process_arm64_packages(python_pkg_list, target_arch):
     return dockerfile, vllm_version, python_pkg_str, target_arch_suffix, python_pkg_list
 
 
+def parse_image_name(name):
+    """Parse image name to extract name and tag."""
+    if ":" in name:
+        image, tag = name.split(":", 1)
+        return image, tag
+    return name, "latest"
+
+
 def prepare_build_command(args, tmpdir, dockerfile, build_vars):
     """Prepare the Docker build command with all necessary arguments."""
     vllm_version, target_arch_suffix, ray_version, python_version = build_vars[:4]
     cuda_suffix, python_pkg_str, system_pkg_str, instill_sdk_version = build_vars[4:8]
-    instill_sdk_project_name = build_vars[8]
+    instill_python_sdk_project_name = build_vars[8]
+
+    image_name, tag = parse_image_name(args.name)
 
     command = [
         "docker",
@@ -282,36 +270,45 @@ def prepare_build_command(args, tmpdir, dockerfile, build_vars):
         "--file",
         f"{tmpdir}/{dockerfile}",
         "--build-arg",
-        f"VLLM_VERSION={vllm_version}",
-        "--build-arg",
         f"TARGET_ARCH_SUFFIX={target_arch_suffix}",
         "--build-arg",
         f"RAY_VERSION={ray_version}",
         "--build-arg",
         f"PYTHON_VERSION={python_version}",
         "--build-arg",
-        f"CUDA_SUFFIX={cuda_suffix}",
-        "--build-arg",
         f"PYTHON_PACKAGES={python_pkg_str}",
         "--build-arg",
-        f"SYSTEM_PACKAGES={system_pkg_str}",
-        "--build-arg",
-        f"INSTILL_SDK_VERSION={instill_sdk_version}",
-        "--build-arg",
-        (
-            f"INSTILL_SDK_PROJECT_NAME={instill_sdk_project_name}"
-            if instill_sdk_project_name
-            else ""
-        ),
+        f"INSTILL_PYTHON_SDK_VERSION={instill_sdk_version}",
         "--platform",
         f"linux/{args.target_arch}",
         "-t",
-        f"{args.name}:{args.tag}",
+        f"{image_name}:{tag}",
         tmpdir,
         "--load",
     ]
+
+    # Add conditional build args
     if args.no_cache:
         command.append("--no-cache")
+
+    if vllm_version:
+        command.extend(["--build-arg", f"VLLM_VERSION={vllm_version}"])
+
+    if cuda_suffix:
+        command.extend(["--build-arg", f"CUDA_SUFFIX={cuda_suffix}"])
+
+    if system_pkg_str:
+        command.extend(["--build-arg", f"SYSTEM_PACKAGES={system_pkg_str}"])
+
+    command.extend(
+        [
+            "--build-arg",
+            f"INSTILL_PYTHON_SDK_PROJECT_NAME={instill_python_sdk_project_name}",
+        ]
+        if instill_python_sdk_project_name
+        else []
+    )
+
     return command
 
 
@@ -391,7 +388,8 @@ def build(args):
             command = prepare_build_command(args, tmpdir, dockerfile, build_vars)
 
             subprocess.run(command, check=True)
-            Logger.i(f"[Instill] {args.name}:{args.tag} built")
+            image_name, tag = parse_image_name(args.name)
+            Logger.i(f"[Instill] {image_name}:{tag} built")
     except subprocess.CalledProcessError:
         Logger.e("[Instill] Build failed")
     except (ValueError, FileNotFoundError, OSError, IOError) as e:
@@ -404,14 +402,15 @@ def build(args):
 def push(args):
     """Push a built model image to a Docker registry."""
     registry = args.url
-    tagged_image = f"{registry}/{args.name}:{args.tag}"
+    image_name, tag = parse_image_name(args.name)
+    tagged_image = f"{registry}/{image_name}:{tag}"
     try:
         # Tag the image
         subprocess.run(
             [
                 "docker",
                 "tag",
-                f"{args.name}:{args.tag}",
+                f"{image_name}:{tag}",
                 tagged_image,
             ],
             check=True,
@@ -442,6 +441,7 @@ def run(args):
     docker_run = False
     try:
         name = uuid.uuid4()
+        image_name, tag = parse_image_name(args.name)
         Logger.i("[Instill] Starting model image...")
         if not args.gpu:
             subprocess.run(
@@ -453,7 +453,7 @@ def run(args):
                     "--shm-size=4gb",
                     "--name",
                     str(name),
-                    f"{args.name}:{args.tag}",
+                    f"{image_name}:{tag}",
                     "serve",
                     "run",
                     "_model:entrypoint",
@@ -465,7 +465,7 @@ def run(args):
             subprocess.run(
                 f"docker run \
                     --rm -d --shm-size=4gb --name {str(name)} --gpus all \
-                    {args.name}:{args.tag} /bin/bash -c \
+                    {image_name}:{tag} /bin/bash -c \
                         \"serve build _model:entrypoint -o serve.yaml && \
                         sed -i 's/app1/default/' serve.yaml && \
                         sed -i 's/num_cpus: 0.0/num_gpus: {args.num_of_gpus}/' serve.yaml && \
