@@ -2,7 +2,6 @@ from typing import Union
 
 import grpc
 
-import instill.protogen.app.app.v1alpha.app_public_service_pb2_grpc as app_service
 import instill.protogen.artifact.artifact.v1alpha.artifact_public_service_pb2_grpc as artifact_service
 import instill.protogen.core.mgmt.v1beta.mgmt_public_service_pb2_grpc as mgmt_service
 import instill.protogen.model.model.v1alpha.model_public_service_pb2_grpc as model_service
@@ -50,7 +49,6 @@ class InstillInstance:
             pipeline_service.PipelinePublicServiceStub,
             mgmt_service.MgmtPublicServiceStub,
             artifact_service.ArtifactPublicServiceStub,
-            app_service.AppPublicServiceStub,
         ] = stub(channel)
         if async_enabled:
             self.async_channel: grpc.Channel = async_channel
@@ -59,5 +57,4 @@ class InstillInstance:
                 pipeline_service.PipelinePublicServiceStub,
                 mgmt_service.MgmtPublicServiceStub,
                 artifact_service.ArtifactPublicServiceStub,
-                app_service.AppPublicServiceStub,
             ] = stub(async_channel)
