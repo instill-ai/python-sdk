@@ -66,7 +66,6 @@ class InstillClient:
                 "Instill Artifact is not serving, Artifact functionalities will not work"
             )
 
-
     def _lookup_namespace_uid(self, namespace_id: str):
         resp = self.mgmt.check_namespace(namespace_id)
         if resp.type == mgmt_interface.CheckNamespaceAdminResponse.NAMESPACE_USER:
