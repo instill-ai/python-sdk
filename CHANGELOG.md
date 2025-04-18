@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.17.0](https://github.com/instill-ai/python-sdk/compare/v0.16.2...v0.17.0) (2025-04-15)
+
+
+### Features
+
+* **cli:** enhance CLI functionality and add Docker support ([#268](https://github.com/instill-ai/python-sdk/issues/268)) ([8fa8fed](https://github.com/instill-ai/python-sdk/commit/8fa8fedd054a14641ee98f8527722060bc41f654))
+* **ray:** add high scale config ([#261](https://github.com/instill-ai/python-sdk/issues/261)) ([ccf24b2](https://github.com/instill-ai/python-sdk/commit/ccf24b26b474dc4eac018bc183601ba9677a86d3))
+
+
+### Bug Fixes
+
+* **client, const:** add secure argument to latest SDK client ([#271](https://github.com/instill-ai/python-sdk/issues/271)) ([1355086](https://github.com/instill-ai/python-sdk/commit/1355086db4b7ed04bda02b1ac222424b9c49534d))
+* **ray:** align autoscale config ([#263](https://github.com/instill-ai/python-sdk/issues/263)) ([c07b787](https://github.com/instill-ai/python-sdk/commit/c07b787ffba23eca592a08f9d2186401d67aca42))
+* **ray:** fix config not applied ([0bc15de](https://github.com/instill-ai/python-sdk/commit/0bc15deea3dc3e46d2e90ed48b828b575ce81c5d))
+* **ray:** override max replica ([7e456ca](https://github.com/instill-ai/python-sdk/commit/7e456ca59d51af3a62c99b53f1a7d162a1231dd8))
+* **ray:** update high scale model config ([#264](https://github.com/instill-ai/python-sdk/issues/264)) ([1086e6d](https://github.com/instill-ai/python-sdk/commit/1086e6d98be3831562fa9b8650442a3c598412cb))
+
 ## [0.16.2](https://github.com/instill-ai/python-sdk/compare/v0.16.1...v0.16.2) (2025-02-19)
 
 
