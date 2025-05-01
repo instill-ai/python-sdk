@@ -2,11 +2,12 @@
 import base64
 import io
 import re
-from typing import Dict, List, Union
+from typing import Dict, Iterable, List, Union
 
 import numpy as np
 import requests
 from google.protobuf import json_format, struct_pb2
+from google.protobuf.struct_pb2 import Struct
 from PIL import Image
 from starlette.requests import Request
 
@@ -25,7 +26,10 @@ from instill.helpers.const import (
     VisionInput,
 )
 from instill.helpers.errors import InvalidInputException, InvalidOutputShapeException
-from instill.helpers.protobufs.user_defined_pb2 import CallRequest, CallResponse
+from instill.protogen.model.ray.v1alpha.user_defined_pb2 import (
+    CallRequest,
+    CallResponse,
+)
 
 
 def base64_to_pil_image(base64_str):
@@ -54,9 +58,9 @@ def snake_to_lower_camel(name):
     return components[0] + "".join(x.title() for x in components[1:])
 
 
-def dict_to_struct(dict_data):
+def dict_to_struct(dict_data: Dict) -> Struct:
     """Convert Dict to Struct"""
-    struct_pb = struct_pb2.Struct()
+    struct_pb: Struct = struct_pb2.Struct()
     json_format.ParseDict(dict_data, struct_pb)
 
     return struct_pb
@@ -66,7 +70,7 @@ async def _parse_vision_task_to_vision_input(
     request: Union[CallRequest, Request],
 ) -> List[VisionInput]:
 
-    def extract_data(data: dict) -> VisionInput:
+    def extract_data(data: Dict) -> VisionInput:
         image_type = data["type"]
 
         inp = VisionInput()
@@ -81,7 +85,7 @@ async def _parse_vision_task_to_vision_input(
 
     # http test input
     if isinstance(request, Request):
-        data: dict = await request.json()
+        data = await request.json()
 
         if "type" not in data:
             data["type"] = IMAGE_INPUT_TYPE_URL
@@ -114,10 +118,9 @@ def construct_task_classification_output(
     if not len(categories) == len(scores):
         raise InvalidOutputShapeException
 
-    task_outputs = []
+    task_outputs: List[Union[Struct, Dict]] = []
     for category, score in zip(categories, scores):
-        data = {"category": str(category), "score": float(score)}
-
+        data: Dict = {"category": str(category), "score": float(score)}
         if isinstance(request, Request):
             task_outputs.append({"data": data})
         else:
@@ -126,7 +129,11 @@ def construct_task_classification_output(
     if isinstance(request, Request):
         return task_outputs
 
-    return CallResponse(task_outputs=task_outputs)
+    # Convert any remaining dictionaries to Struct objects
+    struct_outputs = [
+        o if isinstance(o, Struct) else dict_to_struct(o) for o in task_outputs
+    ]
+    return CallResponse(task_outputs=struct_outputs)
 
 
 async def parse_task_detection_to_vision_input(
@@ -153,10 +160,10 @@ def construct_task_detection_output(
     if not len(categories) == len(scores) == len(bounding_boxes):
         raise InvalidOutputShapeException
 
-    task_outputs = []
+    task_outputs: List[Union[Struct, Dict]] = []
     for category, score, bbox in zip(categories, scores, bounding_boxes):
-        data = {}
-        objects = []
+        data: Dict = {}
+        objects: List[Dict] = []
         for cat, sc, bb in zip(category, score, bbox):
             bb_dict = {
                 "top": float(bb[1]),
@@ -178,7 +185,11 @@ def construct_task_detection_output(
     if isinstance(request, Request):
         return task_outputs
 
-    return CallResponse(task_outputs=task_outputs)
+    # Convert any remaining dictionaries to Struct objects
+    struct_outputs = [
+        o if isinstance(o, Struct) else dict_to_struct(o) for o in task_outputs
+    ]
+    return CallResponse(task_outputs=struct_outputs)
 
 
 async def parse_task_ocr_to_vision_input(
@@ -205,10 +216,10 @@ def construct_task_ocr_output(
     if not len(texts) == len(scores) == len(bounding_boxes):
         raise InvalidOutputShapeException
 
-    task_outputs = []
+    task_outputs: List[Union[Struct, Dict]] = []
     for text, score, bbox in zip(texts, scores, bounding_boxes):
-        data = {}
-        objects = []
+        data: Dict = {}
+        objects: List[Dict] = []
         for txt, sc, bb in zip(text, score, bbox):
             bb_dict = {
                 "top": float(bb[1]),
@@ -230,7 +241,11 @@ def construct_task_ocr_output(
     if isinstance(request, Request):
         return task_outputs
 
-    return CallResponse(task_outputs=task_outputs)
+    # Convert any remaining dictionaries to Struct objects
+    struct_outputs = [
+        o if isinstance(o, Struct) else dict_to_struct(o) for o in task_outputs
+    ]
+    return CallResponse(task_outputs=struct_outputs)
 
 
 async def parse_task_instance_segmentation_to_vision_input(
@@ -259,10 +274,10 @@ def construct_task_instance_segmentation_output(
     if not len(rles) == len(categories) == len(scores) == len(bounding_boxes):
         raise InvalidOutputShapeException
 
-    task_outputs = []
+    task_outputs: List[Union[Struct, Dict]] = []
     for rle, category, score, bbox in zip(rles, categories, scores, bounding_boxes):
-        data = {}
-        objects = []
+        data: Dict = {}
+        objects: List[Dict] = []
         for r, cat, sc, bb in zip(rle, category, score, bbox):
             bb_dict = {
                 "top": float(bb[1]),
@@ -289,7 +304,11 @@ def construct_task_instance_segmentation_output(
     if isinstance(request, Request):
         return task_outputs
 
-    return CallResponse(task_outputs=task_outputs)
+    # Convert any remaining dictionaries to Struct objects
+    struct_outputs = [
+        o if isinstance(o, Struct) else dict_to_struct(o) for o in task_outputs
+    ]
+    return CallResponse(task_outputs=struct_outputs)
 
 
 async def parse_task_semantic_segmentation_to_vision_input(
@@ -314,10 +333,10 @@ def construct_task_semantic_segmentation_output(
     if not len(rles) == len(categories):
         raise InvalidOutputShapeException
 
-    task_outputs = []
+    task_outputs: List[Union[Struct, Dict]] = []
     for rle, category in zip(rles, categories):
-        data = {}
-        objects = []
+        data: Dict = {}
+        objects: List[Dict] = []
         for r, cat in zip(rle, category):
             objects.append({"rle": str(r), "category": str(cat)})
 
@@ -331,7 +350,11 @@ def construct_task_semantic_segmentation_output(
     if isinstance(request, Request):
         return task_outputs
 
-    return CallResponse(task_outputs=task_outputs)
+    # Convert any remaining dictionaries to Struct objects
+    struct_outputs = [
+        o if isinstance(o, Struct) else dict_to_struct(o) for o in task_outputs
+    ]
+    return CallResponse(task_outputs=struct_outputs)
 
 
 async def parse_task_keypoint_to_vision_input(
@@ -360,10 +383,10 @@ def construct_task_keypoint_output(
     if not len(keypoints) == len(scores) == len(bounding_boxes):
         raise InvalidOutputShapeException
 
-    task_outputs = []
+    task_outputs: List[Union[Struct, Dict]] = []
     for keypoint, score, bbox in zip(keypoints, scores, bounding_boxes):
-        data = {}
-        objects = []
+        data: Dict = {}
+        objects: List[Dict] = []
         for kps, sc, bb in zip(keypoint, score, bbox):
             point_list = []
             for kp in kps:
@@ -389,7 +412,11 @@ def construct_task_keypoint_output(
     if isinstance(request, Request):
         return task_outputs
 
-    return CallResponse(task_outputs=task_outputs)
+    # Convert any remaining dictionaries to Struct objects
+    struct_outputs = [
+        o if isinstance(o, Struct) else dict_to_struct(o) for o in task_outputs
+    ]
+    return CallResponse(task_outputs=struct_outputs)
 
 
 async def parse_task_completion_to_completion_input(
@@ -398,7 +425,7 @@ async def parse_task_completion_to_completion_input(
 
     # http test input
     if isinstance(request, Request):
-        test_data: dict = await request.json()
+        test_data: Dict = await request.json()
 
         # Initialize ChatInput with default values
         inp = CompletionInput()
@@ -517,13 +544,13 @@ def construct_task_completion_output(
         if not len(completion_tokens) == len(prompt_tokens) == len(total_tokens):
             raise InvalidOutputShapeException
 
-    task_outputs = []
+    task_outputs: List[Union[Struct, Dict]] = []
     # data
     for finish_reason_list, index_list, created_timestamp_list, content_list in zip(
         finish_reasons, indexes, created_timestamps, contents
     ):
-        data = {}
-        choices = []
+        data: Dict = {}
+        choices: List[Dict] = []
         for (
             finish_reason,
             index,
@@ -562,10 +589,11 @@ def construct_task_completion_output(
     if isinstance(request, Request):
         return task_outputs
 
-    for i, o in enumerate(task_outputs):
-        task_outputs[i] = dict_to_struct(o)
-
-    return CallResponse(task_outputs=task_outputs)
+    # Convert any remaining dictionaries to Struct objects
+    struct_outputs = [
+        o if isinstance(o, Struct) else dict_to_struct(o) for o in task_outputs
+    ]
+    return CallResponse(task_outputs=struct_outputs)
 
 
 async def parse_task_chat_to_chat_input(
@@ -574,7 +602,7 @@ async def parse_task_chat_to_chat_input(
 
     # http test input
     if isinstance(request, Request):
-        test_data: dict = await request.json()
+        test_data: Dict = await request.json()
 
         # Initialize ChatInput with default values
         inp = ChatInput()
@@ -604,7 +632,7 @@ async def parse_task_chat_to_chat_input(
 
         return [inp]
 
-    input_list = []
+    input_list: List[ChatInput] = []
     for task_input in request.task_inputs:
         task_input_dict = json_format.MessageToDict(task_input)
 
@@ -740,13 +768,13 @@ def construct_task_chat_output(
         if not len(completion_tokens) == len(prompt_tokens) == len(total_tokens):
             raise InvalidOutputShapeException
 
-    task_outputs = []
+    task_outputs: List[Union[Struct, Dict]] = []
     # data
     for finish_reason_list, index_list, created_timestamp_list, message_list in zip(
         finish_reasons, indexes, created_timestamps, messages
     ):
-        data = {}
-        choices = []
+        data: Dict = {}
+        choices: List[Dict] = []
         for (
             finish_reason,
             index,
@@ -785,10 +813,11 @@ def construct_task_chat_output(
     if isinstance(request, Request):
         return task_outputs
 
-    for i, o in enumerate(task_outputs):
-        task_outputs[i] = dict_to_struct(o)
-
-    return CallResponse(task_outputs=task_outputs)
+    # Convert any remaining dictionaries to Struct objects
+    struct_outputs = [
+        o if isinstance(o, Struct) else dict_to_struct(o) for o in task_outputs
+    ]
+    return CallResponse(task_outputs=struct_outputs)
 
 
 async def parse_task_chat_to_multimodal_chat_input(
@@ -797,7 +826,7 @@ async def parse_task_chat_to_multimodal_chat_input(
 
     # http test input
     if isinstance(request, Request):
-        test_data: dict = await request.json()
+        test_data: Dict = await request.json()
 
         # Initialize ChatMultiModalInput with default values
         inp = ChatMultiModalInput()
@@ -931,7 +960,7 @@ async def parse_task_text_to_image_input(
 
     # http test input
     if isinstance(request, Request):
-        data: dict = await request.json()
+        data: Dict = await request.json()
 
         inp = TextToImageInput()
         inp.prompt = data["prompt"]
@@ -990,10 +1019,10 @@ def construct_task_text_to_image_output(
     if len(images) > 0 and not len(finish_reasons[0]) == len(images[0]):
         raise InvalidOutputShapeException
 
-    task_outputs = []
+    task_outputs: List[Union[Struct, Dict]] = []
     for imgs, finishes in zip(images, finish_reasons):
-        data = {}
-        choices = []
+        data: Dict = {}
+        choices: List[Dict] = []
 
         for img, finish in zip(imgs, finishes):
             choices.append(
@@ -1008,101 +1037,11 @@ def construct_task_text_to_image_output(
     if isinstance(request, Request):
         return task_outputs
 
-    for i, o in enumerate(task_outputs):
-        task_outputs[i] = dict_to_struct(o)
-
-    return CallResponse(task_outputs=task_outputs)
-
-
-# async def parse_task_image_to_image_input(
-#     request: Union[CallRequest, Request],
-# ) -> List[ImageToImageInput]:
-
-#     # http test input
-#     if isinstance(request, Request):
-#         data: dict = await request.json()
-
-#         test_prompt = data["prompt"]
-#         test_image_url = data["image_url"]
-
-#         inp = ImageToImageInput()
-#         inp.prompt = test_prompt
-#         inp.prompt_image = url_to_pil_image(test_image_url)
-
-#         return [inp]
-
-#     input_list = []
-#     for task_input in request.task_inputs:
-#         task_input_dict = json_format.MessageToDict(task_input)["ImageToImage"]
-
-#         inp = ImageToImageInput()
-
-#         # prompt
-#         inp.prompt = task_input_dict["prompt"]
-
-#         # prompt images
-#         if (
-#             "Promptimage-url" in task_input_dict["Type"]
-#             and "Promptimage-base64" in task_input_dict["Type"]
-#         ) or (
-#             "Promptimage-url" not in task_input_dict["Type"]
-#             and "Promptimage-base64" not in task_input_dict["Type"]
-#         ):
-#             raise InvalidInputException
-#         if "Promptimage-url" in task_input_dict["Type"]:
-#             inp.prompt_image = url_to_pil_image(
-#                 task_input_dict["Type"]["Promptimage-url"]
-#             )
-#         elif "Promptimage-base64" in task_input_dict["Type"]:
-#             inp.prompt_image = base64_to_pil_image(
-#                 task_input_dict["Type"]["Promptimage-base64"]
-#             )
-
-#         # steps
-#         if "steps" in task_input_dict:
-#             inp.steps = int(task_input_dict["steps"])
-
-#         # cfg_scale
-#         if "cfg_scale" in task_input_dict:
-#             inp.cfg_scale = task_input_dict["cfg_scale"]
-
-#         # samples
-#         if "samples" in task_input_dict:
-#             inp.samples = int(task_input_dict["samples"])
-
-#         # seed
-#         if "seed" in task_input_dict:
-#             inp.seed = int(task_input_dict["seed"])
-
-#         input_list.append(inp)
-
-#     return input_list
-
-
-# def construct_task_image_to_image_output(
-#     request: Union[CallRequest, Request],
-#     images: List[List[str]],
-# ) -> Union[CallResponse, List[List[str]]]:
-#     """Construct trigger output for keypoint task
-
-#     Args:
-#         images (List[List[str]]): for each input prompt, the generated images with the length of `samples`
-#     """
-
-#     if isinstance(request, Request):
-#         return images
-
-#     task_outputs = []
-#     for imgs in images:
-#         task_outputs.append(
-#             protobuf_to_struct(
-#                 modelpb.TaskOutput(
-#                     image_to_image=imagetoimagepb.ImageToImageOutput(images=imgs)
-#                 )
-#             )
-#         )
-
-#     return CallResponse(task_outputs=task_outputs)
+    # Convert any remaining dictionaries to Struct objects
+    struct_outputs = [
+        o if isinstance(o, Struct) else dict_to_struct(o) for o in task_outputs
+    ]
+    return CallResponse(task_outputs=struct_outputs)
 
 
 async def parse_task_embedding_to_text_embedding_input(
@@ -1111,7 +1050,7 @@ async def parse_task_embedding_to_text_embedding_input(
 
     # http test input
     if isinstance(request, Request):
-        test_data: dict = await request.json()
+        test_data: Dict = await request.json()
 
         test_prompt = test_data["prompt"]
 
@@ -1168,7 +1107,7 @@ async def parse_task_embedding_to_image_embedding_input(
 
     # http test input
     if isinstance(request, Request):
-        test_data: dict = await request.json()
+        test_data: Dict = await request.json()
 
         test_img = test_data["image"]
 
@@ -1227,7 +1166,7 @@ async def parse_task_embedding_to_multimodal_embedding_input(
 
     # http test input
     if isinstance(request, Request):
-        test_data: dict = await request.json()
+        test_data: Dict = await request.json()
 
         inp = MultimodalEmbeddingInput()
         inp.contents = []
@@ -1309,13 +1248,12 @@ def construct_task_embedding_output(
     ):
         raise InvalidOutputShapeException
 
-    task_outputs = []
-    # data
+    task_outputs: List[Union[Struct, Dict]] = []
     for index_list, created_timestamp_list, embedding_list in zip(
         indexes, created_timestamps, embeddings
     ):
-        data = {}
-        embeds = []
+        data: Dict = {}
+        embeds: List[Dict] = []
         for (
             index,
             created_timestamp,
@@ -1336,10 +1274,11 @@ def construct_task_embedding_output(
     if isinstance(request, Request):
         return task_outputs
 
-    for i, o in enumerate(task_outputs):
-        task_outputs[i] = dict_to_struct(o)
-
-    return CallResponse(task_outputs=task_outputs)
+    # Convert any remaining dictionaries to Struct objects
+    struct_outputs = [
+        o if isinstance(o, Struct) else dict_to_struct(o) for o in task_outputs
+    ]
+    return CallResponse(task_outputs=struct_outputs)
 
 
 async def parse_custom_input(
@@ -1348,7 +1287,7 @@ async def parse_custom_input(
 
     # http test input
     if isinstance(request, Request):
-        test_data: dict = await request.json()
+        test_data: Dict = await request.json()
 
         return [test_data]
 
@@ -1368,7 +1307,8 @@ def construct_custom_output(
     if isinstance(request, Request):
         return outputs
 
-    for i, o in enumerate(outputs):
-        outputs[i] = dict_to_struct(o)
-
-    return CallResponse(task_outputs=outputs)
+    # Convert any remaining dictionaries to Struct objects
+    struct_outputs = [
+        o if isinstance(o, Struct) else dict_to_struct(o) for o in outputs
+    ]
+    return CallResponse(task_outputs=struct_outputs)

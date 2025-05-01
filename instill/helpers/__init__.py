@@ -1,5 +1,4 @@
 # pylint: disable=no-name-in-module
-from instill.helpers.protobufs.user_defined_pb2 import CallRequest, CallResponse
 from instill.helpers.ray_config import InstillDeployable, instill_deployment
 from instill.helpers.ray_io import (
     construct_custom_output,
