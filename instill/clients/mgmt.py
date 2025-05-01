@@ -677,11 +677,12 @@ class MgmtClient(Client):
     @grpc_handler
     def get_pipeline_trigger_count(
         self,
-        namespace_id: str,
+        requester_id: str,
         start: datetime,
         stop: datetime,
         async_enabled: bool = False,
     ) -> metric_interface.GetPipelineTriggerCountResponse:
+
         start_timestamp = timestamp_pb2.Timestamp()
         start_timestamp.FromDatetime(start)
         stop_timestamp = timestamp_pb2.Timestamp()
@@ -691,7 +692,7 @@ class MgmtClient(Client):
             return RequestFactory(
                 method=self.host.async_client.GetPipelineTriggerCount,
                 request=metric_interface.GetPipelineTriggerCountRequest(
-                    namespace_id=namespace_id,
+                    requester_id=requester_id,
                     start=start_timestamp,
                     stop=stop_timestamp,
                 ),
@@ -701,7 +702,7 @@ class MgmtClient(Client):
         return RequestFactory(
             method=self.host.client.GetPipelineTriggerCount,
             request=metric_interface.GetPipelineTriggerCountRequest(
-                namespace_id=namespace_id,
+                requester_id=requester_id,
                 start=start_timestamp,
                 stop=stop_timestamp,
             ),
@@ -716,6 +717,7 @@ class MgmtClient(Client):
         stop: datetime,
         async_enabled: bool = False,
     ) -> metric_interface.GetModelTriggerCountResponse:
+
         start_timestamp = timestamp_pb2.Timestamp()
         start_timestamp.FromDatetime(start)
         stop_timestamp = timestamp_pb2.Timestamp()
@@ -774,16 +776,26 @@ class MgmtClient(Client):
     @grpc_handler
     def list_pipeline_trigger_chart_records(
         self,
-        aggregation_window: int,
-        filter_str: str = "",
+        requester_id: str,
+        aggregation_window: str,
+        start: datetime,
+        stop: datetime,
         async_enabled: bool = False,
     ) -> metric_interface.ListPipelineTriggerChartRecordsResponse:
+
+        start_timestamp = timestamp_pb2.Timestamp()
+        start_timestamp.FromDatetime(start)
+        stop_timestamp = timestamp_pb2.Timestamp()
+        stop_timestamp.FromDatetime(stop)
+
         if async_enabled:
             return RequestFactory(
                 method=self.host.async_client.ListPipelineTriggerChartRecords,
                 request=metric_interface.ListPipelineTriggerChartRecordsRequest(
+                    requester_id=requester_id,
                     aggregation_window=aggregation_window,
-                    filter=filter_str,
+                    start=start_timestamp,
+                    stop=stop_timestamp,
                 ),
                 metadata=self.host.metadata + self.metadata,
             ).send_async()
@@ -791,8 +803,10 @@ class MgmtClient(Client):
         return RequestFactory(
             method=self.host.client.ListPipelineTriggerChartRecords,
             request=metric_interface.ListPipelineTriggerChartRecordsRequest(
+                requester_id=requester_id,
                 aggregation_window=aggregation_window,
-                filter=filter_str,
+                start=start_timestamp,
+                stop=stop_timestamp,
             ),
             metadata=self.host.metadata + self.metadata,
         ).send_sync()
@@ -922,6 +936,7 @@ class MgmtClient(Client):
         stop: datetime,
         async_enabled: bool = False,
     ) -> metric_interface.ListCreditConsumptionChartRecordsResponse:
+
         start_timestamp = timestamp_pb2.Timestamp()
         start_timestamp.FromDatetime(start)
         stop_timestamp = timestamp_pb2.Timestamp()

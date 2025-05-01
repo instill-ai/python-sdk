@@ -2,7 +2,7 @@
 
 import instill.protogen.core.mgmt.v1beta.mgmt_public_service_pb2_grpc as mgmt_service
 import instill.protogen.model.model.v1alpha.model_public_service_pb2_grpc as model_service
-import instill.protogen.vdp.pipeline.v1beta.pipeline_public_service_pb2_grpc as pipeline_service
+import instill.protogen.pipeline.pipeline.v1beta.pipeline_public_service_pb2_grpc as pipeline_service
 from instill.clients import MgmtClient, ModelClient, PipelineClient
 from instill.clients.instance import InstillInstance
 

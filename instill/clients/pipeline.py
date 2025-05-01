@@ -4,20 +4,19 @@ from typing import Callable, List, Optional
 
 from google.protobuf import field_mask_pb2, timestamp_pb2
 from google.protobuf.json_format import MessageToDict
-from google.protobuf.struct_pb2 import Struct
 
 import instill.protogen.common.healthcheck.v1beta.healthcheck_pb2 as healthcheck
-import instill.protogen.vdp.pipeline.v1beta.component_definition_pb2 as component_definition
-import instill.protogen.vdp.pipeline.v1beta.integration_pb2 as integration_interface
+import instill.protogen.pipeline.pipeline.v1beta.component_definition_pb2 as component_definition
+import instill.protogen.pipeline.pipeline.v1beta.integration_pb2 as integration_interface
 
 # pipeline
-import instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 as pipeline_interface
-import instill.protogen.vdp.pipeline.v1beta.pipeline_public_service_pb2_grpc as pipeline_service
-import instill.protogen.vdp.pipeline.v1beta.secret_pb2 as secret_interface
+import instill.protogen.pipeline.pipeline.v1beta.pipeline_pb2 as pipeline_interface
+import instill.protogen.pipeline.pipeline.v1beta.pipeline_public_service_pb2_grpc as pipeline_service
+import instill.protogen.pipeline.pipeline.v1beta.secret_pb2 as secret_interface
 from instill.clients.base import Client, RequestFactory
 from instill.clients.instance import InstillInstance
 from instill.helpers.const import HOST_URL_PROD
-from instill.protogen.vdp.pipeline.v1beta import common_pb2
+from instill.protogen.pipeline.pipeline.v1beta import common_pb2
 from instill.utils.error_handler import grpc_handler
 
 
@@ -485,82 +484,6 @@ class PipelineClient(Client):
                 sharing=sharing,
                 target_namespace_id=namespace_id,
                 target_pipeline_id=target,
-            ),
-            metadata=self.host.metadata + self.metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def send_pipeline_event(
-        self,
-        namespace_id: str,
-        pipeline_id: str,
-        event: str,
-        code: str,
-        data: dict,
-        async_enabled: bool = False,
-    ) -> pipeline_interface.SendNamespacePipelineEventResponse:
-        trigger_data = Struct()
-        trigger_data.update(data)
-
-        if async_enabled:
-            return RequestFactory(
-                method=self.host.async_client.SendNamespacePipelineEvent,
-                request=pipeline_interface.SendNamespacePipelineEventRequest(
-                    namespace_id=namespace_id,
-                    pipeline_id=pipeline_id,
-                    event=event,
-                    code=code,
-                    data=trigger_data,
-                ),
-                metadata=self.host.metadata + self.metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.host.client.SendNamespacePipelineEvent,
-            request=pipeline_interface.SendNamespacePipelineEventRequest(
-                namespace_id=namespace_id,
-                pipeline_id=pipeline_id,
-                event=event,
-                code=code,
-                data=trigger_data,
-            ),
-            metadata=self.host.metadata + self.metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def send_pipeline_release_event(
-        self,
-        namespace_id: str,
-        pipeline_id: str,
-        release_id: str,
-        event: str,
-        code: str,
-        data: Struct,
-        async_enabled: bool = False,
-    ) -> pipeline_interface.SendNamespacePipelineReleaseEventResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.host.async_client.SendNamespacePipelineReleaseEvent,
-                request=pipeline_interface.SendNamespacePipelineReleaseEventRequest(
-                    namespace_id=namespace_id,
-                    pipeline_id=pipeline_id,
-                    release_id=release_id,
-                    event=event,
-                    code=code,
-                    data=data,
-                ),
-                metadata=self.host.metadata + self.metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.host.client.SendNamespacePipelineReleaseEvent,
-            request=pipeline_interface.SendNamespacePipelineReleaseEventRequest(
-                namespace_id=namespace_id,
-                pipeline_id=pipeline_id,
-                release_id=release_id,
-                event=event,
-                code=code,
-                data=data,
             ),
             metadata=self.host.metadata + self.metadata,
         ).send_sync()
@@ -1171,120 +1094,6 @@ class PipelineClient(Client):
             method=self.host.client.GetOperation,
             request=pipeline_interface.GetOperationRequest(
                 operation_id=operation_id,
-            ),
-            metadata=self.host.metadata + self.metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def list_connector_definitions(
-        self,
-        total_size: int = 100,
-        next_page_token: str = "",
-        filter_str: str = "",
-        async_enabled: bool = False,
-    ) -> component_definition.ListConnectorDefinitionsResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.host.async_client.ListConnectorDefinitions,
-                request=component_definition.ListConnectorDefinitionsRequest(
-                    view=component_definition.ComponentDefinition.VIEW_FULL,
-                    page_size=total_size,
-                    page_token=next_page_token,
-                    filter=filter_str,
-                ),
-                metadata=self.host.metadata + self.metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.host.client.ListConnectorDefinitions,
-            request=component_definition.ListConnectorDefinitionsRequest(
-                view=component_definition.ComponentDefinition.VIEW_FULL,
-                page_size=total_size,
-                page_token=next_page_token,
-                filter=filter_str,
-            ),
-            metadata=self.host.metadata + self.metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def get_connector_definition(
-        self,
-        namespace_id: str,
-        name: str,
-        async_enabled: bool = False,
-    ) -> component_definition.GetConnectorDefinitionResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.host.async_client.GetConnectorDefinition,
-                request=component_definition.GetConnectorDefinitionRequest(
-                    name=f"namespaces/{namespace_id}/pipelines/{name}",
-                    view=component_definition.ComponentDefinition.VIEW_FULL,
-                ),
-                metadata=self.host.metadata + self.metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.host.client.GetConnectorDefinition,
-            request=component_definition.GetConnectorDefinitionRequest(
-                name=f"namespaces/{namespace_id}/pipelines/{name}",
-                view=component_definition.ComponentDefinition.VIEW_FULL,
-            ),
-            metadata=self.host.metadata + self.metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def list_operator_definitions(
-        self,
-        total_size: int = 100,
-        next_page_token: str = "",
-        filter_str: str = "",
-        async_enabled: bool = False,
-    ) -> component_definition.ListOperatorDefinitionsResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.host.async_client.ListOperatorDefinitions,
-                request=component_definition.ListOperatorDefinitionsRequest(
-                    view=component_definition.ComponentDefinition.VIEW_FULL,
-                    page_size=total_size,
-                    page_token=next_page_token,
-                    filter=filter_str,
-                ),
-                metadata=self.host.metadata + self.metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.host.client.ListOperatorDefinitions,
-            request=component_definition.ListOperatorDefinitionsRequest(
-                view=component_definition.ComponentDefinition.VIEW_FULL,
-                page_size=total_size,
-                page_token=next_page_token,
-                filter=filter_str,
-            ),
-            metadata=self.host.metadata + self.metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def get_operator_definition(
-        self,
-        namespace_id: str,
-        name: str,
-        async_enabled: bool = False,
-    ) -> component_definition.GetOperatorDefinitionResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.host.async_client.GetOperatorDefinition,
-                request=component_definition.GetOperatorDefinitionRequest(
-                    name=f"namespaces/{namespace_id}/pipelines/{name}",
-                    view=component_definition.ComponentDefinition.VIEW_FULL,
-                ),
-                metadata=self.host.metadata + self.metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.host.client.GetOperatorDefinition,
-            request=component_definition.GetOperatorDefinitionRequest(
-                name=f"namespaces/{namespace_id}/pipelines/{name}",
-                view=component_definition.ComponentDefinition.VIEW_FULL,
             ),
             metadata=self.host.metadata + self.metadata,
         ).send_sync()

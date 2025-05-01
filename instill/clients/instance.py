@@ -5,7 +5,7 @@ import grpc
 import instill.protogen.artifact.artifact.v1alpha.artifact_public_service_pb2_grpc as artifact_service
 import instill.protogen.core.mgmt.v1beta.mgmt_public_service_pb2_grpc as mgmt_service
 import instill.protogen.model.model.v1alpha.model_public_service_pb2_grpc as model_service
-import instill.protogen.vdp.pipeline.v1beta.pipeline_public_service_pb2_grpc as pipeline_service
+import instill.protogen.pipeline.pipeline.v1beta.pipeline_public_service_pb2_grpc as pipeline_service
 
 MB = 1024**2
 

@@ -7,7 +7,7 @@ from google.protobuf import json_format
 from google.protobuf.field_mask_pb2 import FieldMask
 from google.protobuf.struct_pb2 import Struct
 
-import instill.protogen.vdp.pipeline.v1beta.pipeline_pb2 as pipeline_interface
+import instill.protogen.pipeline.pipeline.v1beta.pipeline_pb2 as pipeline_interface
 from instill.clients import InstillClient
 from instill.resources.resource import Resource
 from instill.utils.logger import Logger
