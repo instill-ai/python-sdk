@@ -141,10 +141,6 @@ def init(_):
         __file__.replace("cli.py", "init-templates/model.py"),
         f"{os.getcwd()}/model.py",
     )
-    shutil.copyfile(
-        __file__.replace("cli.py", "init-templates/.dockerignore"),
-        f"{os.getcwd()}/.dockerignore",
-    )
 
 
 def find_project_root(start_path):
@@ -237,8 +233,8 @@ def process_arm64_packages(python_pkg_list, target_arch):
                 filtered_pkg_list.append(pkg)
 
         python_pkg_list = filtered_pkg_list
-        if vllm_version is not None:
-            dockerfile = "Dockerfile.arm"
+        if vllm_version is not None and target_arch == "arm64":
+            dockerfile = "Dockerfile.vllm"
 
     python_pkg_str = " ".join(python_pkg_list)
     target_arch_suffix = "-aarch64" if target_arch == "arm64" else ""
@@ -343,12 +339,18 @@ def build(args):
         ) = process_arm64_packages(python_pkg_list, args.target_arch)
 
         with tempfile.TemporaryDirectory() as tmpdir:
+
             # Copy files to tmpdir
-            shutil.copyfile(
-                __file__.replace("cli.py", f"docker/{dockerfile}"),
-                f"{tmpdir}/{dockerfile}",
+            docker_dir = __file__.replace("cli.py", "docker")
+            shutil.copyfile(f"{docker_dir}/{dockerfile}", f"{tmpdir}/Dockerfile")
+            shutil.copyfile(f"{docker_dir}/.dockerignore", f"{tmpdir}/.dockerignore")
+            shutil.copytree(
+                os.getcwd(),
+                tmpdir,
+                ignore=shutil.ignore_patterns("model.py"),
+                dirs_exist_ok=True,
             )
-            shutil.copytree(os.getcwd(), tmpdir, dirs_exist_ok=True)
+            shutil.copyfile(f"{os.getcwd()}/model.py", f"{tmpdir}/_model.py")
 
             # Handle SDK wheel if provided
             if args.sdk_wheel is not None:

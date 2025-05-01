@@ -27,7 +27,7 @@ RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
     pip install --default-timeout=1000 $package; \
     done
 
-COPY --chown=ray:users --exclude=model.py . .
+COPY --chown=ray:users . .
 
 ARG INSTILL_PYTHON_SDK_PROJECT_NAME
 ARG INSTILL_PYTHON_SDK_VERSION
@@ -40,4 +40,8 @@ RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
     pip install --default-timeout=1000 instill-sdk==${INSTILL_PYTHON_SDK_VERSION}; \
     fi;
 
-COPY --chown=ray:users model.py _model.py
+# Download protobuf definition from GitHub
+RUN curl -L https://raw.githubusercontent.com/instill-ai/protobufs/1427cfe974daf443987b08a97fe4ff1cd9fcd7c8/model/ray/v1alpha/user_defined.proto -o user_defined.proto
+
+RUN python -m grpc_tools.protoc -I=. --python_out=. --pyi_out=. --grpc_python_out=. ./user_defined.proto
+ENV PYTHONPATH=/home/ray
