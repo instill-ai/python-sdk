@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.1](https://github.com/instill-ai/python-sdk/compare/v0.17.0...v0.17.1) (2025-05-17)
+
+
+### Bug Fixes
+
+* **ray:** fix dynamic package loading issue ([#275](https://github.com/instill-ai/python-sdk/issues/275)) ([c812d14](https://github.com/instill-ai/python-sdk/commit/c812d1453451c44607213f1a0067d16a22c17250))
+
 ## [0.17.0](https://github.com/instill-ai/python-sdk/compare/v0.16.2...v0.17.0) (2025-04-15)
 
 
