@@ -90,8 +90,9 @@ RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
 
 USER ray
 
-# Download protobuf definition from GitHub
-RUN curl -L https://raw.githubusercontent.com/instill-ai/protobufs/1427cfe974daf443987b08a97fe4ff1cd9fcd7c8/model/ray/v1alpha/user_defined.proto -o user_defined.proto
-
-RUN python -m grpc_tools.protoc -I=. --python_out=. --pyi_out=. --grpc_python_out=. ./user_defined.proto
-ENV PYTHONPATH=/home/ray
+# The python-sdk is a local module that is not installed in the Ray worker environment.
+# Ray workers need to deserialize model configurations and deployment settings that were
+# created in the runtime environment. These objects may depend on this python-sdk.
+# Instead of installing the SDK in the Ray image, we copy
+# the entire SDK to /home/ray and set PYTHONPATH to allow dynamic importing.
+ENV PYTHONPATH=/home/ray/python-sdk/instill/protogen/model/ray/v1alpha
