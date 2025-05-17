@@ -95,4 +95,5 @@ USER ray
 # created in the runtime environment. These objects may depend on this python-sdk.
 # Instead of installing the SDK in the Ray image, we copy
 # the entire SDK to /home/ray and set PYTHONPATH to allow dynamic importing.
-ENV PYTHONPATH=/home/ray/python-sdk/instill/protogen/model/ray/v1alpha
+ARG PYTHONPATH_USER_DEFINED_PROTO
+ENV PYTHONPATH=${PYTHONPATH_USER_DEFINED_PROTO}
