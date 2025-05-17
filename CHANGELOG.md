@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.2](https://github.com/instill-ai/python-sdk/compare/v0.17.1...v0.17.2) (2025-05-17)
+
+
+### Bug Fixes
+
+* **ray:** make non-editable work with dynamic pkg import ([#277](https://github.com/instill-ai/python-sdk/issues/277)) ([0bd4807](https://github.com/instill-ai/python-sdk/commit/0bd480722c63cac9fc242766087ddd1117856ff6))
+
 ## [0.17.1](https://github.com/instill-ai/python-sdk/compare/v0.17.0...v0.17.1) (2025-05-17)
 
 
