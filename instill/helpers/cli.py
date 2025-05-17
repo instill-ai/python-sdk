@@ -63,7 +63,7 @@ def cli():
     build_parser.add_argument(
         "-a",
         "--target-arch",
-        help="target platform architecture for the model image, default to host",
+        help="target platform architecture for the model image, default to host architecture",
         default=default_platform,
         choices=["arm64", "amd64"],
         required=False,
@@ -298,11 +298,23 @@ def prepare_build_command(args, tmpdir, dockerfile, build_vars):
 
     command.extend(
         [
+            # editable mode
             "--build-arg",
             f"INSTILL_PYTHON_SDK_PROJECT_NAME={instill_python_sdk_project_name}",
+            "--build-arg",
+            (
+                "PYTHONPATH_USER_DEFINED_PROTO=/home/ray/"
+                f"{instill_python_sdk_project_name}/instill/protogen/model/ray/v1alpha"
+            ),
         ]
         if instill_python_sdk_project_name
-        else []
+        else [
+            "--build-arg",
+            (
+                "PYTHONPATH_USER_DEFINED_PROTO=/home/ray/"
+                "anaconda3/lib/python3.11/site-packages/instill/protogen/model/ray/v1alpha"
+            ),
+        ]
     )
 
     return command

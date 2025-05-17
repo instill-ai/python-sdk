@@ -31,7 +31,7 @@ COPY --chown=ray:users . .
 
 ARG INSTILL_PYTHON_SDK_PROJECT_NAME
 ARG INSTILL_PYTHON_SDK_VERSION
-RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \    
+RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
     if [ ! -z "$INSTILL_PYTHON_SDK_PROJECT_NAME" ]; then \
     pip install -e ${INSTILL_PYTHON_SDK_PROJECT_NAME}; \
     elif [ -f instill_sdk-${INSTILL_PYTHON_SDK_VERSION}dev-py3-none-any.whl ]; then \
@@ -45,4 +45,5 @@ RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
 # created in the runtime environment. These objects may depend on this python-sdk.
 # Instead of installing the SDK in the Ray image, we copy
 # the entire SDK to /home/ray and set PYTHONPATH to allow dynamic importing.
-ENV PYTHONPATH=/home/ray/python-sdk/instill/protogen/model/ray/v1alpha
+ARG PYTHONPATH_USER_DEFINED_PROTO
+ENV PYTHONPATH=${PYTHONPATH_USER_DEFINED_PROTO}
