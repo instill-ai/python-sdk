@@ -93,8 +93,8 @@ def cli():
     push_parser.add_argument(
         "-u",
         "--url",
-        help="image registry url, in the format of host:port, default to api.instill.tech",
-        default="api.instill.tech",
+        help="image registry url, in the format of host:port, default to api.instill-ai.com",
+        default="api.instill-ai.com",
         required=False,
     )
 

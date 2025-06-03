@@ -10,8 +10,8 @@ Welcome to Instill Python SDK, where the world of AI-first application comes ali
 
 Before you jump into creating your first application with this SDK tool, we recommend you to get familiar with the core concepts of Instill Product first. You can check out our documentation here:
 
-- [Instill Core](https://www.instill.tech/docs/latest/core/concepts)
-- [Instill SDK](https://www.instill.tech/docs/latest/sdk/python)
+- [Instill Core](https://www.instill-ai.dev/docs/latest/core/concepts)
+- [Instill SDK](https://www.instill-ai.dev/docs/latest/sdk/python)
 
 ## Setup
 
@@ -90,7 +90,7 @@ hosts:
     secure: false
     token: instill_sk***
   cloud:
-    url: api.instill.tech
+    url: api.instill-ai.com
     secure: true
     token: instill_sk***
 ```
@@ -103,7 +103,7 @@ If you do not like the idea of having to create a config file, you can also setu
 from instill.configuration import global_config
 
 global_config.set_default(
-    url="api.instill.tech",
+    url="api.instill-ai.com",
     token="instill_sk***",
     secure=True,
 )
@@ -143,7 +143,7 @@ user = client.mgmt_service.get_user()
 # ...
 ```
 
-Please find more usages for this sdk at [here](https://www.instill.tech/docs/sdk/python#usage)
+Please find more usages for this sdk at [here](https://www.instill-ai.dev/docs/sdk/python#usage)
 
 **You can also find some notebook examples [here](https://github.com/instill-ai/python-sdk/tree/main/notebooks)**
 
@@ -168,7 +168,7 @@ client.model_service.create_model(
 
 `Instill Model` is an advanced MLOps/LLMOps platform that was specifically crafted to facilitate the efficient management and orchestration of model deployments for unstructured data ETL. With `Instill Model`, you can easily create, manage, and deploy your own custom models with ease in `Instill Core` or on the cloud with `Instill Cloud`.
 
-Follow the instructions [here](https://www.instill.tech/docs/model/create) to build and deploy your model.
+Follow the instructions [here](https://www.instill-ai.dev/docs/model/create) to build and deploy your model.
 
 ### Create pipeline
 
