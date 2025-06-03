@@ -6,7 +6,7 @@ version = "0.17.2"
 
 packages = [{include = "instill"}]
 
-authors = ["instill-ai <drop@instill.tech>"]
+authors = ["instill-ai <drop@instill-ai.com>"]
 license = "MIT"
 
 documentation = "https://instill-sdk.readthedocs.io"
@@ -14,7 +14,7 @@ homepage = "https://pypi.org/project/instill-sdk"
 readme = "README.md"
 repository = "https://github.com/instill-ai/python-sdk"
 
-maintainers = ["Ping-Lin Chang <ping-lin.chang@instill.tech>"]
+maintainers = ["Ping-Lin Chang <ping-lin.chang@instill-ai.com>"]
 
 classifiers = [
   "Development Status :: 1 - Planning",
