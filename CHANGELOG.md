@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.17.3](https://github.com/instill-ai/python-sdk/compare/v0.17.2...v0.17.3) (2025-06-13)
+
+
+### Miscellaneous
+
+* **deps-dev:** bump setuptools from 74.1.2 to 78.1.1 ([#279](https://github.com/instill-ai/python-sdk/issues/279)) ([33fda4f](https://github.com/instill-ai/python-sdk/commit/33fda4f77536a37c724a36b0bb6be6e34612aad7))
+* **deps-dev:** bump tornado from 6.4.2 to 6.5.1 ([#280](https://github.com/instill-ai/python-sdk/issues/280)) ([0caa2fe](https://github.com/instill-ai/python-sdk/commit/0caa2fe7f79a31382141f21f0edc862650a8c107))
+* **domain:** update production domain ([3f0efe0](https://github.com/instill-ai/python-sdk/commit/3f0efe07b17fa50a9224f8c8e798a1730cad3d54))
+* **pacakge:** upgrade versions ([4e45717](https://github.com/instill-ai/python-sdk/commit/4e45717fce55b10e338474688dc4ddcd9ad1f373))
+* **release-please:** update config.json ([#281](https://github.com/instill-ai/python-sdk/issues/281)) ([13cbace](https://github.com/instill-ai/python-sdk/commit/13cbace811abd24c39039d907fc202cae26fda17))
+
 ## [0.17.2](https://github.com/instill-ai/python-sdk/compare/v0.17.1...v0.17.2) (2025-05-17)
 
 
