@@ -1,3 +1,5 @@
+"""Base resource interface module."""
+
 # pylint: disable=no-member,wrong-import-position
 from abc import ABC, abstractmethod
 
@@ -12,19 +14,19 @@ class Resource(ABC):
     @property
     @abstractmethod
     def client(self):
-        pass
+        """Get the client instance."""
 
     @client.setter
     @abstractmethod
-    def client(self):
-        pass
+    def client(self, value):
+        """Set the client instance."""
 
     @property
     @abstractmethod
     def resource(self):
-        pass
+        """Get the resource instance."""
 
     @resource.setter
     @abstractmethod
-    def resource(self):
-        pass
+    def resource(self, value):
+        """Set the resource instance."""
