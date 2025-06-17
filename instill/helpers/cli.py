@@ -16,7 +16,7 @@ from instill.helpers.const import DEFAULT_DEPENDENCIES
 from instill.helpers.errors import ModelConfigException
 from instill.utils.logger import Logger
 
-bash_script = """
+BASH_SCRIPT = """
 until curl -s -o /dev/null -w "%{http_code}" http://localhost:8265 | grep -q "200"; do
     sleep 5
 done
@@ -51,7 +51,10 @@ def cli():
     build_parser.set_defaults(func=build)
     build_parser.add_argument(
         "name",
-        help="user and model namespace, in the format of <user-id>/<model-id>[:tag] (default tag is 'latest')",
+        help="""
+            user and model namespace, in the format of <user-id>/<model-id>[:tag]
+            (default tag is 'latest')
+        """,
     )
     build_parser.add_argument(
         "-n",
@@ -78,7 +81,10 @@ def cli():
     build_parser.add_argument(
         "-e",
         "--editable-project",
-        help="path to local Python project to install in editable mode (overrides --sdk-wheel if both are specified)",
+        help="""
+            path to local Python project to install in editable mode
+            (overrides --sdk-wheel if both are specified)
+        """,
         default=None,
         required=False,
     )
@@ -88,7 +94,10 @@ def cli():
     push_parser.set_defaults(func=push)
     push_parser.add_argument(
         "name",
-        help="user and model namespace, in the format of <user-id>/<model-id>[:tag] (default tag is 'latest')",
+        help="""
+            user and model namespace, in the format of <user-id>/<model-id>[:tag]
+            (default tag is 'latest')
+        """,
     )
     push_parser.add_argument(
         "-u",
@@ -103,7 +112,10 @@ def cli():
     run_parser.set_defaults(func=run)
     run_parser.add_argument(
         "name",
-        help="user and model namespace, in the format of <user-id>/<model-id>[:tag] (default tag is 'latest')",
+        help="""
+            user and model namespace, in the format of <user-id>/<model-id>[:tag]
+            (default tag is 'latest')
+        """,
     )
     run_parser.add_argument(
         "-g",
@@ -350,11 +362,13 @@ def build(args):
             python_pkg_list,
         ) = process_arm64_packages(python_pkg_list, args.target_arch)
 
-        with tempfile.TemporaryDirectory() as tmpdir:
+        if build_params["llm_serving_runtime"] == "mlc":
+            dockerfile = "Dockerfile.mlc"
 
+        with tempfile.TemporaryDirectory() as tmpdir:
             # Copy files to tmpdir
             docker_dir = __file__.replace("cli.py", "docker")
-            shutil.copyfile(f"{docker_dir}/{dockerfile}", f"{tmpdir}/Dockerfile")
+            shutil.copyfile(f"{docker_dir}/{dockerfile}", f"{tmpdir}/{dockerfile}")
             shutil.copyfile(f"{docker_dir}/.dockerignore", f"{tmpdir}/.dockerignore")
             shutil.copytree(
                 os.getcwd(),
@@ -377,7 +391,9 @@ def build(args):
                 project_root = find_project_root(args.editable_project)
                 if project_root is None:
                     raise FileNotFoundError(
-                        "[Instill] No Python project found at the specified path (missing setup.py or pyproject.toml)"
+                        """
+                        [Instill] No Python project found at the specified path (missing setup.py or pyproject.toml)
+                    """
                     )
                 instill_sdk_project_name = os.path.basename(project_root)
                 Logger.i(f"[Instill] Found Python project: {instill_sdk_project_name}")
@@ -465,6 +481,7 @@ def run(args):
                     "--rm",
                     "-d",
                     "--shm-size=4gb",
+                    "--platform=linux/amd64",
                     "--name",
                     str(name),
                     f"{image_name}:{tag}",
@@ -490,7 +507,7 @@ def run(args):
             )
         docker_run = True
         subprocess.run(
-            f"docker exec {str(name)} /bin/bash -c '{bash_script}'",
+            f"docker exec {str(name)} /bin/bash -c '{BASH_SCRIPT}'",
             shell=True,
             check=True,
             stdout=subprocess.DEVNULL,

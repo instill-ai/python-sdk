@@ -24,7 +24,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 ARG PYTHON_PACKAGES
 RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
     for package in ${PYTHON_PACKAGES}; do \
-    pip install --default-timeout=1000 $package; \
+    pip install $package; \
     done
 
 COPY --chown=ray:users . .

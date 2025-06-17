@@ -12,25 +12,13 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata curl vim cmake && \
     sudo rm -rf /var/lib/apt/lists/*
 
-# Build mlc-llm from source
-RUN conda create -y -q -n mlc-venv -c conda-forge "cmake>=3.24" rust git python=${PYTHON_VERSION}
-RUN conda run -n mlc-venv bash -c " \
-    git clone --recursive https://github.com/mlc-ai/mlc-llm.git && \
-    cd mlc-llm/ && \
-    mkdir -p build && cd build && \    
-    echo '
-    set(TVM_SOURCE_DIR 3rdparty/tvm)\n \
-        set(CMAKE_BUILD_TYPE RelWithDebInfo)\n \
-        set(USE_CUDA OFF)\n \
-        set(USE_CUTLASS OFF)\n \
-        set(USE_CUBLAS OFF)\n \
-        set(USE_ROCM OFF)\n \
-        set(USE_VULKAN OFF)\n \
-        set(USE_METAL OFF)\n \
-        set(USE_OPENCL OFF)\n \
-        set(USE_OPENCL_ENABLE_HOST_PTR OFF)\n \
-        set(USE_FLASHINFER ON)' > config.cmake && \
-    cmake .. && cmake --build . --parallel $(nproc) && sudo make install"
+# Install mlc-llm from pre-built wheels
+RUN pip install git-lfs
+RUN if [ -z "$CUDA_SUFFIX" ]; then \
+        pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cpu mlc-ai-nightly-cpu; \
+    else \
+        pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cu128 mlc-ai-nightly-cu128; \
+    fi
 
 ARG SYSTEM_PACKAGES
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
