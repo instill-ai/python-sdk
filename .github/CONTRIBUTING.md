@@ -27,34 +27,34 @@ Before delving into the details to come up with your first PR, please familiaris
 
 To confirm these system dependencies are configured correctly:
 
-```bash
-$ make doctor
+```shell
+make doctor
 ```
 
 #### Installation
 
 Fetch git submodules:
 
-```bash
-$ make get-proto
+```shell
+make get-proto
 ```
 
 Fetch and generate json schema files and dataclass:
 
-```bash
-$ make update-specs
+```shell
+make update-specs
 # `instill/resources/schema/airbyte/OAuth2.py` will be generated with an error, need to manually remove the `OAuth2.` in `OAuth2.AuthType.OAuth2_0`
 ```
 
 > [!IMPORTANT]  
-> **Create a `.venv` folder if you are rusing `conda`**  
+> **Create a `.venv` folder if you are using `conda`**  
 > This will be fixed soon, but currently if you are installing the development dependencies inside a conda env,
-> you will need to create a `.venv` folder in your proejct root to prevent errors
+> you will need to create a `.venv` folder in your project root to prevent errors
 
 Install project dependencies into a virtual environment:
 
-```text
-$ make install
+```shell
+make install
 ```
 
 ### Development Tasks
@@ -63,28 +63,28 @@ $ make install
 
 Run the tests:
 
-```text
-$ make test
+```shell
+make test
 ```
 
 Run static analysis:
 
-```text
-$ make check
+```shell
+make check
 ```
 
 Build the documentation:
 
-```text
-$ make docs
+```shell
+make docs
 ```
 
 #### Automatic
 
 Keep all of the above tasks running on change:
 
-```text
-$ make dev
+```shell
+make dev
 ```
 
 > In order to have OS X notifications, `brew install terminal-notifier`.
@@ -93,16 +93,16 @@ $ make dev
 
 The CI server will report overall build status:
 
-```text
-$ make all
+```shell
+make all
 ```
 
 ### Release Tasks
 
 Release to PyPI:
 
-```text
-$ make upload
+```shell
+make upload
 ```
 
 ### Sending PRs

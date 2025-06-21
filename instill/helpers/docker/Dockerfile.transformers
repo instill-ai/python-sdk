@@ -3,8 +3,42 @@
 ARG RAY_VERSION=2.47.0
 ARG PYTHON_VERSION=-py311
 ARG CUDA_VERSION=-cu128
+ARG DEVICE_TYPE=-cpu
 
-rayproject/ray:${RAY_VERSION}${PYTHON_VERSION}${CUDA_VERSION}
+#####################################################################################################
+# CPU Base Image (amd64)
+#####################################################################################################
+FROM rayproject/ray:${RAY_VERSION}${PYTHON_VERSION}${CUDA_VERSION} AS base-cpu-amd64
+
+ARG TRANSFORMERS_VERSION=4.52.4
+RUN pip install transformers==${TRANSFORMERS_VERSION} torch torchvision torchaudio triton accelerate sentencepiece 
+RUN pip install -U flash-attn --no-build-isolation 
+RUN pip install -U autoawq --no-build-isolation 
+
+#####################################################################################################
+# CPU Base Image (arm64)
+#####################################################################################################
+FROM rayproject/ray:${RAY_VERSION}${PYTHON_VERSION}${CUDA_VERSION} AS base-cpu-arm64
+
+ARG TRANSFORMERS_VERSION=4.52.4
+RUN pip install transformers==${TRANSFORMERS_VERSION} torch torchvision torchaudio accelerate sentencepiece
+# RUN pip install -U autoawq --no-build-isolation 
+# RUN pip install intel-extension-for-pytorch --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+
+#####################################################################################################
+# GPU Base Image (amd64)
+#####################################################################################################
+FROM rayproject/ray:${RAY_VERSION}${PYTHON_VERSION}${CUDA_VERSION} AS base-gpu-amd64
+
+ARG TRANSFORMERS_VERSION=4.52.4
+RUN pip install transformers==${TRANSFORMERS_VERSION} torch torchvision torchaudio triton accelerate sentencepiece 
+RUN pip install -U flash-attn --no-build-isolation 
+RUN pip install -U autoawq --no-build-isolation 
+
+###############################################################################
+# Main Image
+###############################################################################
+FROM base${DEVICE_TYPE}-${TARGETARCH}
 
 # Install base packages
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \

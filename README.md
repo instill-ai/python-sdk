@@ -1,10 +1,12 @@
+# Instill Core Python SDK
+
 [![Unix Build Status](https://img.shields.io/github/actions/workflow/status/instill-ai/python-sdk/build.yml?branch=main&label=linux)](https://github.com/instill-ai/python-sdk/actions) [![Coverage Status](https://img.shields.io/codecov/c/gh/instill-ai/python-sdk)](https://codecov.io/gh/instill-ai/python-sdk) [![PyPI License](https://img.shields.io/pypi/l/instill-sdk.svg)](https://pypi.org/project/instill-sdk) [![PyPI Version](https://img.shields.io/pypi/v/instill-sdk.svg)](https://pypi.org/project/instill-sdk) [![PyPI Downloads](https://img.shields.io/pypi/dm/instill-sdk.svg?color=orange)](https://pypistats.org/packages/instill-sdk)
 
-> [!IMPORTANT]<br>
-> **This SDK tool is under active development**<br>
-> For any bug found or featur request, feel free to open any issue regarding this SDK in our [instill-core](https://github.com/instill-ai/instill-core/issues) repo.
+> [!IMPORTANT]
+> **This SDK tool is under active development**
+> For any bug found or feature request, feel free to open any issue regarding this SDK in our [instill-core](https://github.com/instill-ai/instill-core/issues) repo.
 
-# Overview
+## Overview
 
 Welcome to Instill Python SDK, where the world of AI-first application comes alive in the form of Python.
 
@@ -15,45 +17,46 @@ Before you jump into creating your first application with this SDK tool, we reco
 
 ## Setup
 
-> [!NOTE]<br>
+> [!NOTE]
 > For setting up development environment, please refer to [Contributing](#contributing)
 
 ### Requirements
 
-- Python 3.8 - 3.11
+- Python 3.9 - 3.12
+- CUDA 12.2 - 12.8 (if you want to build a model with GPU support)
 
 ### Installation
 
-> [!WARNING]<br>
-> If your host machine is on arm64 architecture(including Apple silicon machines, equipped with m1/m2 processors), there are some issues when installing `grpcio` within `conda` environment. You will have to manually build and install it like below. Read more about this issue [here](https://github.com/grpc/grpc/issues/33714).
+> [!WARNING]
+> If your host machine is on arm64 architecture(including Apple silicon machines, equipped with m1/m2 processors), there are some issues when installing `grpcio` within `conda` environment. You will have to manually build and install it like below. Read more about this issue in the [gRPC GitHub issue](https://github.com/grpc/grpc/issues/33714).
 
-```bash
-$ GRPC_PYTHON_LDFLAGS=" -framework CoreFoundation" pip install grpcio --no-binary :all:
+```shell
+GRPC_PYTHON_LDFLAGS=" -framework CoreFoundation" pip install grpcio --no-binary :all:
 ```
 
 Install it directly into an activated virtual environment:
 
-```text
-$ pip install instill-sdk
+```shell
+pip install instill-sdk
 ```
 
 or add it to your [Poetry](https://poetry.eustace.io/) project:
 
-```text
-$ poetry add instill-sdk
+```shell
+poetry add instill-sdk
 ```
 
 ### Check import
 
 After installation, you can check if it has been installed correctly:
 
-```text
-$ python
+```shell
+python
 >>> import instill
 >>> instill.__version__
 ```
 
-### Config `Instill Core` or `Instill Cloud` instance
+### Config `Instill Core` or `Managed Instill Core` instance
 
 Before we can start using this SDK, you will need to properly config your target instance. We support two ways to setup the configs, which are
 
@@ -61,7 +64,7 @@ Before we can start using this SDK, you will need to properly config your target
 
 create a config file under this path `${HOME}/.config/instill/sdk/python/config.yml`, and within that path you will need to fill in some basic parameters for your desired host.[^1]
 
-[^1]: You can obtain an `api_token` by simply going to Settings > API Tokens page from the console, no matter it is `Instill Core` or `Instill Cloud`.
+[^1]: You can obtain an `api_token` by simply going to Settings > API Tokens page from the console, no matter it is `Instill Core` or `Managed Instill Core`.
 
 Within the config file, you can define multiple instances with the `alias` of your liking, later in the SDK you can refer to this `alias` to switch between instances.[^2]
 
@@ -143,9 +146,9 @@ user = client.mgmt_service.get_user()
 # ...
 ```
 
-Please find more usages for this sdk at [here](https://www.instill-ai.dev/docs/sdk/python#usage)
+Please find more usages for this SDK in our [documentation](https://www.instill-ai.dev/docs/sdk/python#usage)
 
-**You can also find some notebook examples [here](https://github.com/instill-ai/python-sdk/tree/main/notebooks)**
+**You can also find some notebook examples in our [notebooks directory](https://github.com/instill-ai/python-sdk/tree/main/notebooks)**
 
 ### Create a model
 
@@ -168,7 +171,7 @@ client.model_service.create_model(
 
 `Instill Model` is an advanced MLOps/LLMOps platform that was specifically crafted to facilitate the efficient management and orchestration of model deployments for unstructured data ETL. With `Instill Model`, you can easily create, manage, and deploy your own custom models with ease in `Instill Core` or on the cloud with `Instill Cloud`.
 
-Follow the instructions [here](https://www.instill-ai.dev/docs/model/create) to build and deploy your model.
+Follow the [model creation guide](https://www.instill-ai.dev/docs/model/create) to build and deploy your model.
 
 ### Create pipeline
 

@@ -1,7 +1,19 @@
+"""Constants for Instill Core Python SDK."""
+
 import os
 from typing import Dict, List
 
 from PIL import Image
+
+PYTHON_VERSION_MIN = "3.9"
+PYTHON_VERSION_MAX = "3.12"
+
+CUDA_VERSION_MIN = "12.2"
+CUDA_VERSION_MAX = "12.8"
+
+TRANSFORMERS_VERSION = "4.52.4"
+VLLM_VERSION = "0.9.1"
+MLC_LLM_VERSION = "0.19.0"
 
 PROMPT_ROLES = ["user", "assistant", "system"]
 
@@ -132,8 +144,6 @@ RAM_MINIMUM_RESERVE = 1  # GB
 RAM_UPSCALE_FACTOR = 1.25
 VRAM_MINIMUM_RESERVE = 2  # GB
 VRAM_UPSCALE_FACTOR = 1.25
-
-DEFAULT_DEPENDENCIES = ["protobuf==4.25.3", "grpcio-tools==1.62.0"]
 
 ENV_MEMORY = "RAY_MEMORY"
 ENV_TOTAL_VRAM = "RAY_TOTAL_VRAM"

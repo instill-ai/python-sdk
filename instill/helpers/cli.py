@@ -12,9 +12,18 @@ import ray
 import yaml
 
 import instill
-from instill.helpers.const import DEFAULT_DEPENDENCIES
 from instill.helpers.errors import ModelConfigException
 from instill.utils.logger import Logger
+
+from instill.helpers.const import (
+    PYTHON_VERSION_MIN,
+    PYTHON_VERSION_MAX,
+    CUDA_VERSION_MIN,
+    CUDA_VERSION_MAX,
+    TRANSFORMERS_VERSION,
+    VLLM_VERSION,
+    MLC_LLM_VERSION,
+)
 
 BASH_SCRIPT = """
 until curl -s -o /dev/null -w "%{http_code}" http://localhost:8265 | grep -q "200"; do
@@ -29,9 +38,6 @@ def config_check_required_fields(c):
         raise ModelConfigException("build")
     if "gpu" not in c["build"] or c["build"]["gpu"] is None:
         raise ModelConfigException("gpu")
-    if "python_version" not in c["build"] or c["build"]["python_version"] is None:
-        raise ModelConfigException("python_version")
-
 
 def cli():
     """Command line interface for the Instill CLI tool."""
@@ -52,21 +58,22 @@ def cli():
     build_parser.add_argument(
         "name",
         help="""
-            user and model namespace, in the format of <user-id>/<model-id>[:tag]
+            Image name and tag for the model with the format <namespace>/<model>[:tag]
             (default tag is 'latest')
         """,
     )
     build_parser.add_argument(
         "-n",
         "--no-cache",
-        help="build the image without cache",
+        help="Build the image without cache",
+        default=False,
         action="store_true",
         required=False,
     )
     build_parser.add_argument(
         "-a",
         "--target-arch",
-        help="target platform architecture for the model image, default to host architecture",
+        help="Target platform architecture for the model image. If not specified, default to host architecture",
         default=default_platform,
         choices=["arm64", "amd64"],
         required=False,
@@ -74,7 +81,7 @@ def cli():
     build_parser.add_argument(
         "-w",
         "--sdk-wheel",
-        help="instill sdk wheel absolute path for debug purpose",
+        help="The python-sdk wheel absolute path",
         default=None,
         required=False,
     )
@@ -82,7 +89,7 @@ def cli():
         "-e",
         "--editable-project",
         help="""
-            path to local Python project to install in editable mode
+            The python-sdk project path to install in editable mode
             (overrides --sdk-wheel if both are specified)
         """,
         default=None,
@@ -95,14 +102,14 @@ def cli():
     push_parser.add_argument(
         "name",
         help="""
-            user and model namespace, in the format of <user-id>/<model-id>[:tag]
+            Image name and tag for the model with the format <namespace>/<model>[:tag]
             (default tag is 'latest')
         """,
     )
     push_parser.add_argument(
         "-u",
         "--url",
-        help="image registry url, in the format of host:port, default to api.instill-ai.com",
+        help="Image registry URL in the format of host:port. If not specified, default to api.instill-ai.com",
         default="api.instill-ai.com",
         required=False,
     )
@@ -113,21 +120,37 @@ def cli():
     run_parser.add_argument(
         "name",
         help="""
-            user and model namespace, in the format of <user-id>/<model-id>[:tag]
+            Image name and tag for the model with the format <namespace>/<model>[:tag]
             (default tag is 'latest')
         """,
     )
     run_parser.add_argument(
+        "-nc",
+        "--num-of-cpus",
+        help="Number of CPUs to use if --gpu flag is off, default to 1",
+        type=int,
+        default=1,
+        required=False,
+    )
+    run_parser.add_argument(
+        "-cs",
+        "--cpu-kvcache-space",
+        help="CPU KV-Cache space in GB. If not specified, default to 4GB",
+        type=int,
+        default=4,
+        required=False,
+    )
+    run_parser.add_argument(
         "-g",
         "--gpu",
-        help="whether the model needs gpu",
+        help="Whether the model runs on GPUs",
         action="store_true",
         required=False,
     )
     run_parser.add_argument(
         "-ng",
         "--num-of-gpus",
-        help="number of gpus to use if gpu flag is on, default to 1",
+        help="Number of GPUs to use if --gpu flag is on, default to 1",
         type=int,
         default=1,
         required=False,
@@ -135,7 +158,8 @@ def cli():
     run_parser.add_argument(
         "-i",
         "--input",
-        help="inference input json",
+        help="Inference input as a string in JSON format",
+        type=str,
         required=True,
     )
 
@@ -166,29 +190,89 @@ def find_project_root(start_path):
         current_path = os.path.dirname(current_path)
     return None
 
+def validate_python_version(python_version: str) -> str:
+    """Validate Python version and return cleaned version string."""
+    # Set default Python version if not provided
+    if not python_version:
+        python_version = "3.11"
 
-def is_vllm_version_compatible(version_parts):
-    """Check if vLLM version meets minimum requirements (v0.6.5)"""
-    return not (
-        version_parts[0] < 0
-        or (version_parts[0] == 0 and version_parts[1] < 6)
-        or (version_parts[0] == 0 and version_parts[1] == 6 and version_parts[2] < 5)
-    )
+    # Validate Python version format first
+    try:
+        version_parts = [int(x) for x in python_version.split(".")]
+        if len(version_parts) < 2:
+            raise ValueError(f"Invalid Python version format: {python_version}. Must be in format X.Y (e.g., 3.11)")
+    except (ValueError, IndexError) as exc:
+        raise ValueError(f"Invalid Python version format: {python_version}. Must be in format X.Y (e.g., 3.11)") from exc
+
+    # Then validate version range
+    major, minor = version_parts[0], version_parts[1]
+
+    # Parse min and max versions
+    min_major, min_minor = map(int, PYTHON_VERSION_MIN.split('.'))
+    max_major, max_minor = map(int, PYTHON_VERSION_MAX.split('.'))
+
+    # Compare major version first, then minor version
+    if major < min_major or (major == min_major and minor < min_minor):
+        raise ValueError(f"Python version {python_version} is too old. Must be at least {PYTHON_VERSION_MIN}")
+
+    if major > max_major or (major == max_major and minor > max_minor):
+        raise ValueError(f"Python version {python_version} is too new. Must be at most {PYTHON_VERSION_MAX}")
+
+    return python_version.replace(".", "")
+
+
+def validate_cuda_version(cuda_version: str) -> str:
+    """Validate CUDA version and return cleaned version string."""
+    # Set default CUDA version if not provided
+    if not cuda_version:
+        cuda_version = "12.8"
+
+    # Validate CUDA version format first
+    try:
+        version_parts = [int(x) for x in cuda_version.split(".")]
+        if len(version_parts) < 2:
+            raise ValueError(f"Invalid CUDA version format: {cuda_version}. Must be in format X.Y (e.g., 12.8)")
+    except (ValueError, IndexError) as exc:
+        raise ValueError(f"Invalid CUDA version format: {cuda_version}. Must be in format X.Y (e.g., 12.8)") from exc
+
+    # Then validate version range
+    major, minor = version_parts[0], version_parts[1]
+
+    # Parse min and max versions
+    min_major, min_minor = map(int, CUDA_VERSION_MIN.split('.'))
+    max_major, max_minor = map(int, CUDA_VERSION_MAX.split('.'))
+
+    # Compare major version first, then minor version
+    if major < min_major or (major == min_major and minor < min_minor):
+        raise ValueError(f"CUDA version {cuda_version} is too old. Must be at least {CUDA_VERSION_MIN}")
+
+    if major > max_major or (major == max_major and minor > max_minor):
+        raise ValueError(f"CUDA version {cuda_version} is too new. Must be at most {CUDA_VERSION_MAX}")
+
+    return cuda_version.replace(".", "")
 
 
 def prepare_build_environment(build_params):
     """Prepare environment variables and settings for the build process."""
-    python_version = build_params["python_version"].replace(".", "")
-    ray_version = ray.__version__
-    instill_sdk_version = instill.__version__
 
-    # Determine CUDA suffix
+    # Prepare Ray version
+    ray_version = ray.__version__
+
+    # Prepare Python version
+    python_version = f"-py{validate_python_version(build_params.get('python_version'))}"
+
+    # Prepare CUDA version and device type
     if not build_params["gpu"]:
-        cuda_suffix = ""
-    elif "cuda_version" in build_params and not build_params["cuda_version"] is None:
-        cuda_suffix = f'-cu{build_params["cuda_version"].replace(".", "")}'
+        cuda_version = ""
+        device_type = "-cpu"
+    elif build_params.get("cuda_version") is not None:
+        cuda_version = f'-cu{validate_cuda_version(build_params["cuda_version"])}'
+        device_type = "-gpu"
     else:
-        cuda_suffix = "-gpu"
+        cuda_version = "-cu128"  # Default to 12.8
+        device_type = "-gpu"
+
+    llm_runtime = build_params.get("llm_runtime")
 
     # Prepare system packages
     system_pkg_list = []
@@ -206,69 +290,55 @@ def prepare_build_environment(build_params):
         and build_params["python_packages"] is not None
     ):
         python_pkg_list.extend(build_params["python_packages"])
-    python_pkg_list.extend(DEFAULT_DEPENDENCIES)
+    python_pkg_str = " ".join(python_pkg_list)
+
+    # Prepare Instill SDK version
+    instill_sdk_version = instill.__version__
 
     return (
-        python_version,
+        llm_runtime,
         ray_version,
-        instill_sdk_version,
-        cuda_suffix,
+        python_version,
+        cuda_version,
+        device_type,
         system_pkg_str,
-        python_pkg_list,
+        python_pkg_str,
+        instill_sdk_version,
     )
 
+def parse_image_tag_name(image_tag_name: str):
+    """Parse image name to extract name and tag."""
+    if ":" in image_tag_name:
+        return image_tag_name
+    return f"{image_tag_name}:latest"
 
-def process_arm64_packages(python_pkg_list, target_arch):
-    """Process packages for ARM64 architecture, handling vLLM and other dependencies."""
-    dockerfile = "Dockerfile"
-    vllm_version = None
+
+def parse_target_arch(target_arch: str):
+    """Parse target architecture."""
+    if target_arch not in ["amd64", "arm64"]:
+        raise ValueError(f"Invalid target architecture: {target_arch}. Must be 'amd64' or 'arm64'")
 
     if target_arch == "arm64":
-        filtered_pkg_list = []
-        for pkg in python_pkg_list:
-            if pkg.startswith("vllm"):
-                # Transform version string from "0.6.4.post1" to "v0.6.4"
-                version = pkg.split("==")[1]
-                vllm_version = f"v{version.split('.post')[0]}"
-                # Check if version is at least v0.6.5
-                base_version = version.split(".post")[0]
-                version_parts = [int(x) for x in base_version.split(".")]
-                if not is_vllm_version_compatible(version_parts):
-                    raise ValueError(
-                        f"[Instill] vLLM version must be at least v0.6.5, got {vllm_version}"
-                    )
-            elif pkg.startswith("bitsandbytes"):
-                raise ValueError(
-                    "[Instill] bitsandbytes is not supported on ARM architecture"
-                )
-            else:
-                filtered_pkg_list.append(pkg)
-
-        python_pkg_list = filtered_pkg_list
-        if vllm_version is not None and target_arch == "arm64":
-            dockerfile = "Dockerfile.vllm"
-
-    python_pkg_str = " ".join(python_pkg_list)
-    target_arch_suffix = "-aarch64" if target_arch == "arm64" else ""
-
-    return dockerfile, vllm_version, python_pkg_str, target_arch_suffix, python_pkg_list
+        return "aarch64"
+    return "amd64"
 
 
-def parse_image_name(name):
-    """Parse image name to extract name and tag."""
-    if ":" in name:
-        image, tag = name.split(":", 1)
-        return image, tag
-    return name, "latest"
-
-
-def prepare_build_command(args, tmpdir, dockerfile, build_vars):
+def prepare_build_command(tmpdir, dockerfile, build_vars):
     """Prepare the Docker build command with all necessary arguments."""
-    vllm_version, target_arch_suffix, ray_version, python_version = build_vars[:4]
-    cuda_suffix, python_pkg_str, system_pkg_str, instill_sdk_version = build_vars[4:8]
-    instill_python_sdk_project_name = build_vars[8]
-
-    image_name, tag = parse_image_name(args.name)
+    (
+        image_name_tag,
+        target_arch,
+        no_cache,
+        llm_runtime,
+        ray_version,
+        python_version,
+        cuda_version,
+        device_type,
+        python_pkg_str,
+        system_pkg_str,
+        instill_sdk_version,
+        instill_python_sdk_project_name,
+    ) = build_vars
 
     command = [
         "docker",
@@ -278,32 +348,39 @@ def prepare_build_command(args, tmpdir, dockerfile, build_vars):
         "--file",
         f"{tmpdir}/{dockerfile}",
         "--build-arg",
-        f"TARGET_ARCH_SUFFIX={target_arch_suffix}",
-        "--build-arg",
         f"RAY_VERSION={ray_version}",
         "--build-arg",
         f"PYTHON_VERSION={python_version}",
+        "--build-arg",
+        f"CUDA_VERSION={cuda_version}",
+        "--build-arg",
+        f"DEVICE_TYPE={device_type}",
         "--build-arg",
         f"PYTHON_PACKAGES={python_pkg_str}",
         "--build-arg",
         f"INSTILL_PYTHON_SDK_VERSION={instill_sdk_version}",
         "--platform",
-        f"linux/{args.target_arch}",
+        f"linux/{target_arch}",
         "-t",
-        f"{image_name}:{tag}",
+        f"{image_name_tag}",
         tmpdir,
         "--load",
     ]
 
     # Add conditional build args
-    if args.no_cache:
+    if no_cache:
         command.append("--no-cache")
 
-    if vllm_version:
-        command.extend(["--build-arg", f"VLLM_VERSION={vllm_version}"])
-
-    if cuda_suffix:
-        command.extend(["--build-arg", f"CUDA_SUFFIX={cuda_suffix}"])
+    # Extract LLM runtime version
+    if "mlc-llm" in llm_runtime:
+        llm_runtime_version = llm_runtime.split("==")[1] if "==" in llm_runtime else MLC_LLM_VERSION
+        command.extend(["--build-arg", f"MLC_LLM_VERSION={llm_runtime_version}"])
+    elif "vllm" in llm_runtime:
+        llm_runtime_version = llm_runtime.split("==")[1] if "==" in llm_runtime else VLLM_VERSION
+        command.extend(["--build-arg", f"VLLM_VERSION={llm_runtime_version}"])
+    elif "transformers" in llm_runtime:
+        llm_runtime_version = llm_runtime.split("==")[1] if "==" in llm_runtime else TRANSFORMERS_VERSION
+        command.extend(["--build-arg", f"TRANSFORMERS_VERSION={llm_runtime_version}"])
 
     if system_pkg_str:
         command.extend(["--build-arg", f"SYSTEM_PACKAGES={system_pkg_str}"])
@@ -324,7 +401,8 @@ def prepare_build_command(args, tmpdir, dockerfile, build_vars):
             "--build-arg",
             (
                 "PYTHONPATH_USER_DEFINED_PROTO=/home/ray/"
-                "anaconda3/lib/python3.11/site-packages/instill/protogen/model/ray/v1alpha"
+                f"anaconda3/lib/python3.{python_version[4:]}/"
+                "site-packages/instill/protogen/model/ray/v1alpha"
             ),
         ]
     )
@@ -343,27 +421,29 @@ def build(args):
         config_check_required_fields(config)
         build_params = config["build"]
 
+        if build_params.get("gpu") and args.target_arch == "arm64":
+            raise ValueError("GPU is not supported on ARM64 architecture")
+
         # Prepare build environment
         (
-            python_version,
+            llm_runtime,
             ray_version,
-            instill_sdk_version,
-            cuda_suffix,
+            python_version,
+            cuda_version,
+            device_type,
             system_pkg_str,
-            python_pkg_list,
+            python_pkg_str,
+            instill_sdk_version,
         ) = prepare_build_environment(build_params)
 
-        # Process ARM64-specific packages
-        (
-            dockerfile,
-            vllm_version,
-            python_pkg_str,
-            target_arch_suffix,
-            python_pkg_list,
-        ) = process_arm64_packages(python_pkg_list, args.target_arch)
-
-        if build_params["llm_serving_runtime"] == "mlc":
-            dockerfile = "Dockerfile.mlc"
+        if "mlc-llm" in llm_runtime:
+            dockerfile = "Dockerfile.mlc-llm"
+        elif "vllm" in llm_runtime:
+            dockerfile = "Dockerfile.vllm"
+        elif "transformers" in llm_runtime:
+            dockerfile = "Dockerfile.transformers"
+        else:
+            dockerfile = "Dockerfile"
 
         with tempfile.TemporaryDirectory() as tmpdir:
             # Copy files to tmpdir
@@ -390,11 +470,9 @@ def build(args):
             if args.editable_project:
                 project_root = find_project_root(args.editable_project)
                 if project_root is None:
-                    raise FileNotFoundError(
-                        """
-                        [Instill] No Python project found at the specified path (missing setup.py or pyproject.toml)
-                    """
-                    )
+                    raise FileNotFoundError("""
+                    [Instill] No Python project found at the specified path (missing setup.py or pyproject.toml)
+                    """)
                 instill_sdk_project_name = os.path.basename(project_root)
                 Logger.i(f"[Instill] Found Python project: {instill_sdk_project_name}")
                 shutil.copytree(
@@ -404,22 +482,26 @@ def build(args):
                 )
 
             Logger.i("[Instill] Building model image...")
+            image_name_tag = parse_image_tag_name(args.name)
+            target_arch = parse_target_arch(args.target_arch)
             build_vars = [
-                vllm_version,
-                target_arch_suffix,
+                image_name_tag,
+                target_arch,
+                args.no_cache,
+                llm_runtime,
                 ray_version,
                 python_version,
-                cuda_suffix,
+                cuda_version,
+                device_type,
                 python_pkg_str,
                 system_pkg_str,
                 instill_sdk_version,
                 instill_sdk_project_name,
             ]
-            command = prepare_build_command(args, tmpdir, dockerfile, build_vars)
+            command = prepare_build_command(tmpdir, dockerfile, build_vars)
 
             subprocess.run(command, check=True)
-            image_name, tag = parse_image_name(args.name)
-            Logger.i(f"[Instill] {image_name}:{tag} built")
+            Logger.i(f"[Instill] {image_name_tag} built")
     except subprocess.CalledProcessError:
         Logger.e("[Instill] Build failed")
     except (ValueError, FileNotFoundError, OSError, IOError) as e:
@@ -432,15 +514,15 @@ def build(args):
 def push(args):
     """Push a built model image to a Docker registry."""
     registry = args.url
-    image_name, tag = parse_image_name(args.name)
-    tagged_image = f"{registry}/{image_name}:{tag}"
+    image_name_tag = parse_image_tag_name(args.name)
+    tagged_image = f"{registry}/{image_name_tag}"
     try:
         # Tag the image
         subprocess.run(
             [
                 "docker",
                 "tag",
-                f"{image_name}:{tag}",
+                f"{image_name_tag}",
                 tagged_image,
             ],
             check=True,
@@ -471,20 +553,24 @@ def run(args):
     docker_run = False
     try:
         name = uuid.uuid4()
-        image_name, tag = parse_image_name(args.name)
+        image_name_tag = parse_image_tag_name(args.name)
         Logger.i("[Instill] Starting model image...")
         if not args.gpu:
             subprocess.run(
                 [
                     "docker",
                     "run",
-                    "--rm",
                     "-d",
+                    "--privileged",
                     "--shm-size=4gb",
-                    "--platform=linux/amd64",
+                    "--rm",
+                    "-e",
+                    f"VLLM_CPU_OMP_THREADS_BIND=0-{args.num_of_cpus}",
+                    "-e",
+                    f"VLLM_CPU_KVCACHE_SPACE={args.cpu_kvcache_space}",
                     "--name",
                     str(name),
-                    f"{image_name}:{tag}",
+                    image_name_tag,
                     "serve",
                     "run",
                     "_model:entrypoint",
@@ -494,14 +580,25 @@ def run(args):
             )
         else:
             subprocess.run(
-                f"docker run \
-                    --rm -d --shm-size=4gb --name {str(name)} --gpus all \
-                    {image_name}:{tag} /bin/bash -c \
-                        \"serve build _model:entrypoint -o serve.yaml && \
-                        sed -i 's/app1/default/' serve.yaml && \
-                        sed -i 's/num_cpus: 0.0/num_gpus: {args.num_of_gpus}/' serve.yaml && \
-                        serve run serve.yaml\"",
-                shell=True,
+                [
+                    "docker",
+                    "run",
+                    "-d",
+                    "--privileged",
+                    "--shm-size=4gb",
+                    "--rm",
+                    "--name",
+                    str(name),
+                    "--device",
+                    f"nvidia.com/gpu:{args.num_of_gpus}",
+                    f"{image_name_tag}",
+                    "/bin/bash",
+                    "-c",
+                    "serve build _model:entrypoint -o serve.yaml && "
+                    f"sed -i 's/app1/default/' serve.yaml && "
+                    f"sed -i 's/num_cpus: 0.0/num_gpus: {args.num_of_gpus}/' serve.yaml && "
+                    "serve run serve.yaml",
+                ],
                 check=True,
                 stdout=subprocess.DEVNULL,
             )
