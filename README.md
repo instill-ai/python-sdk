@@ -22,7 +22,7 @@ Before you jump into creating your first application with this SDK tool, we reco
 
 ### Requirements
 
-- Python 3.9 - 3.12
+- Python 3.8 - 3.12
 - CUDA 12.2 - 12.8 (if you want to build a model with GPU support)
 
 ### Installation
