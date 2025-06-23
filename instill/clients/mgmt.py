@@ -14,7 +14,7 @@ import instill.protogen.core.mgmt.v1beta.mgmt_public_service_pb2_grpc as mgmt_se
 from instill.clients.base import Client, RequestFactory
 from instill.clients.instance import InstillInstance
 from instill.helpers.const import HOST_URL_PROD
-from instill.utils.error_handler import grpc_handler
+from instill.utils.error_handler import NamespaceException, grpc_handler
 
 
 class MgmtClient(Client):
@@ -75,7 +75,7 @@ class MgmtClient(Client):
         ):
             namespace_uid = self.get_organization(namespace_id).organization.uid
         else:
-            raise Exception("namespace ID not available")
+            raise NamespaceException("namespace ID not available")
 
         return namespace_uid
 

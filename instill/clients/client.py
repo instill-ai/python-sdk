@@ -5,7 +5,7 @@ from instill.clients.mgmt import MgmtClient
 from instill.clients.model import ModelClient
 from instill.clients.pipeline import PipelineClient
 from instill.helpers.const import HOST_URL_PROD
-from instill.utils.error_handler import NotServingException
+from instill.utils.error_handler import NamespaceException, NotServingException
 from instill.utils.logger import Logger
 
 
@@ -76,7 +76,7 @@ class InstillClient:
         ):
             namespace_uid = self.mgmt.get_organization(namespace_id).organization.uid
         else:
-            raise Exception("namespace ID not available")
+            raise NamespaceException("namespace ID not available")
 
         return namespace_uid
 

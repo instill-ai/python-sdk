@@ -7,8 +7,19 @@ from instill.utils.logger import Logger
 
 
 class NotServingException(Exception):
+    def __init__(self, message: str = "target host is not serving"):
+        self.message = message
+
     def __str__(self) -> str:
-        return "target host is not serving"
+        return self.message
+
+
+class NamespaceException(Exception):
+    def __init__(self, message: str = "namespace ID not available"):
+        self.message = message
+
+    def __str__(self) -> str:
+        return self.message
 
 
 def grpc_handler(func):
