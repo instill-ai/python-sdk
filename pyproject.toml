@@ -46,7 +46,7 @@ starlette = "^0.46.1"
 types-protobuf = "^4.24.0.1"
 types-pyyaml = "^6.0.12.11"
 types-requests = "2.31.0.6"
-urllib3 = "1.26.20"
+urllib3 = "2.5.0"
 uvicorn = "^0.34.0"
 virtualenv = "^20.30.0"
 
