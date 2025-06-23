@@ -2,6 +2,7 @@
 
 import time
 import subprocess
+import os
 
 from sniffer.api import select_runnable, file_validator, runnable
 try:
@@ -12,7 +13,16 @@ else:
     notify = Notifier.notify
 
 
-watch_paths = ["instill", "tests"]
+# Watch all relevant directories including subdirectories
+watch_paths = [
+    "instill",
+    "tests",
+    "instill/helpers",
+    "instill/helpers/commands",
+    "instill/clients",
+    "instill/resources",
+    "instill/utils"
+]
 
 
 class Options:
@@ -31,12 +41,27 @@ class Options:
 @select_runnable("run_targets")
 @file_validator
 def python_files(filename):
-    return filename.endswith(".py") and ".py." not in filename
+    """Check if file is a Python file and should trigger tests."""
+    # Ignore cache files and temporary files
+    if any(part in filename for part in ["__pycache__", ".pyc", ".pyo", ".pyd", ".py."]):
+        return False
+
+    # Only watch Python files in our project directories
+    if not filename.endswith(".py"):
+        return False
+
+    # Check if file is in one of our watched paths
+    for path in watch_paths:
+        if filename.startswith(path):
+            return True
+
+    return False
 
 
 @select_runnable("run_targets")
 @file_validator
 def html_files(filename):
+    """Check if file is an HTML/CSS/JS file for docs."""
     return filename.split(".")[-1] in ["html", "css", "js"]
 
 

@@ -4,7 +4,7 @@ ARG RAY_VERSION=2.47.0
 ARG PYTHON_VERSION=-py311
 ARG CUDA_VERSION=-cu128
 
-rayproject/ray:${RAY_VERSION}${PYTHON_VERSION}${CUDA_VERSION}
+FROM rayproject/ray:${RAY_VERSION}${PYTHON_VERSION}${CUDA_VERSION}
 
 # Install base packages
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
