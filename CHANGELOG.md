@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.18.0](https://github.com/instill-ai/python-sdk/compare/v0.17.2...v0.18.0) (2025-06-24)
+
+
+### Features
+
+* **cli,model,llm-runtime:** unify LLM runtimes ([#285](https://github.com/instill-ai/python-sdk/issues/285)) ([9950b8a](https://github.com/instill-ai/python-sdk/commit/9950b8ab4d3de8461c3af1f49efd4ecaa2613774))
+
+
+### Miscellaneous
+
+* **deps-dev:** bump setuptools from 74.1.2 to 78.1.1 ([#279](https://github.com/instill-ai/python-sdk/issues/279)) ([33fda4f](https://github.com/instill-ai/python-sdk/commit/33fda4f77536a37c724a36b0bb6be6e34612aad7))
+* **deps-dev:** bump tornado from 6.4.2 to 6.5.1 ([#280](https://github.com/instill-ai/python-sdk/issues/280)) ([0caa2fe](https://github.com/instill-ai/python-sdk/commit/0caa2fe7f79a31382141f21f0edc862650a8c107))
+* **deps:** bump protobuf from 4.25.3 to 4.25.8 ([#286](https://github.com/instill-ai/python-sdk/issues/286)) ([4b122cf](https://github.com/instill-ai/python-sdk/commit/4b122cfbd228f165e62c0b56e5b4310a71567af8))
+* **deps:** bump requests from 2.32.3 to 2.32.4 ([#282](https://github.com/instill-ai/python-sdk/issues/282)) ([970f693](https://github.com/instill-ai/python-sdk/commit/970f693bb0b35a3a894c42f7194fbe7d7453ad69))
+* **domain:** update production domain ([3f0efe0](https://github.com/instill-ai/python-sdk/commit/3f0efe07b17fa50a9224f8c8e798a1730cad3d54))
+* **mypy:** fix make check errors ([971e640](https://github.com/instill-ai/python-sdk/commit/971e64023aec28378ddc5dcea50519b1efd6e2e9))
+* **pacakge:** upgrade versions ([4e45717](https://github.com/instill-ai/python-sdk/commit/4e45717fce55b10e338474688dc4ddcd9ad1f373))
+* **poetry:** lock ray version on 2.47.0 ([da75851](https://github.com/instill-ai/python-sdk/commit/da75851f229bd46271c90e4e2559763fe5ac16cb))
+* release v0.18.0 ([f267cad](https://github.com/instill-ai/python-sdk/commit/f267cad0bd71066ec413cd1c90165d4ab1b4234a))
+* **release-please:** update config.json ([#281](https://github.com/instill-ai/python-sdk/issues/281)) ([13cbace](https://github.com/instill-ai/python-sdk/commit/13cbace811abd24c39039d907fc202cae26fda17))
+
+
+### Tests
+
+* **instill:** improve unit test coverage ([#287](https://github.com/instill-ai/python-sdk/issues/287)) ([6f38ea9](https://github.com/instill-ai/python-sdk/commit/6f38ea9036733b4c05e334fb48f9d9578f8e87df))
+
 ## [0.17.2](https://github.com/instill-ai/python-sdk/compare/v0.17.1...v0.17.2) (2025-05-17)
 
 
