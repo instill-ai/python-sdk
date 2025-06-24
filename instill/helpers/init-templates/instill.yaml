@@ -2,19 +2,20 @@ build:
   # (Required) Set to true if your model requires GPU.
   gpu: true
 
-  # (Optional) Python version, currently only support 3.11.
-  python_version: "3.11"
+  # (Optional) Python version
+  # support >=3.9 and <3.13 and default to 3.12
+  # python_version: "3.12"
 
   # (Optional) CUDA version if `gpu` is set to true
-  # support 12.1, 12.2, 12.3, 12.4, 12.5, 12.6, 12.7, 12.8
-  cuda_version: "12.8"
+  # support >=12.2 and <=12.8 and default to 12.8
+  # cuda_version: "12.8"
 
   # (Optional) A list of python packages in the format of {package-name}=={version}
   # python_packages:
-  #   - torch==2.3.1
-  #   - transformers==4.41.2
+  #   - numpy==1.21.0
+  #   - pandas==2.1.0
 
   # (Optional) A list of system packages from apt package manager
   # system_packages:
-  #   - htop
+  #   - curl
   #   - libglib2.0-0

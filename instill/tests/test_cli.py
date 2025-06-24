@@ -560,10 +560,11 @@ class TestUtils:
     @pytest.mark.parametrize(
         "version,expected",
         [
+            ("3.12", "312"),
             ("3.11", "311"),
             ("3.10", "310"),
             ("3.9", "39"),
-            ("", "311"),  # Default
+            ("", "312"),  # Default
         ],
     )
     def test_validate_python_version_valid(self, version, expected):
@@ -619,7 +620,7 @@ class TestUtils:
         build_params = {
             "gpu": False,
             "llm_runtime": "transformers",
-            "python_version": "3.11",
+            "python_version": "3.12",
             "system_packages": ["git", "curl"],
             "python_packages": ["numpy", "pandas"],
         }
@@ -640,7 +641,7 @@ class TestUtils:
 
         assert llm_runtime == "transformers"
         assert ray_version == "2.47.0"
-        assert python_version == "-py311"
+        assert python_version == "-py312"
         assert cuda_version == ""
         assert device_type == "-cpu"
         assert system_pkg_str == "git curl"
@@ -655,7 +656,7 @@ class TestUtils:
             "gpu": True,
             "cuda_version": "12.8",
             "llm_runtime": "vllm",
-            "python_version": "3.11",
+            "python_version": "3.12",
         }
 
         result = prepare_build_environment(build_params)
@@ -674,7 +675,7 @@ class TestUtils:
 
         assert llm_runtime == "vllm"
         assert ray_version == "2.47.0"
-        assert python_version == "-py311"
+        assert python_version == "-py312"
         assert cuda_version == "-cu128"
         assert device_type == "-gpu"
         assert system_pkg_str == ""
@@ -721,7 +722,7 @@ class TestUtils:
             False,  # no_cache
             "transformers",  # llm_runtime
             "2.47.0",  # ray_version
-            "-py311",  # python_version
+            "-py312",  # python_version
             "",  # cuda_version
             "-cpu",  # device_type
             "numpy pandas",  # python_pkg_str

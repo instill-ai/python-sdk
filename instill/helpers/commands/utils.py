@@ -47,18 +47,18 @@ def validate_python_version(python_version: str) -> str:
     """Validate Python version and return cleaned version string."""
     # Set default Python version if not provided
     if not python_version:
-        python_version = "3.11"
+        python_version = "3.12"
 
     # Validate Python version format first
     try:
         version_parts = [int(x) for x in python_version.split(".")]
         if len(version_parts) < 2:
             raise ValueError(
-                f"Invalid Python version format: {python_version}. Must be in format X.Y (e.g., 3.11)"
+                f"Invalid Python version format: {python_version}. Must be in format X.Y (e.g., 3.12)"
             )
     except (ValueError, IndexError) as exc:
         raise ValueError(
-            f"Invalid Python version format: {python_version}. Must be in format X.Y (e.g., 3.11)"
+            f"Invalid Python version format: {python_version}. Must be in format X.Y (e.g., 3.12)"
         ) from exc
 
     # Then validate version range
