@@ -2,7 +2,7 @@
 
 description = "python sdk for Instill AI products"
 name = "instill-sdk"
-version = "0.18.0"
+version = "0.18.1"
 
 packages = [{include = "instill"}]
 

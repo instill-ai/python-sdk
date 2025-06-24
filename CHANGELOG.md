@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.1](https://github.com/instill-ai/python-sdk/compare/v0.18.0...v0.18.1) (2025-06-24)
+
+
+### Miscellaneous
+
+* **python:** bump up default python support to 3.12 ([4668d91](https://github.com/instill-ai/python-sdk/commit/4668d9104b8d839ee813587d9d24e92b7b8fff5a))
+
 ## [0.18.0](https://github.com/instill-ai/python-sdk/compare/v0.17.2...v0.18.0) (2025-06-24)
 
 
