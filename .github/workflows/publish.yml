@@ -29,24 +29,17 @@ jobs:
           path: .venv
           key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
 
-      - name: Get rc version
-        if: github.ref == 'refs/heads/release-please--branches--main'
-        id: get-rc-version
-        continue-on-error: true
-        run: |
-          rc_version=$(curl -s https://pypi.org/pypi/instill-sdk/json | jq '.releases | keys' | sort -V | tr -d '[]"", ' | sed '/^$/d' | tail -1 | grep -Eo ''$(poetry version -s)'rc[0-9]+$' | grep -Eo '[0-9]+$')
-          echo "rc_version=$rc_version" >> $GITHUB_OUTPUT
-
-      - name: Tag rc version
+      - name: Get and set rc version
         if: github.ref == 'refs/heads/release-please--branches--main'
         run: |
-          if [ ${{ steps.get-rc-version.outcome }} == 'failure' ]; then
-            rc_version=0
-          else
-            rc_version=${{ steps.get-rc-version.outputs.rc_version }}
+          latest_version=$(curl -s https://pypi.org/pypi/instill-sdk/json | jq '.releases | keys' | sort -V | tr -d '[]"", ' | sed '/^$/d' | tail -1)
+          if echo "$latest_version" | grep -q 'rc[0-9]*$'; then
+            rc_version=$(echo "$latest_version" | sed 's/.*rc\([0-9]*\)/\1/')
             rc_version=$((rc_version+1))
+          else
+            rc_version=0
           fi
-          poetry version "$(poetry version -s)rc$(echo $rc_version)"
+          poetry version "$(poetry version -s)rc$rc_version"
 
       - name: Clean and Build
         run: |
