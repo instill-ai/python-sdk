@@ -67,9 +67,6 @@ PYTEST_OPTIONS += --cov-report=xml
 endif
 PYTEST_RERUN_OPTIONS := --last-failed --exitfirst
 
-.PHONY: test
-test: test-all ## Run unit and integration tests
-
 .PHONY: test-unit
 test-unit: install
 	@ ( mv $(FAILURES) $(FAILURES).bak || true ) > /dev/null 2>&1
@@ -79,23 +76,8 @@ ifndef DISABLE_COVERAGE
 	poetry run coveragespace update unit
 endif
 
-.PHONY: test-int
-test-int: install
-	@ if test -e $(FAILURES); then poetry run pytest tests $(PYTEST_RERUN_OPTIONS); fi
-	@ rm -rf $(FAILURES)
-	poetry run pytest tests $(PYTEST_OPTIONS)
-ifndef DISABLE_COVERAGE
-	poetry run coveragespace update integration
-endif
-
-.PHONY: test-all
-test-all: install
-	@ if test -e $(FAILURES); then poetry run pytest $(PACKAGE) tests $(PYTEST_RERUN_OPTIONS); fi
-	@ rm -rf $(FAILURES)
-	poetry run pytest $(PACKAGE) tests $(PYTEST_OPTIONS)
-ifndef DISABLE_COVERAGE
-	poetry run coveragespace update overall
-endif
+.PHONY: test
+test: test-unit
 
 .PHONY: read-coverage
 read-coverage:
@@ -105,8 +87,8 @@ read-coverage:
 
 .PHONY: format
 format: install
-	poetry run isort $(PACKAGE) tests notebooks
-	poetry run black $(PACKAGE) tests notebooks
+	poetry run isort $(PACKAGE) notebooks
+	poetry run black $(PACKAGE) notebooks
 	@ echo
 
 .PHONY: check
@@ -114,9 +96,9 @@ check: install format ## Run formatters, linters, and static analysis
 ifdef CI
 	git diff --exit-code
 endif
-	poetry run mypy $(PACKAGE) tests
-	poetry run pylint $(PACKAGE) tests --rcfile=.pylint.ini
-	poetry run pydocstyle $(PACKAGE) tests
+	poetry run mypy $(PACKAGE)
+	poetry run pylint $(PACKAGE) --rcfile=.pylint.ini
+	poetry run pydocstyle $(PACKAGE)
 
 # DOCUMENTATION ###############################################################
 
@@ -195,7 +177,7 @@ clean-all: clean
 
 .PHONY: .clean-install
 .clean-install:
-	find $(PACKAGE) tests -name '__pycache__' -delete
+	find $(PACKAGE) -name '__pycache__' -delete
 	rm -rf *.egg-info
 
 .PHONY: .clean-test

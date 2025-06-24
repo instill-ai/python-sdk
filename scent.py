@@ -31,8 +31,7 @@ class Options:
     rerun_args = (None, None, None)
 
     targets = [
-        (("make", "test-unit", "DISABLE_COVERAGE=true"), "Unit Tests", True),
-        (("make", "test-all"), "Integration Tests", False),
+        (("make", "test"), "Unit Tests", True),
         (("make", "check"), "Static Analysis", True),
         (("make", "docs", "CI=true"), None, True),
     ]

@@ -1,6 +1,6 @@
 # Instill Core Python SDK
 
-[![Unix Build Status](https://img.shields.io/github/actions/workflow/status/instill-ai/python-sdk/build.yml?branch=main&label=linux)](https://github.com/instill-ai/python-sdk/actions) [![Coverage Status](https://img.shields.io/codecov/c/gh/instill-ai/python-sdk)](https://codecov.io/gh/instill-ai/python-sdk) [![PyPI License](https://img.shields.io/pypi/l/instill-sdk.svg?color=lightgreen)](https://pypi.org/project/instill-sdk) [![PyPI Version](https://img.shields.io/pypi/v/instill-sdk.svg?color=lightgreen)](https://pypi.org/project/instill-sdk) [![PyPI Downloads](https://img.shields.io/pypi/dm/instill-sdk.svg?color=lightgreen)](https://pypistats.org/packages/instill-sdk)
+[![Unix Build Status](https://img.shields.io/github/actions/workflow/status/instill-ai/python-sdk/build.yml?branch=main&label=linux)](https://github.com/instill-ai/python-sdk/actions) [![Coverage Status](https://img.shields.io/codecov/c/gh/instill-ai/python-sdk)](https://codecov.io/gh/instill-ai/python-sdk) [![PyPI License](https://img.shields.io/pypi/l/instill-sdk.svg?color=blue)](https://pypi.org/project/instill-sdk) [![PyPI Version](https://img.shields.io/pypi/v/instill-sdk.svg?color=blue)](https://pypi.org/project/instill-sdk) [![PyPI Downloads](https://img.shields.io/pypi/dm/instill-sdk.svg?color=blue)](https://pypistats.org/packages/instill-sdk)
 
 > [!IMPORTANT]
 > **This SDK tool is under active development**
@@ -103,7 +103,7 @@ hosts:
 If you do not like the idea of having to create a config file, you can also setup your target instance by doing the following at the very beginning of your script.
 
 ```python
-from instill.configuration import global_config
+from instill.config import global_config
 
 global_config.set_default(
     url="api.instill-ai.com",

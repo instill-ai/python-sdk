@@ -27,10 +27,6 @@ Before delving into the details to come up with your first PR, please familiaris
 
 To confirm these system dependencies are configured correctly:
 
-```shell
-make doctor
-```
-
 #### Installation
 
 Fetch git submodules:
