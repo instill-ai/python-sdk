@@ -6,7 +6,7 @@ import requests
 from google.protobuf.struct_pb2 import Struct
 
 from instill.clients import InstillClient
-from instill.configuration import global_config
+from instill.config import global_config
 
 global_config.set_default(
     url="localhost:8080",

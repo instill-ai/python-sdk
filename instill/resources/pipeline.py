@@ -1,4 +1,7 @@
-# pylint: disable=no-member,wrong-import-position,no-name-in-module
+"""Pipeline resource module."""
+
+# pylint: disable=no-name-in-module,no-member
+
 from typing import Optional, Tuple, Union
 
 import grpc
@@ -68,7 +71,9 @@ class Pipeline(Resource):
         return self._resource
 
     @resource.setter
-    def resource(self, resource: pipeline_interface.Pipeline):
+    def resource(
+        self, resource: Optional[pipeline_interface.Pipeline]
+    ):  # pylint: disable=no-member
         self._resource = resource
 
     def _update(self):

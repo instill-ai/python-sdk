@@ -1,4 +1,7 @@
-# pylint: disable=no-member,wrong-import-position,no-name-in-module
+"""Model resource module."""
+
+# pylint: disable=no-member
+
 from typing import Optional
 
 import instill.protogen.model.model.v1alpha.model_definition_pb2 as model_definition_interface
@@ -54,13 +57,17 @@ class Model(Resource):
         return self._resource
 
     @resource.setter
-    def resource(self, resource: model_interface.Model):
+    def resource(
+        self, resource: Optional[model_interface.Model]
+    ):  # pylint: disable=no-member
         self._resource = resource
 
     def _update(self):
         self.resource = self.client.model.get_model(model_name=self.resource.id).model
 
-    def get_definition(self) -> model_definition_interface.ModelDefinition:
+    def get_definition(
+        self,
+    ) -> model_definition_interface.ModelDefinition:  # pylint: disable=no-member
         return self.resource.model_definition
 
     def delete(self, silent: bool = False):

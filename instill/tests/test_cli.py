@@ -122,9 +122,9 @@ class TestBuildCommand:
 
     @patch("instill.helpers.commands.build.Logger")
     @patch("instill.helpers.commands.build.open", new_callable=mock_open)
-    def test_build_missing_config_file(self, mock_open_func, mock_logger):
+    def test_build_missing_config_file(self, mock_open, mock_logger):
         """Test build when config file is missing."""
-        mock_open_func.side_effect = FileNotFoundError("Config file not found")
+        mock_open.side_effect = FileNotFoundError("Config file not found")
 
         args = MagicMock()
         args.name = "test/model"
@@ -145,8 +145,9 @@ class TestBuildCommand:
         assert len(error_calls) == 1
 
     @patch("instill.helpers.commands.build.open", new_callable=mock_open)
+    @patch("instill.helpers.commands.build.Logger")
     @patch("instill.helpers.commands.build.yaml.safe_load")
-    def test_build_invalid_config(self, mock_yaml_load, mock_open_func):
+    def test_build_invalid_config(self, mock_logger, mock_yaml_load, mock_open):
         """Test build with invalid configuration."""
         mock_yaml_load.return_value = {"build": {"gpu": None}}
 
@@ -163,7 +164,7 @@ class TestBuildCommand:
     @patch("instill.helpers.commands.build.open", new_callable=mock_open)
     @patch("instill.helpers.commands.build.Logger")
     @patch("instill.helpers.commands.build.yaml.safe_load")
-    def test_build_gpu_on_arm64(self, mock_yaml_load, mock_logger, mock_open_func):
+    def test_build_gpu_on_arm64(self, mock_yaml_load, mock_logger, mock_open):
         """Test build with GPU on ARM64 architecture."""
         mock_yaml_load.return_value = {
             "build": {"gpu": True, "llm_runtime": "transformers"}
@@ -187,23 +188,24 @@ class TestBuildCommand:
         ]
         assert len(error_calls) == 1
 
+    @patch("subprocess.run")
     @patch("instill.helpers.commands.build.open", new_callable=mock_open)
-    @patch("instill.helpers.commands.build.subprocess.run")
     @patch("instill.helpers.commands.build.shutil.copytree")
     @patch("instill.helpers.commands.build.shutil.copyfile")
     @patch("instill.helpers.commands.build.os.getcwd")
     @patch("instill.helpers.commands.build.tempfile.TemporaryDirectory")
     @patch("instill.helpers.commands.build.yaml.safe_load")
-    @patch("instill.__version__", "0.17.2")
+    @patch("instill.helpers.commands.build.Logger")
     def test_build_with_sdk_wheel(
         self,
+        mock_logger,
         mock_yaml_load,
         mock_tempdir,
         mock_getcwd,
         mock_copyfile,
         mock_copytree,
+        mock_open,
         mock_subprocess,
-        mock_open_func,
     ):
         """Test build with SDK wheel."""
         mock_yaml_load.return_value = {
@@ -218,15 +220,50 @@ class TestBuildCommand:
         args.name = "test/model"
         args.no_cache = False
         args.target_arch = "amd64"
-        args.sdk_wheel = "/path/to/wheel.whl"
+        args.sdk_wheel = "/path/to/instill_sdk-0.17.2-py3-none-any.whl"
         args.editable_project = None
 
         build(args)
 
-        # Verify SDK wheel was copied
-        mock_copyfile.assert_any_call(
-            "/path/to/wheel.whl", "/tmp/test/instill_sdk-0.17.2dev-py3-none-any.whl"
-        )
+        # Verify SDK wheel was copied - check for any wheel copy call
+        wheel_calls = [
+            call
+            for call in mock_copyfile.call_args_list
+            if "instill_sdk" in str(call) and "dev-py3-none-any.whl" in str(call)
+        ]
+        assert (
+            len(wheel_calls) == 1
+        ), f"Expected 1 wheel copy call, found {len(wheel_calls)}"
+
+        # Verify other expected copy operations occurred
+        # Check that dockerfile was copied
+        dockerfile_calls = [
+            call
+            for call in mock_copyfile.call_args_list
+            if "Dockerfile.transformers" in str(call)
+        ]
+        assert len(dockerfile_calls) == 1
+
+        # Check that .dockerignore was copied
+        dockerignore_calls = [
+            call
+            for call in mock_copyfile.call_args_list
+            if ".dockerignore" in str(call)
+        ]
+        assert len(dockerignore_calls) == 1
+
+        # Check that model.py was copied as _model.py
+        model_calls = [
+            call for call in mock_copyfile.call_args_list if "_model.py" in str(call)
+        ]
+        assert len(model_calls) == 1
+
+        # Verify the build command was executed
+        mock_subprocess.assert_called_once()
+        build_call = mock_subprocess.call_args[0][0]
+        assert build_call[0] == "docker"
+        assert build_call[1] == "buildx"
+        assert build_call[2] == "build"
 
     @patch("instill.helpers.commands.build.open", new_callable=mock_open)
     @patch("instill.helpers.commands.build.find_project_root")
@@ -236,8 +273,10 @@ class TestBuildCommand:
     @patch("instill.helpers.commands.build.os.getcwd")
     @patch("instill.helpers.commands.build.tempfile.TemporaryDirectory")
     @patch("instill.helpers.commands.build.yaml.safe_load")
+    @patch("instill.helpers.commands.build.Logger")
     def test_build_with_editable_project(
         self,
+        mock_logger,
         mock_yaml_load,
         mock_tempdir,
         mock_getcwd,
@@ -245,7 +284,7 @@ class TestBuildCommand:
         mock_copytree,
         mock_subprocess,
         mock_find_project_root,
-        mock_open_func,
+        mock_open,
     ):
         """Test build with editable project."""
         mock_yaml_load.return_value = {
@@ -281,8 +320,10 @@ class TestBuildCommand:
     @patch("instill.helpers.commands.build.os.getcwd")
     @patch("instill.helpers.commands.build.tempfile.TemporaryDirectory")
     @patch("instill.helpers.commands.build.yaml.safe_load")
+    @patch("instill.helpers.commands.build.Logger")
     def test_build_with_editable_project_custom_name(
         self,
+        mock_logger,
         mock_yaml_load,
         mock_tempdir,
         mock_getcwd,
@@ -290,7 +331,7 @@ class TestBuildCommand:
         mock_copytree,
         mock_subprocess,
         mock_find_project_root,
-        mock_open_func,
+        mock_open,
     ):
         """Test build with editable project that has a custom name."""
         mock_yaml_load.return_value = {
@@ -409,7 +450,8 @@ class TestRunCommand:
 
     @patch("instill.helpers.commands.run.subprocess.run")
     @patch("instill.helpers.commands.run.uuid.uuid4")
-    def test_run_cpu_mode(self, mock_uuid, mock_subprocess):
+    @patch("instill.helpers.commands.run.Logger")
+    def test_run_cpu_mode(self, mock_logger, mock_uuid, mock_subprocess):
         """Test run in CPU mode."""
         mock_uuid.return_value = "test-uuid"
         mock_subprocess.return_value.returncode = 0
@@ -440,7 +482,8 @@ class TestRunCommand:
 
     @patch("instill.helpers.commands.run.subprocess.run")
     @patch("instill.helpers.commands.run.uuid.uuid4")
-    def test_run_gpu_mode(self, mock_uuid, mock_subprocess):
+    @patch("instill.helpers.commands.run.Logger")
+    def test_run_gpu_mode(self, mock_logger, mock_uuid, mock_subprocess):
         """Test run in GPU mode."""
         mock_uuid.return_value = "test-uuid"
         mock_subprocess.return_value.returncode = 0

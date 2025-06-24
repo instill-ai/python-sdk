@@ -1,15 +1,10 @@
 """Base resource interface module."""
 
-# pylint: disable=no-member,wrong-import-position
 from abc import ABC, abstractmethod
 
 
 class Resource(ABC):
-    """Base interface class for creating resources.
-
-    Args:
-        ABC (abc.ABCMeta): std abstract class
-    """
+    """Base interface class for creating resources."""
 
     @property
     @abstractmethod
