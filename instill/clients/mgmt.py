@@ -623,29 +623,6 @@ class MgmtClient(Client):
         ).send_sync()
 
     @grpc_handler
-    def get_remaining_credit(
-        self,
-        namespace_id: str,
-        async_enabled: bool = False,
-    ) -> mgmt_interface.GetRemainingCreditResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.host.async_client.GetRemainingCredit,
-                request=mgmt_interface.GetRemainingCreditRequest(
-                    namespace_id=namespace_id,
-                ),
-                metadata=self.host.metadata + self.metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.host.client.GetRemainingCredit,
-            request=mgmt_interface.GetRemainingCreditRequest(
-                namespace_id=namespace_id,
-            ),
-            metadata=self.host.metadata + self.metadata,
-        ).send_sync()
-
-    @grpc_handler
     def list_pipeline_trigger_records(
         self,
         total_size: int = 10,
@@ -882,85 +859,6 @@ class MgmtClient(Client):
                 page_token=next_page_token,
                 view=mgmt_interface.VIEW_FULL,
                 filter=filter_str,
-            ),
-            metadata=self.host.metadata + self.metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def get_authenticated_subscription(
-        self,
-        async_enabled: bool = False,
-    ) -> mgmt_interface.GetAuthenticatedUserSubscriptionResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.host.async_client.GetAuthenticatedUserSubscription,
-                request=mgmt_interface.GetAuthenticatedUserSubscriptionRequest(),
-                metadata=self.host.metadata + self.metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.host.client.GetAuthenticatedUserSubscription,
-            request=mgmt_interface.GetAuthenticatedUserSubscriptionRequest(),
-            metadata=self.host.metadata + self.metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def get_organization_subscription(
-        self,
-        organization_id: str,
-        async_enabled: bool = False,
-    ) -> mgmt_interface.GetOrganizationSubscriptionResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.host.async_client.GetOrganizationSubscription,
-                request=mgmt_interface.GetOrganizationSubscriptionRequest(
-                    organization_id=organization_id,
-                ),
-                metadata=self.host.metadata + self.metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.host.client.GetOrganizationSubscription,
-            request=mgmt_interface.GetOrganizationSubscriptionRequest(
-                organization_id=organization_id,
-            ),
-            metadata=self.host.metadata + self.metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def list_credit_consumption_chart_records(
-        self,
-        namespace_id: str,
-        aggregation_window: str,
-        start: datetime,
-        stop: datetime,
-        async_enabled: bool = False,
-    ) -> metric_interface.ListCreditConsumptionChartRecordsResponse:
-
-        start_timestamp = timestamp_pb2.Timestamp()
-        start_timestamp.FromDatetime(start)
-        stop_timestamp = timestamp_pb2.Timestamp()
-        stop_timestamp.FromDatetime(stop)
-
-        if async_enabled:
-            return RequestFactory(
-                method=self.host.async_client.ListCreditConsumptionChartRecords,
-                request=metric_interface.ListCreditConsumptionChartRecordsRequest(
-                    namespace_id=namespace_id,
-                    aggregation_window=aggregation_window,
-                    start=start_timestamp,
-                    stop=stop_timestamp,
-                ),
-                metadata=self.host.metadata + self.metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.host.client.ListCreditConsumptionChartRecords,
-            request=metric_interface.ListCreditConsumptionChartRecordsRequest(
-                namespace_id=namespace_id,
-                aggregation_window=aggregation_window,
-                start=start_timestamp,
-                stop=stop_timestamp,
             ),
             metadata=self.host.metadata + self.metadata,
         ).send_sync()

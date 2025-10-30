@@ -7,12 +7,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: "true"
+          submodules: "recursive"
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -27,6 +27,15 @@ jobs:
         with:
           path: .venv
           key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+
+      - name: Configure Poetry
+        run: poetry config virtualenvs.in-project true
+
+      - name: Regenerate lock file for CI
+        run: poetry lock
+
+      - name: Stage lock file to avoid git diff errors
+        run: git add poetry.lock
 
       - name: Install dependencies
         run: make install
