@@ -28,27 +28,35 @@ keywords = []
 [tool.poetry.dependencies]
 
 fastapi = "^0.115.12"
-google-api-core = "^2.11.1"
+google-api-core = {version = "^2.22.0", extras = ["grpc"]}
 googleapis-common-protos = "^1.60.0"
-grpcio = "^1.59.0"
+grpcio = "^1.68.0"
 jsonschema = "^4.20.0"
-numpy = "^1.21.0"
-pillow = "^10.1.0"
+numpy = ">=1.26,<1.28"
+pillow = "^11.0.0"
 pkginfo = "^1.12.1.2"
-protobuf = "4.25.8"
+protobuf = "^5.28.0"
 protoc-gen-openapiv2 = "^0.0.1"
 pydantic = ">=1.10.13"
-python = ">=3.9,<3.13"
+python = ">=3.9,<3.14"
 pyyaml = "^6.0.1"
-ray = "2.47.0"
+ray = {version = "^2.47.0", extras = ["default"]}
 requests = "2.32.3"
 starlette = "^0.46.1"
-types-protobuf = "^4.24.0.1"
+types-protobuf = "^5.28.0"
 types-pyyaml = "^6.0.12.11"
 types-requests = "2.31.0.6"
 urllib3 = "1.26.20"
 uvicorn = "^0.34.0"
 virtualenv = "^20.30.0"
+
+# Explicit pins to avoid dependency conflicts
+# Upgrading opentelemetry packages to support protobuf 5.x
+opentelemetry-exporter-otlp = "^1.29.0"
+opentelemetry-exporter-otlp-proto-common = "^1.29.0"
+opentelemetry-exporter-otlp-proto-grpc = "^1.29.0"
+opentelemetry-exporter-otlp-proto-http = "^1.29.0"
+opentelemetry-proto = "^1.29.0"
 
 [tool.poetry.scripts]
 instill = "instill.helpers.cli:cli"
@@ -144,16 +152,16 @@ mkdocs = "~1.3"
 pygments = "^2.11.1"
 
 # Tooling
-MacFSEvents = {version = "*", platform = "darwin"}
+MacFSEvents = {version = "*", platform = "darwin", python = "<3.13"}
 datamodel-code-generator = "^0.25.2"
-grpcio-tools = "1.62.0"
+grpcio-tools = "^1.68.0"
 ipykernel = "^6.28.0"
 ipython = "^8.10.0"
 jsonref = "^1.1.0"
 mypy-protobuf = "^3.5.0"
-pyinstaller = "6.0.0"
+pyinstaller = "^6.16.0"
 pync = {version = "*", platform = "darwin"}
-sniffer = "*"
+sniffer = {version = "*", python = "<3.13"}
 
 # Publish
 twine = "^4.0.2"

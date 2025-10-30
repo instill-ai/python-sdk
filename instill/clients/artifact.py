@@ -3,15 +3,15 @@ from datetime import datetime
 from typing import Callable, List, Optional
 
 # common
-from google.protobuf import timestamp_pb2
+from google.protobuf import field_mask_pb2, timestamp_pb2
 
 # artifact
 import instill.protogen.artifact.artifact.v1alpha.artifact_pb2 as artifact_interface
 import instill.protogen.artifact.artifact.v1alpha.artifact_public_service_pb2_grpc as artifact_service
 import instill.protogen.artifact.artifact.v1alpha.chunk_pb2 as chunk_interface
-import instill.protogen.artifact.artifact.v1alpha.file_catalog_pb2 as file_catalog_interface
+import instill.protogen.artifact.artifact.v1alpha.file_pb2 as file_interface
+import instill.protogen.artifact.artifact.v1alpha.knowledge_base_pb2 as knowledge_base_interface
 import instill.protogen.artifact.artifact.v1alpha.object_pb2 as object_interface
-import instill.protogen.artifact.artifact.v1alpha.qa_pb2 as qa_interface
 import instill.protogen.common.healthcheck.v1beta.healthcheck_pb2 as healthcheck
 from instill.clients.base import Client, RequestFactory
 from instill.clients.instance import InstillInstance
@@ -112,22 +112,22 @@ class ArtifactClient(Client):
             return False
 
     @grpc_handler
-    def create_catalog(
+    def create_knowledge_base(
         self,
         namespace_id: str,
-        name: str,
-        description: str,
+        knowledge_base_id: str = "",
+        description: str = "",
         tags: Optional[list[str]] = None,
         async_enabled: bool = False,
-    ) -> artifact_interface.CreateCatalogResponse:
+    ) -> knowledge_base_interface.CreateKnowledgeBaseResponse:
         tags = tags if tags is not None else []
 
         if async_enabled:
             return RequestFactory(
-                method=self.host.async_client.CreateCatalog,
-                request=artifact_interface.CreateCatalogRequest(
+                method=self.host.async_client.CreateKnowledgeBase,
+                request=knowledge_base_interface.CreateKnowledgeBaseRequest(
                     namespace_id=namespace_id,
-                    name=name,
+                    id=knowledge_base_id,
                     description=description,
                     tags=tags,
                 ),
@@ -135,10 +135,10 @@ class ArtifactClient(Client):
             ).send_async()
 
         return RequestFactory(
-            method=self.host.client.CreateCatalog,
-            request=artifact_interface.CreateCatalogRequest(
+            method=self.host.client.CreateKnowledgeBase,
+            request=knowledge_base_interface.CreateKnowledgeBaseRequest(
                 namespace_id=namespace_id,
-                name=name,
+                id=knowledge_base_id,
                 description=description,
                 tags=tags,
             ),
@@ -146,201 +146,328 @@ class ArtifactClient(Client):
         ).send_sync()
 
     @grpc_handler
-    def list_catalogs(
+    def get_knowledge_base(
         self,
         namespace_id: str,
+        knowledge_base_id: str,
         async_enabled: bool = False,
-    ) -> artifact_interface.ListCatalogsResponse:
+    ) -> knowledge_base_interface.GetKnowledgeBaseResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.host.async_client.ListCatalogs,
-                request=artifact_interface.ListCatalogsRequest(
+                method=self.host.async_client.GetKnowledgeBase,
+                request=knowledge_base_interface.GetKnowledgeBaseRequest(
                     namespace_id=namespace_id,
+                    knowledge_base_id=knowledge_base_id,
                 ),
                 metadata=self.host.metadata + self.metadata,
             ).send_async()
 
         return RequestFactory(
-            method=self.host.client.ListCatalogs,
-            request=artifact_interface.ListCatalogsRequest(
+            method=self.host.client.GetKnowledgeBase,
+            request=knowledge_base_interface.GetKnowledgeBaseRequest(
                 namespace_id=namespace_id,
+                knowledge_base_id=knowledge_base_id,
             ),
             metadata=self.host.metadata + self.metadata,
         ).send_sync()
 
     @grpc_handler
-    def update_catalog(
-        self,
-        catalog_id: str,
-        description: str,
-        namespace_id: str,
-        tags: Optional[list[str]] = None,
-        async_enabled: bool = False,
-    ) -> artifact_interface.UpdateCatalogResponse:
-        tags = tags if tags is not None else []
-
-        if async_enabled:
-            return RequestFactory(
-                method=self.host.async_client.UpdateCatalog,
-                request=artifact_interface.UpdateCatalogRequest(
-                    catalog_id=catalog_id,
-                    description=description,
-                    tags=tags,
-                    namespace_id=namespace_id,
-                ),
-                metadata=self.host.metadata + self.metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.host.client.UpdateCatalog,
-            request=artifact_interface.UpdateCatalogRequest(
-                catalog_id=catalog_id,
-                description=description,
-                tags=tags,
-                namespace_id=namespace_id,
-            ),
-            metadata=self.host.metadata + self.metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def delete_catalog(
+    def list_knowledge_bases(
         self,
         namespace_id: str,
-        catalog_id: str,
-        async_enabled: bool = False,
-    ) -> artifact_interface.DeleteCatalogResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.host.async_client.DeleteCatalog,
-                request=artifact_interface.DeleteCatalogRequest(
-                    namespace_id=namespace_id,
-                    catalog_id=catalog_id,
-                ),
-                metadata=self.host.metadata + self.metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.host.client.DeleteCatalog,
-            request=artifact_interface.DeleteCatalogRequest(
-                namespace_id=namespace_id,
-                catalog_id=catalog_id,
-            ),
-            metadata=self.host.metadata + self.metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def upload_catalog_file(
-        self,
-        namespace_id: str,
-        catalog_id: str,
-        file_path: str,
-        async_enabled: bool = False,
-    ) -> artifact_interface.UploadCatalogFileResponse:
-        file = process_file(file_path)
-
-        if async_enabled:
-            return RequestFactory(
-                method=self.host.async_client.UploadCatalogFile,
-                request=artifact_interface.UploadCatalogFileRequest(
-                    namespace_id=namespace_id,
-                    catalog_id=catalog_id,
-                    file=file,
-                ),
-                metadata=self.host.metadata + self.metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.host.client.UploadCatalogFile,
-            request=artifact_interface.UploadCatalogFileRequest(
-                namespace_id=namespace_id,
-                catalog_id=catalog_id,
-                file=file,
-            ),
-            metadata=self.host.metadata + self.metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def delete_catalog_file(
-        self,
-        file_uid: str,
-        async_enabled: bool = False,
-    ) -> artifact_interface.DeleteCatalogFileResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.host.async_client.DeleteCatalogFile,
-                request=artifact_interface.DeleteCatalogFileRequest(
-                    file_uid=file_uid,
-                ),
-                metadata=self.host.metadata + self.metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.host.client.DeleteCatalogFile,
-            request=artifact_interface.DeleteCatalogFileRequest(
-                file_uid=file_uid,
-            ),
-            metadata=self.host.metadata + self.metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def process_catalog_files(
-        self,
-        file_uids: list[str],
-        async_enabled: bool = False,
-    ) -> artifact_interface.ProcessCatalogFilesResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.host.async_client.ProcessCatalogFiles,
-                request=artifact_interface.ProcessCatalogFilesRequest(
-                    file_uids=file_uids,
-                ),
-                metadata=self.host.metadata + self.metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.host.client.ProcessCatalogFiles,
-            request=artifact_interface.ProcessCatalogFilesRequest(
-                file_uids=file_uids,
-            ),
-            metadata=self.host.metadata + self.metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def list_catalog_files(
-        self,
-        namespace_id: str,
-        catalog_id: str,
-        files_filter: Optional[list[str]] = None,
         page_size: int = 10,
         page_token: str = "",
+        filter_str: str = "",
         async_enabled: bool = False,
-    ) -> artifact_interface.ListCatalogFilesResponse:
-        list_catalog_files_filter = artifact_interface.ListCatalogFilesFilter()
-        files_filter = files_filter if files_filter is not None else []
-        for file_uid in files_filter:
-            list_catalog_files_filter.file_uids.append(file_uid)
-
+    ) -> knowledge_base_interface.ListKnowledgeBasesResponse:
         if async_enabled:
             return RequestFactory(
-                method=self.host.async_client.ListCatalogFiles,
-                request=artifact_interface.ListCatalogFilesRequest(
+                method=self.host.async_client.ListKnowledgeBases,
+                request=knowledge_base_interface.ListKnowledgeBasesRequest(
                     namespace_id=namespace_id,
-                    catalog_id=catalog_id,
-                    filter=list_catalog_files_filter,
                     page_size=page_size,
                     page_token=page_token,
+                    filter=filter_str,
                 ),
                 metadata=self.host.metadata + self.metadata,
             ).send_async()
 
         return RequestFactory(
-            method=self.host.client.ListCatalogFiles,
-            request=artifact_interface.ListCatalogFilesRequest(
+            method=self.host.client.ListKnowledgeBases,
+            request=knowledge_base_interface.ListKnowledgeBasesRequest(
                 namespace_id=namespace_id,
-                catalog_id=catalog_id,
-                filter=list_catalog_files_filter,
                 page_size=page_size,
                 page_token=page_token,
+                filter=filter_str,
+            ),
+            metadata=self.host.metadata + self.metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def update_knowledge_base(
+        self,
+        namespace_id: str,
+        knowledge_base_id: str,
+        description: str = "",
+        tags: Optional[list[str]] = None,
+        async_enabled: bool = False,
+    ) -> knowledge_base_interface.UpdateKnowledgeBaseResponse:
+        tags = tags if tags is not None else []
+
+        # Create the knowledge base object with the fields to update
+        kb = knowledge_base_interface.KnowledgeBase(
+            description=description,
+            tags=tags,
+        )
+
+        # Create update mask
+        update_mask = field_mask_pb2.FieldMask(paths=["description", "tags"])
+
+        if async_enabled:
+            return RequestFactory(
+                method=self.host.async_client.UpdateKnowledgeBase,
+                request=knowledge_base_interface.UpdateKnowledgeBaseRequest(
+                    namespace_id=namespace_id,
+                    knowledge_base_id=knowledge_base_id,
+                    knowledge_base=kb,
+                    update_mask=update_mask,
+                ),
+                metadata=self.host.metadata + self.metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.host.client.UpdateKnowledgeBase,
+            request=knowledge_base_interface.UpdateKnowledgeBaseRequest(
+                namespace_id=namespace_id,
+                knowledge_base_id=knowledge_base_id,
+                knowledge_base=kb,
+                update_mask=update_mask,
+            ),
+            metadata=self.host.metadata + self.metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def delete_knowledge_base(
+        self,
+        namespace_id: str,
+        knowledge_base_id: str,
+        async_enabled: bool = False,
+    ) -> knowledge_base_interface.DeleteKnowledgeBaseResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.host.async_client.DeleteKnowledgeBase,
+                request=knowledge_base_interface.DeleteKnowledgeBaseRequest(
+                    namespace_id=namespace_id,
+                    knowledge_base_id=knowledge_base_id,
+                ),
+                metadata=self.host.metadata + self.metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.host.client.DeleteKnowledgeBase,
+            request=knowledge_base_interface.DeleteKnowledgeBaseRequest(
+                namespace_id=namespace_id,
+                knowledge_base_id=knowledge_base_id,
+            ),
+            metadata=self.host.metadata + self.metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def create_file(
+        self,
+        namespace_id: str,
+        knowledge_base_id: str,
+        file_path: str = "",
+        file_data: Optional[file_interface.File] = None,
+        async_enabled: bool = False,
+    ) -> file_interface.CreateFileResponse:
+        if file_data is None:
+            file_data = process_file(file_path)
+
+        if async_enabled:
+            return RequestFactory(
+                method=self.host.async_client.CreateFile,
+                request=file_interface.CreateFileRequest(
+                    namespace_id=namespace_id,
+                    knowledge_base_id=knowledge_base_id,
+                    file=file_data,
+                ),
+                metadata=self.host.metadata + self.metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.host.client.CreateFile,
+            request=file_interface.CreateFileRequest(
+                namespace_id=namespace_id,
+                knowledge_base_id=knowledge_base_id,
+                file=file_data,
+            ),
+            metadata=self.host.metadata + self.metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def get_file(
+        self,
+        namespace_id: str,
+        knowledge_base_id: str,
+        file_id: str,
+        view: Optional[file_interface.File.View] = None,
+        async_enabled: bool = False,
+    ) -> file_interface.GetFileResponse:
+        if async_enabled:
+            request = file_interface.GetFileRequest(
+                namespace_id=namespace_id,
+                knowledge_base_id=knowledge_base_id,
+                file_id=file_id,
+            )
+            if view is not None:
+                request.view = view  # type: ignore[assignment]
+            return RequestFactory(
+                method=self.host.async_client.GetFile,
+                request=request,
+                metadata=self.host.metadata + self.metadata,
+            ).send_async()
+
+        request = file_interface.GetFileRequest(
+            namespace_id=namespace_id,
+            knowledge_base_id=knowledge_base_id,
+            file_id=file_id,
+        )
+        if view is not None:
+            request.view = view  # type: ignore[assignment]
+        return RequestFactory(
+            method=self.host.client.GetFile,
+            request=request,
+            metadata=self.host.metadata + self.metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def list_files(
+        self,
+        namespace_id: str,
+        knowledge_base_id: str,
+        page_size: int = 10,
+        page_token: str = "",
+        filter_str: str = "",
+        async_enabled: bool = False,
+    ) -> file_interface.ListFilesResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.host.async_client.ListFiles,
+                request=file_interface.ListFilesRequest(
+                    namespace_id=namespace_id,
+                    knowledge_base_id=knowledge_base_id,
+                    page_size=page_size,
+                    page_token=page_token,
+                    filter=filter_str,
+                ),
+                metadata=self.host.metadata + self.metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.host.client.ListFiles,
+            request=file_interface.ListFilesRequest(
+                namespace_id=namespace_id,
+                knowledge_base_id=knowledge_base_id,
+                page_size=page_size,
+                page_token=page_token,
+                filter=filter_str,
+            ),
+            metadata=self.host.metadata + self.metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def update_file(
+        self,
+        namespace_id: str,
+        knowledge_base_id: str,
+        file_id: str,
+        file_data: file_interface.File,
+        update_mask: field_mask_pb2.FieldMask,
+        async_enabled: bool = False,
+    ) -> file_interface.UpdateFileResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.host.async_client.UpdateFile,
+                request=file_interface.UpdateFileRequest(
+                    namespace_id=namespace_id,
+                    knowledge_base_id=knowledge_base_id,
+                    file_id=file_id,
+                    file=file_data,
+                    update_mask=update_mask,
+                ),
+                metadata=self.host.metadata + self.metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.host.client.UpdateFile,
+            request=file_interface.UpdateFileRequest(
+                namespace_id=namespace_id,
+                knowledge_base_id=knowledge_base_id,
+                file_id=file_id,
+                file=file_data,
+                update_mask=update_mask,
+            ),
+            metadata=self.host.metadata + self.metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def delete_file(
+        self,
+        namespace_id: str,
+        knowledge_base_id: str,
+        file_id: str,
+        async_enabled: bool = False,
+    ) -> file_interface.DeleteFileResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.host.async_client.DeleteFile,
+                request=file_interface.DeleteFileRequest(
+                    namespace_id=namespace_id,
+                    knowledge_base_id=knowledge_base_id,
+                    file_id=file_id,
+                ),
+                metadata=self.host.metadata + self.metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.host.client.DeleteFile,
+            request=file_interface.DeleteFileRequest(
+                namespace_id=namespace_id,
+                knowledge_base_id=knowledge_base_id,
+                file_id=file_id,
+            ),
+            metadata=self.host.metadata + self.metadata,
+        ).send_sync()
+
+    @grpc_handler
+    def get_chunk(
+        self,
+        namespace_id: str,
+        knowledge_base_id: str,
+        file_id: str,
+        chunk_id: str,
+        async_enabled: bool = False,
+    ) -> chunk_interface.GetChunkResponse:
+        if async_enabled:
+            return RequestFactory(
+                method=self.host.async_client.GetChunk,
+                request=chunk_interface.GetChunkRequest(
+                    namespace_id=namespace_id,
+                    knowledge_base_id=knowledge_base_id,
+                    file_id=file_id,
+                    chunk_id=chunk_id,
+                ),
+                metadata=self.host.metadata + self.metadata,
+            ).send_async()
+
+        return RequestFactory(
+            method=self.host.client.GetChunk,
+            request=chunk_interface.GetChunkRequest(
+                namespace_id=namespace_id,
+                knowledge_base_id=knowledge_base_id,
+                file_id=file_id,
+                chunk_id=chunk_id,
             ),
             metadata=self.host.metadata + self.metadata,
         ).send_sync()
@@ -349,8 +476,11 @@ class ArtifactClient(Client):
     def list_chunks(
         self,
         namespace_id: str,
-        catalog_id: str,
-        file_uid: str,
+        knowledge_base_id: str,
+        file_id: str,
+        page_size: int = 100,
+        page_token: str = "",
+        filter_str: str = "",
         async_enabled: bool = False,
     ) -> chunk_interface.ListChunksResponse:
         if async_enabled:
@@ -358,8 +488,11 @@ class ArtifactClient(Client):
                 method=self.host.async_client.ListChunks,
                 request=chunk_interface.ListChunksRequest(
                     namespace_id=namespace_id,
-                    catalog_id=catalog_id,
-                    file_uid=file_uid,
+                    knowledge_base_id=knowledge_base_id,
+                    file_id=file_id,
+                    page_size=page_size,
+                    page_token=page_token,
+                    filter=filter_str,
                 ),
                 metadata=self.host.metadata + self.metadata,
             ).send_async()
@@ -368,37 +501,11 @@ class ArtifactClient(Client):
             method=self.host.client.ListChunks,
             request=chunk_interface.ListChunksRequest(
                 namespace_id=namespace_id,
-                catalog_id=catalog_id,
-                file_uid=file_uid,
-            ),
-            metadata=self.host.metadata + self.metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def get_source_file(
-        self,
-        namespace_id: str,
-        catalog_id: str,
-        file_uid: str,
-        async_enabled: bool = False,
-    ) -> chunk_interface.GetSourceFileResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.host.async_client.GetSourceFile,
-                request=chunk_interface.GetSourceFileRequest(
-                    namespace_id=namespace_id,
-                    catalog_id=catalog_id,
-                    file_uid=file_uid,
-                ),
-                metadata=self.host.metadata + self.metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.host.client.GetSourceFile,
-            request=chunk_interface.GetSourceFileRequest(
-                namespace_id=namespace_id,
-                catalog_id=catalog_id,
-                file_uid=file_uid,
+                knowledge_base_id=knowledge_base_id,
+                file_id=file_id,
+                page_size=page_size,
+                page_token=page_token,
+                filter=filter_str,
             ),
             metadata=self.host.metadata + self.metadata,
         ).send_sync()
@@ -406,7 +513,9 @@ class ArtifactClient(Client):
     @grpc_handler
     def update_chunk(
         self,
-        chunk_uid: str,
+        namespace_id: str,
+        knowledge_base_id: str,
+        chunk_id: str,
         retrievable: bool,
         async_enabled: bool = False,
     ) -> chunk_interface.UpdateChunkResponse:
@@ -414,7 +523,9 @@ class ArtifactClient(Client):
             return RequestFactory(
                 method=self.host.async_client.UpdateChunk,
                 request=chunk_interface.UpdateChunkRequest(
-                    chunk_uid=chunk_uid,
+                    namespace_id=namespace_id,
+                    knowledge_base_id=knowledge_base_id,
+                    chunk_id=chunk_id,
                     retrievable=retrievable,
                 ),
                 metadata=self.host.metadata + self.metadata,
@@ -423,105 +534,65 @@ class ArtifactClient(Client):
         return RequestFactory(
             method=self.host.client.UpdateChunk,
             request=chunk_interface.UpdateChunkRequest(
-                chunk_uid=chunk_uid,
+                namespace_id=namespace_id,
+                knowledge_base_id=knowledge_base_id,
+                chunk_id=chunk_id,
                 retrievable=retrievable,
             ),
             metadata=self.host.metadata + self.metadata,
         ).send_sync()
 
     @grpc_handler
-    def similarity_chunks_search(
+    def search_chunks(
         self,
         namespace_id: str,
-        catalog_id: str,
+        knowledge_base_id: str,
         text_prompt: str,
-        top_k: int,
+        top_k: int = 5,
+        chunk_type: Optional[chunk_interface.Chunk.Type] = None,
+        file_media_type: Optional[file_interface.File.FileMediaType] = None,
+        file_ids: Optional[list[str]] = None,
+        tags: Optional[list[str]] = None,
         async_enabled: bool = False,
-    ) -> chunk_interface.SimilarityChunksSearchResponse:
+    ) -> chunk_interface.SearchChunksResponse:
         if async_enabled:
-            return RequestFactory(
-                method=self.host.async_client.SimilarityChunksSearch,
-                request=chunk_interface.SimilarityChunksSearchRequest(
-                    namespace_id=namespace_id,
-                    catalog_id=catalog_id,
-                    text_prompt=text_prompt,
-                    top_k=top_k,
-                ),
-                metadata=self.host.metadata + self.metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.host.client.SimilarityChunksSearch,
-            request=chunk_interface.SimilarityChunksSearchRequest(
+            request = chunk_interface.SearchChunksRequest(
                 namespace_id=namespace_id,
-                catalog_id=catalog_id,
+                knowledge_base_id=knowledge_base_id,
                 text_prompt=text_prompt,
                 top_k=top_k,
-            ),
-            metadata=self.host.metadata + self.metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def question_answering(
-        self,
-        namespace_id: str,
-        catalog_id: str,
-        question: str,
-        top_k: int,
-        async_enabled: bool = False,
-    ) -> qa_interface.QuestionAnsweringResponse:
-        if async_enabled:
+            )
+            if chunk_type is not None:
+                request.type = chunk_type  # type: ignore[assignment]
+            if file_media_type is not None:
+                request.file_media_type = file_media_type
+            if file_ids is not None:
+                request.file_ids.extend(file_ids)
+            if tags is not None:
+                request.tags.extend(tags)
             return RequestFactory(
-                method=self.host.async_client.QuestionAnswering,
-                request=qa_interface.QuestionAnsweringRequest(
-                    namespace_id=namespace_id,
-                    catalog_id=catalog_id,
-                    question=question,
-                    top_k=top_k,
-                ),
+                method=self.host.async_client.SearchChunks,
+                request=request,
                 metadata=self.host.metadata + self.metadata,
             ).send_async()
 
+        request = chunk_interface.SearchChunksRequest(
+            namespace_id=namespace_id,
+            knowledge_base_id=knowledge_base_id,
+            text_prompt=text_prompt,
+            top_k=top_k,
+        )
+        if chunk_type is not None:
+            request.type = chunk_type  # type: ignore[assignment]
+        if file_media_type is not None:
+            request.file_media_type = file_media_type
+        if file_ids is not None:
+            request.file_ids.extend(file_ids)
+        if tags is not None:
+            request.tags.extend(tags)
         return RequestFactory(
-            method=self.host.client.QuestionAnswering,
-            request=qa_interface.QuestionAnsweringRequest(
-                namespace_id=namespace_id,
-                catalog_id=catalog_id,
-                question=question,
-                top_k=top_k,
-            ),
-            metadata=self.host.metadata + self.metadata,
-        ).send_sync()
-
-    @grpc_handler
-    def get_file_catalog(
-        self,
-        namespace_id: str,
-        catalog_id: str,
-        file_id: str = "",
-        file_uid: str = "",
-        async_enabled: bool = False,
-    ) -> file_catalog_interface.GetFileCatalogResponse:
-        if async_enabled:
-            return RequestFactory(
-                method=self.host.async_client.GetFileCatalog,
-                request=file_catalog_interface.GetFileCatalogRequest(
-                    namespace_id=namespace_id,
-                    catalog_id=catalog_id,
-                    file_id=file_id,
-                    file_uid=file_uid,
-                ),
-                metadata=self.host.metadata + self.metadata,
-            ).send_async()
-
-        return RequestFactory(
-            method=self.host.client.GetFileCatalog,
-            request=file_catalog_interface.GetFileCatalogRequest(
-                namespace_id=namespace_id,
-                catalog_id=catalog_id,
-                file_id=file_id,
-                file_uid=file_uid,
-            ),
+            method=self.host.client.SearchChunks,
+            request=request,
             metadata=self.host.metadata + self.metadata,
         ).send_sync()
 

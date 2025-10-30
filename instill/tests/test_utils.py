@@ -1,6 +1,6 @@
 """Unit tests for the instill.utils module."""
 
-# pylint: disable=unused-argument,unused-variable
+# pylint: disable=unused-argument,unused-variable,no-member
 import logging
 import os
 import tempfile
@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 import grpc
 import pytest
 
+import instill.protogen.artifact.artifact.v1alpha.file_pb2 as file_interface
 from instill.utils.error_handler import (
     NamespaceException,
     NotServingException,
@@ -326,7 +327,7 @@ class TestProcessFile:
     def test_get_file_type_text(self):
         """Test get_file_type for text files."""
         # Test various text file extensions that are actually supported
-        text_extensions = [".txt", ".log", ".ini", ".csv"]
+        text_extensions = [".txt", ".log", ".ini"]
 
         for ext in text_extensions:
             with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as temp_file:
@@ -334,10 +335,21 @@ class TestProcessFile:
                 temp_file.flush()
 
                 file_type = get_file_type(temp_file.name, ext)
-                assert file_type == "FILE_TYPE_TEXT"
+                assert file_type == file_interface.File.TYPE_TEXT
 
                 # Clean up
                 os.unlink(temp_file.name)
+
+        # Test CSV separately as it has its own type
+        with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as temp_file:
+            temp_file.write(b"Some text content")
+            temp_file.flush()
+
+            file_type = get_file_type(temp_file.name, ".csv")
+            assert file_type == file_interface.File.TYPE_CSV
+
+            # Clean up
+            os.unlink(temp_file.name)
 
     def test_get_file_type_markdown(self):
         """Test get_file_type for markdown files."""
@@ -346,7 +358,7 @@ class TestProcessFile:
             temp_file.flush()
 
             file_type = get_file_type(temp_file.name, ".md")
-            assert file_type == "FILE_TYPE_MARKDOWN"
+            assert file_type == file_interface.File.TYPE_MARKDOWN
 
             # Clean up
             os.unlink(temp_file.name)
@@ -358,7 +370,7 @@ class TestProcessFile:
             temp_file.flush()
 
             file_type = get_file_type(temp_file.name, ".html")
-            assert file_type == "FILE_TYPE_HTML"
+            assert file_type == file_interface.File.TYPE_HTML
 
             # Clean up
             os.unlink(temp_file.name)
@@ -370,22 +382,28 @@ class TestProcessFile:
             temp_file.flush()
 
             file_type = get_file_type(temp_file.name, ".pdf")
-            assert file_type == "FILE_TYPE_PDF"
+            assert file_type == file_interface.File.TYPE_PDF
 
             # Clean up
             os.unlink(temp_file.name)
 
     def test_get_file_type_office_documents(self):
         """Test get_file_type for Office documents."""
-        office_extensions = [".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx"]
+        office_extensions = {
+            ".doc": file_interface.File.TYPE_DOC,
+            ".docx": file_interface.File.TYPE_DOCX,
+            ".ppt": file_interface.File.TYPE_PPT,
+            ".pptx": file_interface.File.TYPE_PPTX,
+            ".xls": file_interface.File.TYPE_XLS,
+            ".xlsx": file_interface.File.TYPE_XLSX,
+        }
 
-        for ext in office_extensions:
+        for ext, expected_type in office_extensions.items():
             with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as temp_file:
                 temp_file.write(b"fake office document content")
                 temp_file.flush()
 
                 file_type = get_file_type(temp_file.name, ext)
-                expected_type = ext.upper().replace(".", "FILE_TYPE_")
                 assert file_type == expected_type
 
                 # Clean up
@@ -412,7 +430,7 @@ class TestProcessFile:
             temp_file.flush()
 
             file_type = get_file_type(temp_file.name, ".unknown")
-            assert file_type == "FILE_TYPE_PDF"
+            assert file_type == file_interface.File.TYPE_PDF
 
             # Clean up
             os.unlink(temp_file.name)
@@ -423,7 +441,7 @@ class TestProcessFile:
             temp_file.flush()
 
             file_type = get_file_type(temp_file.name, ".unknown")
-            assert file_type == "FILE_TYPE_HTML"
+            assert file_type == file_interface.File.TYPE_HTML
 
             # Clean up
             os.unlink(temp_file.name)
@@ -436,7 +454,7 @@ class TestProcessFile:
             temp_file.flush()
 
             file_type = get_file_type(temp_file.name, ".unknown")
-            assert file_type == "FILE_TYPE_DOCX"
+            assert file_type == file_interface.File.TYPE_DOCX
 
             # Clean up
             os.unlink(temp_file.name)
@@ -454,8 +472,8 @@ class TestProcessFile:
             result = process_file(temp_file.name)
 
             # Verify result properties
-            assert result.name == os.path.basename(temp_file.name)
-            assert result.type == 1  # FILE_TYPE_TEXT enum value
+            assert result.filename == os.path.basename(temp_file.name)
+            assert result.type == file_interface.File.TYPE_TEXT
             assert result.content is not None
             assert len(result.content) > 0
 
@@ -475,8 +493,8 @@ class TestProcessFile:
             result = process_file(temp_file.name)
 
             # Verify result properties
-            assert result.name == os.path.basename(temp_file.name)
-            assert result.type == 3  # FILE_TYPE_MARKDOWN enum value
+            assert result.filename == os.path.basename(temp_file.name)
+            assert result.type == file_interface.File.TYPE_MARKDOWN
             assert result.content is not None
             assert len(result.content) > 0
 
