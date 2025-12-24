@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.18.1](https://github.com/instill-ai/python-sdk/compare/v0.18.0...v0.18.1) (2025-12-24)
+
+
+### Miscellaneous
+
+* **cli,model:** add instill.yaml optional fields ([2a65ec1](https://github.com/instill-ai/python-sdk/commit/2a65ec10534837344721d017d530f623553c19dd))
+* **deps-dev:** bump pyinstaller from 5.13.1 to 6.0.0 ([#289](https://github.com/instill-ai/python-sdk/issues/289)) ([592e5d7](https://github.com/instill-ai/python-sdk/commit/592e5d7183e2fdea70127b67a80cdbf0f69a612a))
+* **deps:** bump ray from 2.47.0 to 2.52.0 ([#291](https://github.com/instill-ai/python-sdk/issues/291)) ([71a14da](https://github.com/instill-ai/python-sdk/commit/71a14daa7a1df916b5d6b471d4ccd6e5fe0e2e5d))
+* **python:** bump up default python support to 3.12 ([4668d91](https://github.com/instill-ai/python-sdk/commit/4668d9104b8d839ee813587d9d24e92b7b8fff5a))
+
+
+### Refactor
+
+* **api:** update for CE protobuf refactoring and Python 3.13 support ([#290](https://github.com/instill-ai/python-sdk/issues/290)) ([a6f16a8](https://github.com/instill-ai/python-sdk/commit/a6f16a807c750cf590f8c1d3163fe45f125a6e4e))
+
 ## [0.18.0](https://github.com/instill-ai/python-sdk/compare/v0.17.2...v0.18.0) (2025-06-24)
 
 
